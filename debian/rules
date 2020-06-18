@@ -27,3 +27,6 @@ override_dh_auto_configure:
 			     -DHLSL_SUPPORT_QUERY_GIT_COMMIT_INFO="OFF" \
 			     $(cmake_vars)
 
+# Do not 'make test`
+override_dh_auto_test: ;
+
