@@ -767,7 +767,7 @@ add_subdirectory(cmake/modules)
 
 if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
   install(DIRECTORY include/llvm include/llvm-c
-    DESTINATION include
+    DESTINATION include/dxc/
     COMPONENT llvm-headers
     FILES_MATCHING
     PATTERN "*.def"
@@ -779,7 +779,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
     )
 
   install(DIRECTORY ${LLVM_INCLUDE_DIR}/llvm
-    DESTINATION include
+    DESTINATION include/dxc/
     COMPONENT llvm-headers
     FILES_MATCHING
     PATTERN "*.def"
