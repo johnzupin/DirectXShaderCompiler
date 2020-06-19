@@ -1,0 +1,18 @@
+From: John Zupin <johnz@lunarg.com>
+Date: Fri, 19 Jun 2020 15:11:26 -0600
+Subject: change /share/llvm/cmake to /share/dxc/llvm/cmake
+
+---
+ cmake/modules/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmake/modules/CMakeLists.txt b/cmake/modules/CMakeLists.txt
+index 5f3f255..3b68fde 100644
+--- a/cmake/modules/CMakeLists.txt
++++ b/cmake/modules/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-set(LLVM_INSTALL_PACKAGE_DIR share/llvm/cmake)
++set(LLVM_INSTALL_PACKAGE_DIR share/dxc/llvm/cmake)
+ set(llvm_cmake_builddir "${LLVM_BINARY_DIR}/${LLVM_INSTALL_PACKAGE_DIR}")
+ 
+ get_property(LLVM_EXPORTS GLOBAL PROPERTY LLVM_EXPORTS)
