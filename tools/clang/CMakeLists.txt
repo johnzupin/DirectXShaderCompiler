@@ -377,8 +377,8 @@ macro(add_clang_library name)
     if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY OR ${name} STREQUAL "libclang")
       install(TARGETS ${name}
         EXPORT ClangTargets
-        LIBRARY DESTINATION lib${LLVM_LIBDIR_SUFFIX}
-        ARCHIVE DESTINATION lib${LLVM_LIBDIR_SUFFIX}
+        LIBRARY DESTINATION lib${LLVM_LIBDIR_SUFFIX}/dxc/
+        ARCHIVE DESTINATION lib${LLVM_LIBDIR_SUFFIX}/dxc/
         RUNTIME DESTINATION bin)
     endif()
     set_property(GLOBAL APPEND PROPERTY CLANG_EXPORTS ${name})
@@ -406,7 +406,7 @@ include_directories(BEFORE
 
 if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
   install(DIRECTORY include/clang include/clang-c
-    DESTINATION include
+    DESTINATION include/dxc/
     FILES_MATCHING
     PATTERN "*.def"
     PATTERN "*.h"
@@ -415,7 +415,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
     )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/clang
-    DESTINATION include
+    DESTINATION include/dxc/
     FILES_MATCHING
     PATTERN "CMakeFiles" EXCLUDE
     PATTERN "*.inc"
@@ -424,7 +424,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
 endif()
 
 install(DIRECTORY include/clang-c
-  DESTINATION include
+  DESTINATION include/dxc/
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
@@ -533,7 +533,7 @@ if (CLANG_BUILT_STANDALONE)
   # Generate a list of CMake library targets so that other CMake projects can
   # link against them. LLVM calls its version of this file LLVMExports.cmake, but
   # the usual CMake convention seems to be ${Project}Targets.cmake.
-  set(CLANG_INSTALL_PACKAGE_DIR share/clang/cmake)
+  set(CLANG_INSTALL_PACKAGE_DIR share/dxc/clang/cmake)
   set(clang_cmake_builddir "${CMAKE_BINARY_DIR}/${CLANG_INSTALL_PACKAGE_DIR}")
   get_property(CLANG_EXPORTS GLOBAL PROPERTY CLANG_EXPORTS)
   export(TARGETS ${CLANG_EXPORTS} FILE ${clang_cmake_builddir}/ClangTargets.cmake)
@@ -544,7 +544,7 @@ if (CLANG_BUILT_STANDALONE)
 
   install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/ClangConfig.cmake
-    DESTINATION share/clang/cmake)
+    DESTINATION share/dxc/clang/cmake)
 
   # Also copy ClangConfig.cmake to the build directory so that dependent projects
   # can build against a build directory of Clang more easily.
