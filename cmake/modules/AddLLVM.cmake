@@ -543,7 +543,7 @@ macro(add_llvm_library name)
 
       install(TARGETS ${name}
             EXPORT LLVMExports
-            ${install_type} DESTINATION lib${LLVM_LIBDIR_SUFFIX}
+            ${install_type} DESTINATION lib${LLVM_LIBDIR_SUFFIX}/dxc/
             COMPONENT ${name})
 
       if (NOT CMAKE_CONFIGURATION_TYPES)
@@ -573,12 +573,12 @@ macro(add_llvm_loadable_module name)
           # DLL platform
           set(dlldir "bin")
         else()
-          set(dlldir "lib${LLVM_LIBDIR_SUFFIX}")
+          set(dlldir "lib${LLVM_LIBDIR_SUFFIX}/dxc/")
         endif()
         install(TARGETS ${name}
           EXPORT LLVMExports
           LIBRARY DESTINATION ${dlldir}
-          ARCHIVE DESTINATION lib${LLVM_LIBDIR_SUFFIX})
+          ARCHIVE DESTINATION lib${LLVM_LIBDIR_SUFFIX}/dxc/)
       endif()
       set_property(GLOBAL APPEND PROPERTY LLVM_EXPORTS ${name})
     endif()
