@@ -8,7 +8,7 @@ Copyright: 2020 LunarG
 License: LLVM
 
 Files: debian/*
-Copyright: 2016 Timo Aaltonen <tjaalton@debian.org>
+Copyright: 2020 LunarG <johnz@lunarg.com>
 License: GPL-3 or MIT or BSD-3-clause
 
 Files: debian/*
