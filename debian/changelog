@@ -1,3 +1,9 @@
+dxc (1.4.0.2274-361-1lunarg18.04-1) bionic; urgency=medium
+
+  * patches: rebase for package release
+
+ -- John Zupin <john@odin>  Mon, 27 Jul 2020 17:53:39 -0600
+
 dxc (1.4.0.2274-322-1) unstable; urgency=medium
 
   * Initial release
