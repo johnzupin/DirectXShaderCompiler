@@ -1,0 +1,17 @@
+From: John Zupin <johnz@lunarg.com>
+Date: Fri, 19 Jun 2020 15:27:31 -0600
+Subject: patches: created initial patches to update install targets
+
+---
+ debian/patches/series | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/debian/patches/series b/debian/patches/series
+index 0c78cdb..2832080 100644
+--- a/debian/patches/series
++++ b/debian/patches/series
+@@ -3,3 +3,4 @@
+ 0003-update-tools-clang-CML.txt-file-to-update-install-ta.patch
+ 0004-update-install-targest-for-llvm-files.patch
+ 0005-update-the-RPATH-setting.patch
++

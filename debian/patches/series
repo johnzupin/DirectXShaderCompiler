@@ -1,5 +1,6 @@
-0001-change-share-llvm-cmake-to-share-dxc-llvm-cmake.patch
-0002-update-install-targets-for-root-CMakeLists.txt-file-.patch
-0003-update-tools-clang-CML.txt-file-to-update-install-ta.patch
-0004-update-install-targest-for-llvm-files.patch
-0005-update-the-RPATH-setting.patch
+0001-patches-created-initial-patches-to-update-install-ta.patch
+0002-change-share-llvm-cmake-to-share-dxc-llvm-cmake.patch
+0003-update-install-targets-for-root-CMakeLists.txt-file-.patch
+0004-update-tools-clang-CML.txt-file-to-update-install-ta.patch
+0005-update-install-targest-for-llvm-files.patch
+0006-update-the-RPATH-setting.patch
