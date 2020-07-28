@@ -1,10 +1,10 @@
-dxc (1.4.0.2274-361-1lunarg20.04-1) focal; urgency=medium
+directxshadercompiler (1.4.0.2274-361-1lunarg20.04-1) focal; urgency=medium
 
   * patches: rebase for package release
 
  -- John Zupin <john@odin>  Mon, 27 Jul 2020 18:05:29 -0600
 
-dxc (1.4.0.2274-322-1) unstable; urgency=medium
+directxshadercompiler (1.4.0.2274-322-1) unstable; urgency=medium
 
   * Initial release
 
