@@ -1,4 +1,4 @@
-Source: dxc
+Source: directxshadercompiler
 Section: graphics
 Priority: optional
 Maintainer: John Zupin <johnz@lunarg.com>
