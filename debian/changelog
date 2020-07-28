@@ -1,3 +1,9 @@
+directxshadercompiler (1.4.0.2274-361-1lunarg18.04-2) bionic; urgency=medium
+
+  * UNRELEASED
+
+ -- John Zupin <john@odin>  Tue, 28 Jul 2020 14:59:50 -0600
+
 directxshadercompiler (1.4.0.2274-361-1lunarg18.04-1) bionic; urgency=medium
 
   * patches: rebase for package release
