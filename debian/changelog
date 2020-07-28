@@ -1,3 +1,9 @@
+directxshadercompiler (1.4.0.2274-361-1lunarg20.04-2) focal; urgency=medium
+
+  * UNRELEASED
+
+ -- John Zupin <john@odin>  Tue, 28 Jul 2020 15:08:40 -0600
+
 directxshadercompiler (1.4.0.2274-361-1lunarg20.04-1) focal; urgency=medium
 
   * patches: rebase for package release
