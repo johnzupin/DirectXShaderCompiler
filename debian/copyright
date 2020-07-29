@@ -3,8 +3,7 @@ Upstream-Name: DirectXShaderCompiler
 Source: https://github.com/microsoft/DirectXShaderCompiler
 
 Files: *
-Copyright: 2020 LunarG
-           2020 John Zupin
+Copyright: Copyright 2020 LunarG Inc.
 License: LLVM
 
 Files: debian/*
