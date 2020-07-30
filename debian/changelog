@@ -1,3 +1,13 @@
+directxshadercompiler (1.4.0.2274-361-1ubuntu18.04-3) bionic; urgency=medium
+
+  * control: updated description
+  * copyright: updated
+  * copyright: add newline at EOF
+  * rules: dont define include and lib install prefix
+  * install: move /bin/opt and llvm-tblgen to dxc-dev package
+
+ -- John Zupin <john@odin>  Thu, 30 Jul 2020 13:23:32 -0600
+
 directxshadercompiler (1.4.0.2274-361-1lunarg18.04-2) bionic; urgency=medium
 
   * UNRELEASED
