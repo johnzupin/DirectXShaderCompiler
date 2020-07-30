@@ -23,8 +23,6 @@ export DH_VERBOSE = 1
 override_dh_auto_configure: cmake_vars := $(shell cat utils/cmake-predefined-config-params)
 override_dh_auto_configure:
 	dh_auto_configure -- -DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH) \
-			     -DCMAKE_INSTALL_LIBDIR="/lib/dxc" \
-			     -DCMAKE_INSTALL_INCLUDEDIR="/include/dxc" \
 			     -DHLSL_ENABLE_FIXED_VER="ON" \
 			     -DHLSL_SUPPORT_QUERY_GIT_COMMIT_INFO="OFF" \
 			     $(cmake_vars)
