@@ -1,5 +1,3 @@
-usr/bin/opt
-usr/bin/llvm*
 usr/include/
 usr/share/dxc/
 usr/lib/dxc/*.a
