@@ -1,3 +1,10 @@
+directxshadercompiler (1.4.0.2274-361-1ubuntu20.04-4) focal; urgency=medium
+
+  * debian: remove README.Debian
+  * install: remove llvm-tblgen and opt
+
+ -- John Zupin <john@odin>  Mon, 03 Aug 2020 16:40:32 -0600
+
 directxshadercompiler (1.4.0.2274-361-1ubuntu20.04-3) focal; urgency=medium
 
   * control: updated description
