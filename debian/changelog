@@ -1,3 +1,10 @@
+directxshadercompiler (1.4.0.2274-361-1ubuntu18.04-4) bionic; urgency=medium
+
+  * debian: remove README.Debian
+  * install: remove llvm-tblgen and opt
+
+ -- John Zupin <john@odin>  Mon, 03 Aug 2020 16:31:51 -0600
+
 directxshadercompiler (1.4.0.2274-361-1ubuntu18.04-3) bionic; urgency=medium
 
   * control: updated description
