@@ -3301,8 +3301,13 @@ void CGMSHLSLRuntime::FinishCodeGen() {
   bool bWaveEnabledStage = m_pHLModule->GetShaderModel()->IsPS() ||
                            m_pHLModule->GetShaderModel()->IsCS() ||
                            m_pHLModule->GetShaderModel()->IsLib();
-  if (CGM.getCodeGenOpts().HLSLStructurizeReturns)
-    StructurizeMultiRet(M, m_ScopeMap, bWaveEnabledStage, m_DxBreaks);
+
+  // Handle lang extensions if provided.
+  if (CGM.getCodeGenOpts().HLSLExtensionsCodegen) {
+    ExtensionCodeGen(HLM, CGM);
+  }
+
+  StructurizeMultiRet(M, CGM, m_ScopeMap, bWaveEnabledStage, m_DxBreaks);
 
   FinishEntries(HLM, Entry, CGM, entryFunctionMap, HSEntryPatchConstantFuncAttr,
                 patchConstantFunctionMap, patchConstantFunctionPropsMap);
@@ -3328,8 +3333,34 @@ void CGMSHLSLRuntime::FinishCodeGen() {
   bool bIsLib = HLM.GetShaderModel()->IsLib();
   if (!bIsLib) {
     // need this for "llvm.global_dtors"?
+    if (HLM.GetShaderModel()->IsHS()) {
+      if (Function *patchConstantFn = HLM.GetPatchConstantFunction()) {
+        // static globals are independent for entry function and patch constant function.
+        // Update static global in entry function will not affect value in patch constant function.
+        // So just call ctors for patch constant function too.
+        ProcessCtorFunctions(
+            M, "llvm.global_ctors",
+            patchConstantFn->getEntryBlock().getFirstInsertionPt(), false);
+        IRBuilder<> B(patchConstantFn->getEntryBlock().getFirstInsertionPt());
+        // For static globals which has const initialize value, copy it at
+        // beginning of patch constant function to avoid use value updated by
+        // entry function.
+        for (GlobalVariable &GV : M.globals()) {
+          if (GV.isConstant())
+            continue;
+          if (!GV.hasInitializer())
+            continue;
+          if (GV.getName() == "llvm.global_ctors")
+            continue;
+          Value *V = GV.getInitializer();
+          if (isa<UndefValue>(V))
+            continue;
+          B.CreateStore(V, &GV);
+        }
+      }
+    }
     ProcessCtorFunctions(M, "llvm.global_ctors",
-                         Entry.Func->getEntryBlock().getFirstInsertionPt());
+                         Entry.Func->getEntryBlock().getFirstInsertionPt(), true);
   }
 
   UpdateLinkage(HLM, CGM, m_ExportMap, entryFunctionMap,
@@ -3341,10 +3372,6 @@ void CGMSHLSLRuntime::FinishCodeGen() {
   // Add dx.break function and make appropriate breaks conditional on it.
   AddDxBreak(M, m_DxBreaks);
 
-  // Handle lang extensions if provided.
-  if (CGM.getCodeGenOpts().HLSLExtensionsCodegen) {
-    ExtensionCodeGen(HLM, CGM);
-  }
   // At this point, we have a high-level DXIL module - record this.
   SetPauseResumePasses(*m_pHLModule->GetModule(), "hlsl-hlemit",
                        "hlsl-hlensure");

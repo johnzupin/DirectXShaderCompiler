@@ -173,7 +173,7 @@ void FinishCBuffer(
         &AnnotationMap);
 
 void ProcessCtorFunctions(llvm::Module &M, llvm::StringRef globalName,
-                          llvm::Instruction *InsertPt);
+                          llvm::Instruction *InsertPt, bool bRemoveGlobal);
 
 void TranslateRayQueryConstructor(hlsl::HLModule &HLM);
 
@@ -184,6 +184,7 @@ void UpdateLinkage(
     llvm::StringMap<PatchConstantInfo> &patchConstantFunctionMap);
 
 void StructurizeMultiRet(llvm::Module &M,
+                         clang::CodeGen::CodeGenModule &CGM,
                          llvm::DenseMap<llvm::Function *, ScopeInfo> &ScopeMap,
                          bool bWaveEnabledStage,
                          llvm::SmallVector<llvm::BranchInst *, 16> &DxBreaks);
