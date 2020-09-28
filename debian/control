@@ -20,6 +20,7 @@ Description: The DirectX Shader Compiler is a compiler used
 Package: dxc-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: llvm
 Description: Development files: for the DirectX Shader
  Compiler project. The DirectX Shader Compiler is a compiler used
  to compile High-Level Shader Language (HLSL) programs into
