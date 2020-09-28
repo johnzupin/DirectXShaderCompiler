@@ -2190,7 +2190,7 @@ bool BuildImmInit(Function *Ctor) {
 namespace CGHLSLMSHelper {
 
 void ProcessCtorFunctions(llvm::Module &M, StringRef globalName,
-                          Instruction *InsertPt) {
+                          Instruction *InsertPt, bool bRemoveGlobal) {
   // add global call to entry func
   GlobalVariable *GV = M.getGlobalVariable(globalName);
   if (!GV)
@@ -2228,7 +2228,9 @@ void ProcessCtorFunctions(llvm::Module &M, StringRef globalName,
     }
   }
   // remove the GV
-  GV->eraseFromParent();
+  if (bRemoveGlobal) {
+    GV->eraseFromParent();
+  }
 }
 
 void FinishCBuffer(
@@ -3015,9 +3017,19 @@ void StructurizeMultiRetFunction(Function *F, ScopeInfo &ScopeInfo,
 } // namespace
 
 namespace CGHLSLMSHelper {
-void StructurizeMultiRet(Module &M, DenseMap<Function *, ScopeInfo> &ScopeMap,
+void StructurizeMultiRet(Module &M, clang::CodeGen::CodeGenModule &CGM,
+                         DenseMap<Function *, ScopeInfo> &ScopeMap,
                          bool bWaveEnabledStage,
                          SmallVector<BranchInst *, 16> &DxBreaks) {
+  if (CGM.getCodeGenOpts().HLSLExtensionsCodegen) {
+    if (!CGM.getCodeGenOpts().HLSLExtensionsCodegen->IsOptionEnabled("structurize-returns"))
+      return;
+  } else {
+    if (!CGM.getCodeGenOpts().HLSLOptimizationToggles.count("structurize-returns") ||
+        !CGM.getCodeGenOpts().HLSLOptimizationToggles.find("structurize-returns")->second)
+      return;
+  }
+
   for (Function &F : M) {
     if (F.isDeclaration())
       continue;

@@ -243,6 +243,9 @@ TEST_F(FileTest, UnaryOpLogicalNot) {
   runFileTest("unary-op.logical-not.hlsl");
 }
 
+// For sizeof()
+TEST_F(FileTest, UnaryOpSizeof) { runFileTest("unary-op.sizeof.hlsl"); }
+
 // For assignments
 TEST_F(FileTest, BinaryOpAssign) { runFileTest("binary-op.assign.hlsl"); }
 TEST_F(FileTest, BinaryOpAssignImage) {
@@ -544,6 +547,10 @@ TEST_F(FileTest, FunctionInOutParamVector) {
   setBeforeHLSLLegalization();
   runFileTest("fn.param.inout.vector.hlsl");
 }
+TEST_F(FileTest, FunctionInOutParamResource) {
+  setBeforeHLSLLegalization();
+  runFileTest("fn.param.inout.resource.hlsl");
+}
 TEST_F(FileTest, FunctionInOutParamDiffStorageClass) {
   setBeforeHLSLLegalization();
   runFileTest("fn.param.inout.storage-class.hlsl");
@@ -803,6 +810,10 @@ TEST_F(FileTest, SemanticCoverageTypeMismatchPS) {
 TEST_F(FileTest, SemanticInnerCoveragePS) {
   runFileTest("semantic.inner-coverage.ps.hlsl");
 }
+TEST_F(FileTest, SemanticInnerCoverageTypeError) {
+  runFileTest("semantic.inner-coverage.type-error.hlsl", Expect::Failure);
+}
+
 TEST_F(FileTest, SemanticViewIDVS) { runFileTest("semantic.view-id.vs.hlsl"); }
 TEST_F(FileTest, SemanticViewIDHS) { runFileTest("semantic.view-id.hs.hlsl"); }
 TEST_F(FileTest, SemanticViewIDDS) { runFileTest("semantic.view-id.ds.hlsl"); }
@@ -907,6 +918,9 @@ TEST_F(FileTest, TextureSampleCmpLevelZero) {
 TEST_F(FileTest, TextureArraySampleCmpLevelZero) {
   runFileTest("texture.array.sample-cmp-level-zero.hlsl");
 }
+TEST_F(FileTest, TextureSampleInvalidImplicitLod) {
+  runFileTest("texture.sample-invalid-implicit-lod.hlsl", Expect::Failure);
+}
 
 // For structured buffer methods
 TEST_F(FileTest, StructuredBufferLoad) {
@@ -977,6 +991,13 @@ TEST_F(FileTest, BufferGetDimensions) {
 
 // For RWTexture methods
 TEST_F(FileTest, RWTextureLoad) { runFileTest("method.rwtexture.load.hlsl"); }
+
+TEST_F(FileTest, RWTextureLoadInvalidResidencyCode) {
+
+  runFileTest("method.rwtexture.load.invalid-residency-arg.hlsl",
+              Expect::Failure);
+}
+
 TEST_F(FileTest, RWTextureGetDimensions) {
   runFileTest("method.rwtexture.get-dimensions.hlsl");
 }
@@ -2175,11 +2196,20 @@ TEST_F(FileTest, RayTracingNVCallable) {
 TEST_F(FileTest, RayTracingNVLibrary) {
   runFileTest("raytracing.nv.library.hlsl");
 }
+TEST_F(FileTest, RayTracingNVAccelerationStructure) {
+  useVulkan1p2();
+  runFileTest("raytracing.nv.acceleration-structure.hlsl");
+}
 
 // === Raytracing KHR examples ===
 TEST_F(FileTest, RayTracingKHRClosestHit) {
   useVulkan1p2();
   runFileTest("raytracing.khr.closesthit.hlsl");
+}
+
+TEST_F(FileTest, RayTracingAccelerationStructure) {
+  useVulkan1p2();
+  runFileTest("raytracing.acceleration-structure.hlsl");
 }
 
 // For decoration uniqueness

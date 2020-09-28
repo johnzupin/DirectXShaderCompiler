@@ -180,6 +180,8 @@ public:
   bool HLSLHighLevel = false;
   /// Whether we allow preserve intermediate values
   bool HLSLAllowPreserveValues = false;
+  /// Whether we fail compilation if loop fails to unroll
+  bool HLSLOnlyWarnOnUnrollFail = false;
   /// Whether use row major as default matrix major.
   bool HLSLDefaultRowMajor = false;
   /// Whether use legacy cbuffer load.
@@ -214,8 +216,6 @@ public:
   std::vector<std::string> HLSLLibraryExports;
   /// ExportShadersOnly limits library export functions to shaders
   bool ExportShadersOnly = false;
-  /// Structurize control flow for function has multiple returns.
-  bool HLSLStructurizeReturns = false;
   /// DefaultLinkage Internal, External, or Default.  If Default, default
   /// function linkage is determined by library target.
   hlsl::DXIL::DefaultLinkage DefaultLinkage = hlsl::DXIL::DefaultLinkage::Default;
@@ -226,6 +226,8 @@ public:
   // Optimization pass enables, disables and selects
   std::map<std::string, bool> HLSLOptimizationToggles;
   std::map<std::string, std::string> HLSLOptimizationSelects;
+  /// Debug option to print IR after every pass
+  bool HLSLPrintAfterAll = false;
   // HLSL Change Ends
 
   // SPIRV Change Starts
