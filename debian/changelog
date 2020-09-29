@@ -1,3 +1,148 @@
+directxshadercompiler (1.4.0.2274-413-1lunarg18.04-1) bionic; urgency=medium
+
+  [ Greg Roth ]
+  * Avoid constant expr from GEP create (#3046)
+
+  [ Helena Kotas ]
+  * Support -h on hctbuild/hcttest and -Release on hcttest (#3049)
+
+  [ Greg Roth ]
+  * Allow double to WaveReadLaneFirst (#3053)
+
+  [ Adam Yang ]
+  * Added hidden option to print after all passes (#3051)
+
+  [ Ehsan ]
+  * [spirv] Fix translation for WaveReadLaneAt. (#3056)
+
+  [ Greg Roth ]
+  * Modify structurize returns option to use opt-enable (#3052)
+  * Verify valid intrinsic parameter casts (#3050)
+  * Restrict parameters to Interlocked* Intrinsics (#3057)
+
+  [ JiaoluAMD ]
+  * [SPIRV] Fix missing implicit decls (#3054)
+
+  [ Greg Roth ]
+  * Correct codegenoption assigning from semantic defines (#3061)
+
+  [ Adam Yang ]
+  * Added mechanism for extra file outputs (#3060)
+
+  [ Xiang Li ]
+  * Remove 4 byte align on struct. (#3063)
+
+  [ Helena Kotas ]
+  * Remove duplicate code for clipplanes attribute arguments parsing (#3067)
+
+  [ Greg Roth ]
+  * Add load for argument matrix subscript lowering (#3065)
+
+  [ Jaebaek Seo ]
+  * [spirv] Hull shader output patch must be shared between threads (#3059)
+
+  [ alan-baker ]
+  * [spirv] Update SPIRV-Tools and SPIRV-Headers (#3074)
+
+  [ Greg Roth ]
+  * Sundry code cleanups (#3073)
+
+  [ Helena Kotas ]
+  * Update highest supported shader model definition with newest Windows releases and move behind marker for shared DxilConf tests (#3075)
+
+  [ David Peixotto ]
+  * Modify the extension mechansim to handle custom lowering for resource… (#3081)
+
+  [ Helena Kotas ]
+  * Update highest shader model to 6.6 in execution tests (#3083)
+
+  [ Jaebaek Seo ]
+  * [spirv] support sizeof() (#3080)
+
+  [ Ehsan ]
+  * Create a bot for monitoring bad memory usage (leaks, etc). (#3090)
+  * [spirv] Fix memory leaks in the SPIR-V backend. (#3091)
+  * [spirv] Handle invalid arg for residency code. (#3064)
+
+  [ Greg Roth ]
+  * Remove unneeded rawbuf Ld/St return type reassign (#3086)
+
+  [ Tex Riddell ]
+  * Fix NonUniform indexing of CBV array (#3095)
+
+  [ Adam Yang ]
+  * Moved unroll to after dxilgen and scalarizer. (#3094)
+
+  [ Ehsan ]
+  * [spirv] Support boolean matrix as ternary condition. (#3096)
+  * [spirv] Support UnaryOperator for negating a matrix. (#3099)
+  * [spirv] Error out if SV_InnerCoverage is not uint. (#3102)
+  * [spirv] Add needed capabilities for Raytracing AccelerationStructure. (#3104)
+  * [spirv] Handle resource templated by vecc1. (#3098)
+
+  [ Tex Riddell ]
+  * Call FixOverloadNames before RefreshCache to prevent more linking problems (#3113)
+
+  [ Adam Yang ]
+  * Hoist exits out of loops when unrolling to make code structured. (#3103)
+
+  [ Tex Riddell ]
+  * Fix vs2019 build warnings for custom build items (#3114)
+
+  [ Xiang Li ]
+  * Create global_ctor when link to lib target. (#3118)
+
+  [ Greg Roth ]
+  * Enhance ShaderOpTest (#3116)
+
+  [ Ehsan ]
+  * [spirv] Fix codegen for inout resource function parameters. (#3112)
+
+  [ Tex Riddell ]
+  * Dxil.dll <= 1.5 compat: Fix RDAT break and validation tests (#3117)
+  * Refactor PSV code for improved maintainability and error handling (#3115)
+
+  [ Xiang Li ]
+  * Call ctor function for static globals in patch constant function. (#3122)
+
+  [ Adam Yang ]
+  * Taught [unroll] that barriers are safe to unroll (#3123)
+
+  [ Ehsan ]
+  * [spirv] CHECK for extensions in the user-type decoration test. (#3124)
+
+  [ Greg Roth ]
+  * Add note regarding .js assocation to readme (#3126)
+
+  [ Ehsan ]
+  * [spirv] Handle corner cases of transpose and mul. (#3127)
+
+  [ luckyxxl ]
+  * [spirv] Error on implicit-lod sampling in non-fragment shaders (#3128)
+
+  [ Jeff Noyle ]
+  * autofilesys (#3120)
+
+  [ Tex Riddell ]
+  * Remove assert.h include from DxilPipelineStateValidation.h (#3129)
+
+  [ Jeff Noyle ]
+  * PIX value-to-declare pass: subprogram type members (#3140)
+
+  [ Xiang Li ]
+  * Not init undef when recover init value for patch constant function. (#3141)
+
+  [ Adam Yang ]
+  * print-after-all directly prints to stderr (#3142)
+
+  [ Helena Kotas ]
+  *  Enable Visual Studio 2019 build by default (#3138)
+
+  [ John Zupin ]
+  * packaging: recommend llvm for dxc-dev
+
+ -- John Zupin <john@odin>  Mon, 28 Sep 2020 18:13:31 -0600
+
 directxshadercompiler (1.4.0.2274-361-1ubuntu18.04-4) bionic; urgency=medium
 
   * debian: remove README.Debian
