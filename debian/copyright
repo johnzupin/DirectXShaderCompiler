@@ -7,11 +7,11 @@ Copyright: Copyright 2020 LunarG Inc.
 License: LLVM
 
 Files: debian/*
-Copyright: 2020 LunarG <johnz@lunarg.com>
+Copyright: 2020 LunarG Inc. <johnz@lunarg.com>
 License: GPL-3 or MIT or BSD-3-clause
 
 Files: debian/*
-Copyright: 2020 John Zupin <john@lunarg.com>
+Copyright: 2020 LunarG Inc. <john@lunarg.com>
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
