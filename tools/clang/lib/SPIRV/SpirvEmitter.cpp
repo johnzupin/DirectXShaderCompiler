@@ -38,6 +38,24 @@ namespace spirv {
 
 namespace {
 
+// Returns true if the given decl is an implicit variable declaration inside the
+// "vk" namespace.
+bool isImplicitVarDeclInVkNamespace(const Decl *decl) {
+  if (!decl)
+    return false;
+
+  if (auto *varDecl = dyn_cast<VarDecl>(decl)) {
+    // Check whether it is implicitly defined.
+    if (!decl->isImplicit())
+      return false;
+
+    if (auto *nsDecl = dyn_cast<NamespaceDecl>(varDecl->getDeclContext()))
+      if (nsDecl->getName().equals("vk"))
+        return true;
+  }
+  return false;
+}
+
 // Returns true if the given decl has the given semantic.
 bool hasSemantic(const DeclaratorDecl *decl,
                  hlsl::DXIL::SemanticKind semanticKind) {
@@ -113,8 +131,10 @@ inline bool isExternalVar(const VarDecl *var) {
 const DeclContext *isConstantTextureBufferDeclRef(const Expr *expr) {
   if (const auto *declRefExpr = dyn_cast<DeclRefExpr>(expr->IgnoreParenCasts()))
     if (const auto *varDecl = dyn_cast<VarDecl>(declRefExpr->getFoundDecl()))
-      if (isConstantTextureBuffer(varDecl))
-        return varDecl->getType()->getAs<RecordType>()->getDecl();
+      if (isConstantTextureBuffer(varDecl->getType()))
+        return hlsl::GetHLSLResourceResultType(varDecl->getType())
+            ->getAs<RecordType>()
+            ->getDecl();
 
   return nullptr;
 }
@@ -283,18 +303,6 @@ inline bool evaluatesToConstZero(const Expr *expr, ASTContext &astContext) {
   return false;
 }
 
-/// Returns the HLSLBufferDecl if the given VarDecl is inside a cbuffer/tbuffer.
-/// Returns nullptr otherwise, including varDecl is a ConstantBuffer or
-/// TextureBuffer itself.
-inline const HLSLBufferDecl *getCTBufferContext(const VarDecl *varDecl) {
-  if (const auto *bufferDecl =
-          dyn_cast<HLSLBufferDecl>(varDecl->getDeclContext()))
-    // Filter ConstantBuffer/TextureBuffer
-    if (!bufferDecl->isConstantBufferView())
-      return bufferDecl;
-  return nullptr;
-}
-
 /// Returns the real definition of the callee of the given CallExpr.
 ///
 /// If we are calling a forward-declared function, callee will be the
@@ -351,6 +359,34 @@ void getBaseClassIndices(const CastExpr *expr,
   indices->clear();
 
   QualType derivedType = expr->getSubExpr()->getType();
+
+  // There are two types of UncheckedDerivedToBase/HLSLDerivedToBase casts:
+  //
+  // The first is when a derived object tries to access a member in the base.
+  // For example: derived.base_member.
+  // ImplicitCastExpr 'Base' lvalue <UncheckedDerivedToBase (Base)>
+  // `-DeclRefExpr 'Derived' lvalue Var 0x1f0d9bb2890 'derived' 'Derived'
+  //
+  // The second is when a pointer of the dervied is used to access members or
+  // methods of the base. There are currently no pointers in HLSL, but the
+  // method defintions can use the "this" pointer.
+  // For example:
+  // class Base { float value; };
+  // class Derviced : Base {
+  //   float4 getBaseValue() { return value; }
+  // };
+  //
+  // In this example, the 'this' pointer (pointing to Derived) is used inside
+  // 'getBaseValue', which is then cast to a Base pointer:
+  //
+  // ImplicitCastExpr 'Base *' <UncheckedDerivedToBase (Base)>
+  // `-CXXThisExpr 'Derviced *' this
+  //
+  // Therefore in order to obtain the derivedDecl below, we must make sure that
+  // we handle the second case too by using the pointee type.
+  if (derivedType->isPointerType())
+    derivedType = derivedType->getPointeeType();
+
   const auto *derivedDecl = derivedType->getAsCXXRecordDecl();
 
   // Go through the base cast chain: for each of the derived to base cast, find
@@ -373,6 +409,8 @@ void getBaseClassIndices(const CastExpr *expr,
 
     // Continue to proceed the next base in the chain
     derivedType = baseType;
+    if (derivedType->isPointerType())
+      derivedType = derivedType->getPointeeType();
     derivedDecl = derivedType->getAsCXXRecordDecl();
   }
 }
@@ -398,6 +436,10 @@ std::string getFnName(const FunctionDecl *fn) {
     if (const auto *st = dyn_cast<CXXRecordDecl>(memberFn->getDeclContext()))
       classOrStructName = st->getName().str() + ".";
   return getNamespacePrefix(fn) + classOrStructName + fn->getName().str();
+}
+
+bool isMemoryObjectDeclaration(SpirvInstruction *inst) {
+  return isa<SpirvVariable>(inst) || isa<SpirvFunctionParameter>(inst);
 }
 
 } // namespace
@@ -458,7 +500,7 @@ SpirvEmitter::SpirvEmitter(CompilerInstance &ci)
 
   // Set shader module version, source file name, and source file content (if
   // needed).
-  llvm::StringRef source = "";
+  llvm::StringRef source;
   std::vector<llvm::StringRef> fileNames;
   const auto &inputFiles = ci.getFrontendOpts().Inputs;
   // File name
@@ -478,8 +520,25 @@ SpirvEmitter::SpirvEmitter(CompilerInstance &ci)
                                              spvContext.getMinorVersion(),
                                              fileNames, source);
 
+  // OpenCL.DebugInfo.100 DebugSource
+  if (spirvOptions.debugInfoRich) {
+    auto *dbgSrc = spvBuilder.createDebugSource(mainSourceFile->getString());
+    // spvContext.getDebugInfo().insert() inserts {string key, RichDebugInfo}
+    // pair and returns {{string key, RichDebugInfo}, true /*Success*/}.
+    // spvContext.getDebugInfo().insert().first->second is a RichDebugInfo.
+    auto *richDebugInfo =
+        &spvContext.getDebugInfo()
+             .insert(
+                 {mainSourceFile->getString(),
+                  RichDebugInfo(dbgSrc,
+                                spvBuilder.createDebugCompilationUnit(dbgSrc))})
+             .first->second;
+    spvContext.pushDebugLexicalScope(richDebugInfo,
+                                     richDebugInfo->scopeStack.back());
+  }
+
   if (spirvOptions.debugInfoTool &&
-      spirvOptions.targetEnv.compare("vulkan1.1") >= 0) {
+      featureManager.isTargetEnvVulkan1p1OrAbove()) {
     // Emit OpModuleProcessed to indicate the commit information.
     std::string commitHash =
         std::string("dxc-commit-hash: ") + clang::getGitCommitHash();
@@ -513,6 +572,9 @@ void SpirvEmitter::HandleTranslationUnit(ASTContext &context) {
           addFunctionToWorkQueue(getShaderModelKind(shaderAttr->getStage()),
                                  funcDecl, /*isEntryFunction*/ true);
           numEntryPoints++;
+        } else if (funcDecl->getAttr<HLSLExportAttr>()) {
+          addFunctionToWorkQueue(spvContext.getCurrentShaderModelKind(),
+                                 funcDecl, /*isEntryFunction*/ false);
         }
       } else {
         if (funcDecl->getName() == entryFunctionName) {
@@ -540,8 +602,6 @@ void SpirvEmitter::HandleTranslationUnit(ASTContext &context) {
       return;
   }
 
-  const spv_target_env targetEnv = featureManager.getTargetEnv();
-
   // Addressing and memory model are required in a valid SPIR-V module.
   spvBuilder.setMemoryModel(spv::AddressingModel::Logical,
                             spv::MemoryModel::GLSL450);
@@ -558,7 +618,7 @@ void SpirvEmitter::HandleTranslationUnit(ASTContext &context) {
     spvBuilder.addEntryPoint(
         getSpirvShaderStage(entryInfo->shaderModelKind),
         entryInfo->entryFunction, entryInfo->funcDecl->getName(),
-        targetEnv == SPV_ENV_VULKAN_1_2
+        featureManager.isTargetEnvVulkan1p2OrAbove()
             ? spvBuilder.getModule()->getVariables()
             : llvm::ArrayRef<SpirvVariable *>(declIdMapper.collectStageVars()));
   }
@@ -569,6 +629,10 @@ void SpirvEmitter::HandleTranslationUnit(ASTContext &context) {
 
   // Add descriptor set and binding decorations to resource variables.
   if (!declIdMapper.decorateResourceBindings())
+    return;
+
+  // Add Coherent docrations to resource variables.
+  if (!declIdMapper.decorateResourceCoherent())
     return;
 
   // Output the constructed module.
@@ -638,14 +702,7 @@ void SpirvEmitter::doDecl(const Decl *decl) {
   }
 
   if (const auto *varDecl = dyn_cast<VarDecl>(decl)) {
-    // We can have VarDecls inside cbuffer/tbuffer. For those VarDecls, we need
-    // to emit their cbuffer/tbuffer as a whole and access each individual one
-    // using access chains.
-    if (const auto *bufferDecl = getCTBufferContext(varDecl)) {
-      doHLSLBufferDecl(bufferDecl);
-    } else {
-      doVarDecl(varDecl);
-    }
+    doVarDecl(varDecl);
   } else if (const auto *namespaceDecl = dyn_cast<NamespaceDecl>(decl)) {
     for (auto *subDecl : namespaceDecl->decls())
       // Note: We only emit functions as they are discovered through the call
@@ -667,11 +724,67 @@ void SpirvEmitter::doDecl(const Decl *decl) {
   }
 }
 
+RichDebugInfo *
+SpirvEmitter::getOrCreateRichDebugInfo(const SourceLocation &loc) {
+  const StringRef file =
+      astContext.getSourceManager().getPresumedLoc(loc).getFilename();
+  auto &debugInfo = spvContext.getDebugInfo();
+  auto it = debugInfo.find(file);
+  if (it != debugInfo.end())
+    return &it->second;
+
+  auto *dbgSrc = spvBuilder.createDebugSource(file);
+  // debugInfo.insert() inserts {string key, RichDebugInfo} pair and
+  // returns {{string key, RichDebugInfo}, true /*Success*/}.
+  // debugInfo.insert().first->second is a RichDebugInfo.
+  return &debugInfo
+              .insert({file, RichDebugInfo(
+                                 dbgSrc, spvBuilder.createDebugCompilationUnit(
+                                             dbgSrc))})
+              .first->second;
+}
+
 void SpirvEmitter::doStmt(const Stmt *stmt,
                           llvm::ArrayRef<const Attr *> attrs) {
   if (const auto *compoundStmt = dyn_cast<CompoundStmt>(stmt)) {
-    for (auto *st : compoundStmt->body())
-      doStmt(st);
+    if (spirvOptions.debugInfoRich) {
+      // Any opening of curly braces ('{') starts a CompoundStmt in the AST
+      // tree. It also means we have a new lexical block!
+      const auto loc = stmt->getLocStart();
+      const auto &sm = astContext.getSourceManager();
+      const uint32_t line = sm.getPresumedLineNumber(loc);
+      const uint32_t column = sm.getPresumedColumnNumber(loc);
+      RichDebugInfo *info = getOrCreateRichDebugInfo(loc);
+
+      auto *debugLexicalBlock = spvBuilder.createDebugLexicalBlock(
+          info->source, line, column, info->scopeStack.back());
+
+      // Add this lexical block to the stack of lexical scopes.
+      spvContext.pushDebugLexicalScope(info, debugLexicalBlock);
+
+      // Update or add DebugScope.
+      if (spvBuilder.getInsertPoint()->empty()) {
+        spvBuilder.getInsertPoint()->updateDebugScope(
+            new (spvContext) SpirvDebugScope(debugLexicalBlock));
+      } else if (!spvBuilder.isCurrentBasicBlockTerminated()) {
+        spvBuilder.createDebugScope(debugLexicalBlock);
+      }
+
+      // Iterate over sub-statements
+      for (auto *st : compoundStmt->body())
+        doStmt(st);
+
+      // We are done with processing this compound statement. Remove its lexical
+      // block from the stack of lexical scopes.
+      spvContext.popDebugLexicalScope(info);
+      if (!spvBuilder.isCurrentBasicBlockTerminated()) {
+        spvBuilder.createDebugScope(spvContext.getCurrentLexicalScope());
+      }
+    } else {
+      // Iterate over sub-statements
+      for (auto *st : compoundStmt->body())
+        doStmt(st);
+    }
   } else if (const auto *retStmt = dyn_cast<ReturnStmt>(stmt)) {
     doReturnStmt(retStmt);
   } else if (const auto *declStmt = dyn_cast<DeclStmt>(stmt)) {
@@ -714,8 +827,12 @@ SpirvInstruction *SpirvEmitter::doExpr(const Expr *expr) {
   expr = expr->IgnoreParens();
 
   if (const auto *declRefExpr = dyn_cast<DeclRefExpr>(expr)) {
-    result = declIdMapper.getDeclEvalInfo(declRefExpr->getDecl(),
-                                          expr->getLocStart());
+    auto *decl = declRefExpr->getDecl();
+    if (isImplicitVarDeclInVkNamespace(declRefExpr->getDecl())) {
+      result = doExpr(cast<VarDecl>(decl)->getInit());
+    } else {
+      result = declIdMapper.getDeclEvalInfo(decl, expr->getLocStart());
+    }
   } else if (const auto *memberExpr = dyn_cast<MemberExpr>(expr)) {
     result = doMemberExpr(memberExpr);
   } else if (const auto *castExpr = dyn_cast<CastExpr>(expr)) {
@@ -939,6 +1056,7 @@ void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
   // This will allow the entry-point name to be something like
   // myNamespace::myEntrypointFunc.
   std::string funcName = getFnName(decl);
+  std::string debugFuncName = funcName;
 
   SpirvFunction *func = declIdMapper.getOrRegisterFn(decl);
 
@@ -957,8 +1075,35 @@ void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
       declIdMapper.getTypeAndCreateCounterForPotentialAliasVar(decl);
 
   spvBuilder.beginFunction(retType, decl->getLocStart(), funcName,
-                           decl->hasAttr<HLSLPreciseAttr>(), func);
+                           decl->hasAttr<HLSLPreciseAttr>(),
+                           decl->hasAttr<NoInlineAttr>(), func);
 
+  auto loc = decl->getLocStart();
+  RichDebugInfo *info = nullptr;
+  const auto &sm = astContext.getSourceManager();
+  if (spirvOptions.debugInfoRich && decl->hasBody()) {
+    const uint32_t line = sm.getPresumedLineNumber(loc);
+    const uint32_t column = sm.getPresumedColumnNumber(loc);
+    info = getOrCreateRichDebugInfo(loc);
+
+    auto *source = info->source;
+    // Note that info->scopeStack.back() is a lexical scope of the function
+    // caller.
+    auto *parentScope = info->compilationUnit;
+    // TODO: figure out the proper flag based on the function decl.
+    // using FlagIsPublic for now.
+    uint32_t flags = 3u;
+    // The line number in the source program at which the function scope begins.
+    auto scopeLine = sm.getPresumedLineNumber(decl->getBody()->getLocStart());
+    SpirvDebugFunction *debugFunction = spvBuilder.createDebugFunction(
+        decl, debugFuncName, source, line, column, parentScope, "", flags,
+        scopeLine, func);
+    func->setDebugScope(new (spvContext) SpirvDebugScope(debugFunction));
+
+    spvContext.pushDebugLexicalScope(info, debugFunction);
+  }
+
+  bool isNonStaticMemberFn = false;
   if (const auto *memberFn = dyn_cast<CXXMethodDecl>(decl)) {
     if (!memberFn->isStatic()) {
       // For non-static member function, the first parameter should be the
@@ -973,6 +1118,23 @@ void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
         curThis->setContainsAliasComponent(true);
         needsLegalization = true;
       }
+
+      if (spirvOptions.debugInfoRich) {
+        // Add DebugLocalVariable information
+        const auto &sm = astContext.getSourceManager();
+        const uint32_t line = sm.getPresumedLineNumber(loc);
+        const uint32_t column = sm.getPresumedColumnNumber(loc);
+        if (!info)
+          info = getOrCreateRichDebugInfo(loc);
+        // TODO: replace this with FlagArtificial|FlagObjectPointer.
+        uint32_t flags = (1 << 5) | (1 << 8);
+        auto *debugLocalVar = spvBuilder.createDebugLocalVariable(
+            valueType, "this", info->source, line, column,
+            info->scopeStack.back(), flags, 1);
+        spvBuilder.createDebugDeclare(debugLocalVar, curThis);
+      }
+
+      isNonStaticMemberFn = true;
     }
   }
 
@@ -982,11 +1144,11 @@ void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
     if (spvContext.isHS() && decl == patchConstFunc &&
         hlsl::IsHLSLOutputPatchType(paramDecl->getType())) {
       // Since the output patch used in hull shaders is translated to
-      // a variable with Workgroup storage class, there is no need
+      // a variable with Output storage class, there is no need
       // to pass the variable as function parameter in SPIR-V.
       continue;
     }
-    (void)declIdMapper.createFnParam(paramDecl);
+    (void)declIdMapper.createFnParam(paramDecl, i + 1 + isNonStaticMemberFn);
   }
 
   if (decl->hasBody()) {
@@ -1016,6 +1178,10 @@ void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
   }
 
   spvBuilder.endFunction();
+
+  if (spirvOptions.debugInfoRich) {
+    spvContext.popDebugLexicalScope(info);
+  }
 }
 
 bool SpirvEmitter::validateVKAttributes(const NamedDecl *decl) {
@@ -1102,6 +1268,8 @@ bool SpirvEmitter::validateVKAttributes(const NamedDecl *decl) {
       isValidType = bufDecl->isCBuffer();
     else if ((bufDecl = dyn_cast<HLSLBufferDecl>(decl->getDeclContext())))
       isValidType = bufDecl->isCBuffer();
+    else if (isa<VarDecl>(decl))
+      isValidType = isConstantBuffer(dyn_cast<VarDecl>(decl)->getType());
 
     if (!isValidType) {
       emitError(
@@ -1179,6 +1347,8 @@ void SpirvEmitter::doVarDecl(const VarDecl *decl) {
   if (!validateVKAttributes(decl))
     return;
 
+  const auto loc = decl->getLocation();
+
   // HLSL has the 'string' type which can be used for rare purposes such as
   // printf (SPIR-V's DebugPrintf). SPIR-V does not have a 'char' or 'string'
   // type, and therefore any variable of such type should not be created.
@@ -1195,7 +1365,7 @@ void SpirvEmitter::doVarDecl(const VarDecl *decl) {
                                       decl)) {
     emitError("externally initialized non-floating-point column-major "
               "matrices not supported yet",
-              decl->getLocation());
+              loc);
   }
 
   // Reject arrays of RW/append/consume structured buffers. They have assoicated
@@ -1208,7 +1378,7 @@ void SpirvEmitter::doVarDecl(const VarDecl *decl) {
 
     if (isRWAppendConsumeSBuffer(type)) {
       emitError("arrays of RW/append/consume structured buffers unsupported",
-                decl->getLocation());
+                loc);
       return;
     }
   }
@@ -1230,8 +1400,20 @@ void SpirvEmitter::doVarDecl(const VarDecl *decl) {
     return;
   }
 
-  if (isa<HLSLBufferDecl>(decl->getDeclContext())) {
-    // This is a VarDecl of a ConstantBuffer/TextureBuffer type.
+  // We can have VarDecls inside cbuffer/tbuffer. For those VarDecls, we need
+  // to emit their cbuffer/tbuffer as a whole and access each individual one
+  // using access chains.
+  // cbuffers and tbuffers are HLSLBufferDecls
+  // ConstantBuffers and TextureBuffers are not HLSLBufferDecls.
+  if (const auto *bufferDecl =
+          dyn_cast<HLSLBufferDecl>(decl->getDeclContext())) {
+    // This is a VarDecl of cbuffer/tbuffer type.
+    doHLSLBufferDecl(bufferDecl);
+    return;
+  }
+
+  if (isConstantTextureBuffer(decl->getType())) {
+    // This is a VarDecl of ConstantBuffer/TextureBuffer type.
     (void)declIdMapper.createCTBuffer(decl);
     return;
   }
@@ -1250,7 +1432,6 @@ void SpirvEmitter::doVarDecl(const VarDecl *decl) {
     // We already know the variable is not externally visible here. If it does
     // not have local storage, it should be file scope variable.
     const bool isFileScopeVar = !decl->hasLocalStorage();
-
     if (isFileScopeVar)
       var = declIdMapper.createFileVar(decl, llvm::None);
     else
@@ -1273,14 +1454,27 @@ void SpirvEmitter::doVarDecl(const VarDecl *decl) {
     // Function local variables. Just emit OpStore at the current insert point.
     else if (const Expr *init = decl->getInit()) {
       if (auto *constInit = tryToEvaluateAsConst(init)) {
-        spvBuilder.createStore(var, constInit, decl->getLocation());
+        spvBuilder.createStore(var, constInit, loc);
       } else {
-        storeValue(var, loadIfGLValue(init), decl->getType(),
-                   decl->getLocation());
+        storeValue(var, loadIfGLValue(init), decl->getType(), loc);
       }
 
       // Update counter variable associated with local variables
       tryToAssignCounterVar(decl, init);
+    }
+
+    if (!isFileScopeVar && spirvOptions.debugInfoRich) {
+      // Add DebugLocalVariable information
+      const auto &sm = astContext.getSourceManager();
+      const uint32_t line = sm.getPresumedLineNumber(loc);
+      const uint32_t column = sm.getPresumedColumnNumber(loc);
+      const auto *info = getOrCreateRichDebugInfo(loc);
+      // TODO: replace this with FlagIsLocal enum.
+      uint32_t flags = 1 << 2;
+      auto *debugLocalVar = spvBuilder.createDebugLocalVariable(
+          decl->getType(), decl->getName(), info->source, line, column,
+          info->scopeStack.back(), flags);
+      spvBuilder.createDebugDeclare(debugLocalVar, var);
     }
 
     // Variables that are not externally visible and of opaque types should
@@ -1792,7 +1986,7 @@ void SpirvEmitter::doReturnStmt(const ReturnStmt *stmt) {
       return;
 
     auto retType = retVal->getType();
-    if (retInfo->getStorageClass() != spv::StorageClass::Function &&
+    if (retInfo->getLayoutRule() != SpirvLayoutRule::Void &&
         retType->isStructureType()) {
       // We are returning some value from a non-Function storage class. Need to
       // create a temporary variable to "convert" the value to Function storage
@@ -2021,7 +2215,8 @@ SpirvInstruction *SpirvEmitter::processCall(const CallExpr *callExpr) {
         // Based on SPIR-V spec, function parameter must always be in Function
         // scope. If we pass a non-function scope argument, we need
         // the legalization.
-        if (objInstr->getStorageClass() != spv::StorageClass::Function)
+        if (objInstr->getStorageClass() != spv::StorageClass::Function ||
+            !isMemoryObjectDeclaration(objInstr))
           beforeHlslLegalization = true;
 
         args.push_back(objInstr);
@@ -2041,6 +2236,7 @@ SpirvInstruction *SpirvEmitter::processCall(const CallExpr *callExpr) {
     // the LValueToRValue implicit cast here.
     auto *arg = callExpr->getArg(i)->IgnoreParenLValueCasts();
     const auto *param = callee->getParamDecl(i);
+    const auto paramType = param->getType();
 
     // Get the evaluation info if this argument is referencing some variable
     // *as a whole*, in which case we can avoid creating the temporary variable
@@ -2062,8 +2258,8 @@ SpirvInstruction *SpirvEmitter::processCall(const CallExpr *callExpr) {
     // expects are point-to-pointer argument for resources, which will be
     // resolved by legalization.
     if ((argInfo || (argInst && !argInst->isRValue())) &&
-        canActAsOutParmVar(param) && !isResourceType(param) &&
-        paramTypeMatchesArgType(param->getType(), arg->getType())) {
+        canActAsOutParmVar(param) && !isResourceType(paramType) &&
+        paramTypeMatchesArgType(paramType, arg->getType())) {
       // Based on SPIR-V spec, function parameter must be always Function
       // scope. In addition, we must pass memory object declaration argument
       // to function. If we pass an argument that is not function scope
@@ -2109,16 +2305,14 @@ SpirvInstruction *SpirvEmitter::processCall(const CallExpr *callExpr) {
       // the function. And we will cast back the results once the function call
       // has returned.
       if (canActAsOutParmVar(param) &&
-          !paramTypeMatchesArgType(param->getType(), arg->getType())) {
-        auto paramType = param->getType();
+          !paramTypeMatchesArgType(paramType, arg->getType())) {
         if (const auto *refType = paramType->getAs<ReferenceType>())
-          paramType = refType->getPointeeType();
-        rhsVal =
-            castToType(rhsVal, arg->getType(), paramType, arg->getLocStart());
+          rhsVal = castToType(rhsVal, arg->getType(), refType->getPointeeType(),
+                              arg->getLocStart());
       }
 
       // Initialize the temporary variables using the contents of the arguments
-      storeValue(tempVar, rhsVal, param->getType(), arg->getLocStart());
+      storeValue(tempVar, rhsVal, paramType, arg->getLocStart());
     }
   }
 
@@ -2143,6 +2337,7 @@ SpirvInstruction *SpirvEmitter::processCall(const CallExpr *callExpr) {
   // Go through all parameters and write those marked as out/inout
   for (uint32_t i = 0; i < numParams; ++i) {
     const auto *param = callee->getParamDecl(i);
+    const auto paramType = param->getType();
     // If it calls a non-static member function, the object itself is argument
     // 0, and therefore all other argument positions are shifted by 1.
     const uint32_t index = i + isNonStaticMemberCall;
@@ -2151,21 +2346,19 @@ SpirvInstruction *SpirvEmitter::processCall(const CallExpr *callExpr) {
     // there is no reason to copy back the results after the function call into
     // the resource.
     if (isTempVar[index] && canActAsOutParmVar(param) &&
-        !isResourceType(param)) {
+        !isResourceType(paramType)) {
       const auto *arg = callExpr->getArg(i);
-      SpirvInstruction *value = spvBuilder.createLoad(
-          param->getType(), vars[index], arg->getLocStart());
+      SpirvInstruction *value =
+          spvBuilder.createLoad(paramType, vars[index], arg->getLocStart());
 
       // Now we want to assign 'value' to arg. But first, in rare cases when
       // using 'out' or 'inout' where the parameter and argument have a type
       // mismatch, we need to first cast 'value' to the type of 'arg' because
       // the AST will not include a cast node.
-      if (!paramTypeMatchesArgType(param->getType(), arg->getType())) {
-        auto paramType = param->getType();
+      if (!paramTypeMatchesArgType(paramType, arg->getType())) {
         if (const auto *refType = paramType->getAs<ReferenceType>())
-          paramType = refType->getPointeeType();
-        value =
-            castToType(value, paramType, arg->getType(), arg->getLocStart());
+          value = castToType(value, refType->getPointeeType(), arg->getType(),
+                             arg->getLocStart());
       }
 
       processAssignment(arg, value, false, args[index]);
@@ -2537,6 +2730,16 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr) {
 SpirvInstruction *SpirvEmitter::processFlatConversion(
     const QualType type, const QualType initType, SpirvInstruction *initInstr,
     SourceLocation srcLoc) {
+  // When translating ConstantBuffer<T> or TextureBuffer<T> types, we consider
+  // the underlying type (T), and therefore we should bypass the FlatConversion
+  // node when accessing these types:
+  // `-MemberExpr
+  //   `-ImplicitCastExpr 'const T' lvalue <FlatConversion>
+  //     `-ArraySubscriptExpr 'ConstantBuffer<T>':'ConstantBuffer<T>' lvalue
+  if (isConstantTextureBuffer(initType)) {
+    return initInstr;
+  }
+
   // Try to translate the canonical type first
   const auto canonicalType = type.getCanonicalType();
   if (canonicalType != type)
@@ -2566,6 +2769,8 @@ SpirvInstruction *SpirvEmitter::processFlatConversion(
         case BuiltinType::LongLong:
         case BuiltinType::ULong:
         case BuiltinType::ULongLong:
+        case BuiltinType::Int8_4Packed:
+        case BuiltinType::UInt8_4Packed:
           return castToInt(initInstr, initType, ty, srcLoc);
         // Target type is a float variant.
         case BuiltinType::Double:
@@ -5356,6 +5561,19 @@ SpirvInstruction *SpirvEmitter::reconstructValue(SpirvInstruction *srcVal,
   if (const auto *recordType = valType->getAs<RecordType>()) {
     uint32_t index = 0;
     llvm::SmallVector<SpirvInstruction *, 4> elements;
+
+    // If the struct inherits from other structs, visit the bases.
+    const auto *decl = valType->getAsCXXRecordDecl();
+    for (auto baseIt = decl->bases_begin(), baseIe = decl->bases_end();
+         baseIt != baseIe; ++baseIt, ++index) {
+      SpirvInstruction *subSrcVal = spvBuilder.createCompositeExtract(
+          baseIt->getType(), srcVal, {index}, loc);
+      subSrcVal->setLayoutRule(srcVal->getLayoutRule());
+      elements.push_back(
+          reconstructValue(subSrcVal, baseIt->getType(), dstLR, loc));
+    }
+
+    // Go over struct fields.
     for (const auto *field : recordType->getDecl()->fields()) {
       SpirvInstruction *subSrcVal = spvBuilder.createCompositeExtract(
           field->getType(), srcVal, {index}, loc);
@@ -5415,6 +5633,8 @@ SpirvInstruction *SpirvEmitter::processBinaryOp(
   } else {
     // Evalute lhs before rhs
     lhsPtr = doExpr(lhs);
+    if (!lhsPtr)
+      return nullptr;
     lhsVal = loadIfGLValue(lhs, lhsPtr);
     rhsVal = loadIfGLValue(rhs);
   }
@@ -5821,12 +6041,15 @@ SpirvEmitter::tryToGenFloatVectorScale(const BinaryOperator *expr) {
     if (const auto *cast = dyn_cast<ImplicitCastExpr>(rhs)) {
       if (cast->getCastKind() == CK_HLSLVectorSplat) {
         const QualType vecType = expr->getType();
-        if (isa<CompoundAssignOperator>(expr)) {
+        if (const auto *compoundAssignExpr =
+                dyn_cast<CompoundAssignOperator>(expr)) {
+          const auto computationType =
+              compoundAssignExpr->getComputationLHSType();
           SpirvInstruction *lhsPtr = nullptr;
-          auto *result =
-              processBinaryOp(lhs, cast->getSubExpr(), expr->getOpcode(),
-                              vecType, vecType, range, expr->getOperatorLoc(),
-                              &lhsPtr, spv::Op::OpVectorTimesScalar);
+          auto *result = processBinaryOp(lhs, cast->getSubExpr(),
+                                         expr->getOpcode(), computationType,
+                                         vecType, range, expr->getOperatorLoc(),
+                                         &lhsPtr, spv::Op::OpVectorTimesScalar);
           return processAssignment(lhs, result, true, lhsPtr);
         } else {
           return processBinaryOp(lhs, cast->getSubExpr(), expr->getOpcode(),
@@ -5889,11 +6112,14 @@ SpirvEmitter::tryToGenFloatMatrixScale(const BinaryOperator *expr) {
       if (cast->getCastKind() == CK_HLSLMatrixSplat) {
         const QualType matType = expr->getType();
         const spv::Op opcode = selectOpcode(lhsType);
-        if (isa<CompoundAssignOperator>(expr)) {
+        if (const auto *compoundAssignExpr =
+                dyn_cast<CompoundAssignOperator>(expr)) {
+          const auto computationType =
+              compoundAssignExpr->getComputationLHSType();
           SpirvInstruction *lhsPtr = nullptr;
           auto *result = processBinaryOp(
-              lhs, cast->getSubExpr(), expr->getOpcode(), matType, matType,
-              range, expr->getOperatorLoc(), &lhsPtr, opcode);
+              lhs, cast->getSubExpr(), expr->getOpcode(), computationType,
+              matType, range, expr->getOperatorLoc(), &lhsPtr, opcode);
           return processAssignment(lhs, result, true, lhsPtr);
         } else {
           return processBinaryOp(lhs, cast->getSubExpr(), expr->getOpcode(),
@@ -6501,8 +6727,7 @@ const Expr *SpirvEmitter::collectArrayStructIndices(
             varDecl->getType(), VK_LValue);
 
     const Expr *base = collectArrayStructIndices(
-        indexing->getBase()->IgnoreParenNoopCasts(astContext), rawIndex,
-        rawIndices, indices, isMSOutAttribute);
+        indexing->getBase(), rawIndex, rawIndices, indices, isMSOutAttribute);
 
     if (isMSOutAttribute && base) {
       if (const auto *arg = dyn_cast<DeclRefExpr>(base)) {
@@ -6621,6 +6846,26 @@ const Expr *SpirvEmitter::collectArrayStructIndices(
           spvBuilder.getConstantInt(astContext.IntTy, llvm::APInt(32, 0)));
       indices->push_back(doExpr(index));
       return object;
+    }
+  }
+
+  {
+    // Indexing into ConstantBuffers and TextureBuffers involves an additional
+    // FlatConversion node which casts the handle to the underlying structure
+    // type. We can look past the FlatConversion to continue to collect indices.
+    // For example: MyConstantBufferArray[0].structMember1
+    // `-MemberExpr .structMember1
+    //   `-ImplicitCastExpr 'const T' lvalue <FlatConversion>
+    //     `-ArraySubscriptExpr 'ConstantBuffer<T>':'ConstantBuffer<T>' lvalue
+    if (auto *castExpr = dyn_cast<ImplicitCastExpr>(expr)) {
+      if (castExpr->getCastKind() == CK_FlatConversion) {
+        const auto *subExpr = castExpr->getSubExpr();
+        const QualType subExprType = subExpr->getType();
+        if (isConstantTextureBuffer(subExprType)) {
+          return collectArrayStructIndices(subExpr, rawIndex, rawIndices,
+                                           indices, isMSOutAttribute);
+        }
+      }
     }
   }
 
@@ -7091,6 +7336,9 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
   case hlsl::IntrinsicOp::IOP_rcp:
     retVal = processIntrinsicRcp(callExpr);
     break;
+  case hlsl::IntrinsicOp::IOP_VkReadClock:
+    retVal = processIntrinsicReadClock(callExpr);
+    break;
   case hlsl::IntrinsicOp::IOP_saturate:
     retVal = processIntrinsicSaturate(callExpr);
     break;
@@ -7240,11 +7488,31 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
                                callExpr->getExprLoc());
       }
     }
-    spvBuilder.createRayTracingOpsNV(
-        hlslOpcode == hlsl::IntrinsicOp ::IOP_AcceptHitAndEndSearch
-            ? spv::Op::OpTerminateRayNV
-            : spv::Op::OpIgnoreIntersectionNV,
-        QualType(), {}, srcLoc);
+    bool nvRayTracing =
+        featureManager.isExtensionEnabled(Extension::NV_ray_tracing);
+
+    if (nvRayTracing) {
+      spvBuilder.createRayTracingOpsNV(
+          hlslOpcode == hlsl::IntrinsicOp::IOP_AcceptHitAndEndSearch
+              ? spv::Op::OpTerminateRayNV
+              : spv::Op::OpIgnoreIntersectionNV,
+          QualType(), {}, srcLoc);
+    } else {
+      spvBuilder.createRaytracingTerminateKHR(
+          hlslOpcode == hlsl::IntrinsicOp::IOP_AcceptHitAndEndSearch
+              ? spv::Op::OpTerminateRayKHR
+              : spv::Op::OpIgnoreIntersectionKHR,
+          srcLoc);
+      // According to the SPIR-V spec, both OpTerminateRayKHR and
+      // OpIgnoreIntersectionKHR are termination instructions.
+      // The spec also requires that these instructions must be the last
+      // instruction in a block.
+      // Therefore we need to create a new basic block, and the following
+      // instructions will go there.
+      auto *newBB = spvBuilder.createBasicBlock();
+      spvBuilder.setInsertPoint(newBB);
+    }
+
     break;
   }
   case hlsl::IntrinsicOp::IOP_ReportHit: {
@@ -7863,8 +8131,8 @@ SpirvInstruction *SpirvEmitter::processWaveBroadcast(const CallExpr *callExpr) {
     // might incorrectly suggest so). The proper mapping to SPIR-V for
     // it is OpGroupNonUniformShuffle, *not* OpGroupNonUniformBroadcast.
     return spvBuilder.createGroupNonUniformBinaryOp(
-        spv::Op::OpGroupNonUniformShuffle, retType, spv::Scope::Subgroup,
-        value, doExpr(callExpr->getArg(1)), srcLoc);
+        spv::Op::OpGroupNonUniformShuffle, retType, spv::Scope::Subgroup, value,
+        doExpr(callExpr->getArg(1)), srcLoc);
   else
     return spvBuilder.createGroupNonUniformUnaryOp(
         srcLoc, spv::Op::OpGroupNonUniformBroadcastFirst, retType,
@@ -8979,6 +9247,13 @@ SpirvInstruction *SpirvEmitter::processIntrinsicRcp(const CallExpr *callExpr) {
 }
 
 SpirvInstruction *
+SpirvEmitter::processIntrinsicReadClock(const CallExpr *callExpr) {
+  auto *scope = doExpr(callExpr->getArg(0));
+  assert(scope->getAstResultType()->isIntegerType());
+  return spvBuilder.createReadClock(scope, callExpr->getExprLoc());
+}
+
+SpirvInstruction *
 SpirvEmitter::processIntrinsicAllOrAny(const CallExpr *callExpr,
                                        spv::Op spvOp) {
   // 'all' and 'any' take only 1 parameter.
@@ -9676,6 +9951,8 @@ SpirvInstruction *SpirvEmitter::processReportHit(const CallExpr *callExpr) {
 }
 
 void SpirvEmitter::processCallShader(const CallExpr *callExpr) {
+  bool nvRayTracing =
+      featureManager.isExtensionEnabled(Extension::NV_ray_tracing);
   SpirvInstruction *callDataLocInst = nullptr;
   SpirvInstruction *callDataStageVar = nullptr;
   const VarDecl *callDataArg = nullptr;
@@ -9730,10 +10007,16 @@ void SpirvEmitter::processCallShader(const CallExpr *callExpr) {
   // Id)
   llvm::SmallVector<SpirvInstruction *, 2> callShaderArgs;
   callShaderArgs.push_back(doExpr(args[0]));
-  callShaderArgs.push_back(callDataLocInst);
 
-  spvBuilder.createRayTracingOpsNV(spv::Op::OpExecuteCallableNV, QualType(),
-                                   callShaderArgs, callExpr->getExprLoc());
+  if (nvRayTracing) {
+    callShaderArgs.push_back(callDataLocInst);
+    spvBuilder.createRayTracingOpsNV(spv::Op::OpExecuteCallableNV, QualType(),
+                                     callShaderArgs, callExpr->getExprLoc());
+  } else {
+    callShaderArgs.push_back(callDataStageVar);
+    spvBuilder.createRayTracingOpsNV(spv::Op::OpExecuteCallableKHR, QualType(),
+                                     callShaderArgs, callExpr->getExprLoc());
+  }
 
   // Copy data back to argument
   tempLoad = spvBuilder.createLoad(callDataArg->getType(), callDataStageVar,
@@ -9743,6 +10026,9 @@ void SpirvEmitter::processCallShader(const CallExpr *callExpr) {
 }
 
 void SpirvEmitter::processTraceRay(const CallExpr *callExpr) {
+  bool nvRayTracing =
+      featureManager.isExtensionEnabled(Extension::NV_ray_tracing);
+
   SpirvInstruction *rayPayloadLocInst = nullptr;
   SpirvInstruction *rayPayloadStageVar = nullptr;
   const VarDecl *rayPayloadArg = nullptr;
@@ -9840,10 +10126,16 @@ void SpirvEmitter::processTraceRay(const CallExpr *callExpr) {
   traceArgs.push_back(tMin);
   traceArgs.push_back(direction);
   traceArgs.push_back(tMax);
-  traceArgs.push_back(rayPayloadLocInst);
 
-  spvBuilder.createRayTracingOpsNV(spv::Op::OpTraceNV, QualType(), traceArgs,
-                                   callExpr->getExprLoc());
+  if (nvRayTracing) {
+    traceArgs.push_back(rayPayloadLocInst);
+    spvBuilder.createRayTracingOpsNV(spv::Op::OpTraceNV, QualType(), traceArgs,
+                                     callExpr->getExprLoc());
+  } else {
+    traceArgs.push_back(rayPayloadStageVar);
+    spvBuilder.createRayTracingOpsNV(spv::Op::OpTraceRayKHR, QualType(),
+                                     traceArgs, callExpr->getExprLoc());
+  }
 
   // Copy arguments back to stage variable
   tempLoad = spvBuilder.createLoad(rayPayloadArg->getType(), rayPayloadStageVar,
@@ -10775,6 +11067,10 @@ bool SpirvEmitter::emitEntryFunctionWrapper(const FunctionDecl *decl,
   // function calls. And the wrapper is the entry function.
   entryFunction = spvBuilder.beginFunction(
       astContext.VoidTy, decl->getLocStart(), decl->getName());
+
+  // Specify that entryFunction is an entry function wrapper.
+  entryFunction->setEntryFunctionWrapper();
+
   // Note this should happen before using declIdMapper for other tasks.
   declIdMapper.setEntryFunction(entryFunction);
 
@@ -10977,11 +11273,10 @@ bool SpirvEmitter::emitEntryFunctionWrapper(const FunctionDecl *decl,
     }
   }
 
-  // For wrapper of entry point, it is better not to specify SourceLocation
-  // for return statement, because it is not the location of the actual
-  // return and emitting the location of the end of entry function makes
-  // us confused. It is better to emit debug line just before OpFunctionEnd.
-  spvBuilder.createReturn(/* SourceLocation */ {});
+  // To prevent spirv-opt from removing all debug info, we emit at least
+  // a single OpLine to specify the end of the shader. This SourceLocation
+  // will provide the information.
+  spvBuilder.createReturn(decl->getLocEnd());
   spvBuilder.endFunction();
 
   // For Hull shaders, there is no explicit call to the PCF in the HLSL source.
@@ -11029,7 +11324,7 @@ bool SpirvEmitter::processHSEntryPointOutputAndPCF(
   // results to it, so it can be passed to the PCF.
   if (const auto *param = patchConstFuncTakesHullOutputPatch(patchConstFunc)) {
     hullMainOutputPatch = declIdMapper.createHullMainOutputPatch(
-        param, retType, numOutputControlPoints, locEnd);
+        param, retType, numOutputControlPoints);
     auto *tempLocation = spvBuilder.createAccessChain(
         retType, hullMainOutputPatch, {outputControlPointId}, locEnd);
     spvBuilder.createStore(tempLocation, retVal, locEnd);
@@ -11416,9 +11711,6 @@ void SpirvEmitter::addFunctionToWorkQueue(hlsl::DXIL::ShaderKind shaderKind,
 
 SpirvInstruction *
 SpirvEmitter::processTraceRayInline(const CXXMemberCallExpr *expr) {
-  emitWarning("SPV_KHR_ray_query is currently a provisional extension and "
-              "might change in ways that are not backwards compatible",
-              expr->getExprLoc());
   const auto object = expr->getImplicitObjectArgument();
   uint32_t templateFlags = hlsl::GetHLSLResourceTemplateUInt(object->getType());
   const auto constFlags = spvBuilder.getConstantInt(
@@ -11499,9 +11791,6 @@ SpirvEmitter::processTraceRayInline(const CXXMemberCallExpr *expr) {
 SpirvInstruction *
 SpirvEmitter::processRayQueryIntrinsics(const CXXMemberCallExpr *expr,
                                         hlsl::IntrinsicOp opcode) {
-  emitWarning("SPV_KHR_ray_query is currently a provisional extension and "
-              "might change in ways that are not backwards compatible",
-              expr->getExprLoc());
   const auto object = expr->getImplicitObjectArgument();
   SpirvInstruction *rayqueryObj = loadIfAliasVarRef(object);
 
@@ -11765,15 +12054,6 @@ bool SpirvEmitter::spirvToolsOptimize(std::vector<uint32_t> *mod,
     // Add performance passes.
     optimizer.RegisterPerformancePasses();
 
-    // Add flattening of resources if needed.
-    if (spirvOptions.flattenResourceArrays ||
-        declIdMapper.requiresFlatteningCompositeResources()) {
-      optimizer.RegisterPass(spvtools::CreateDescriptorScalarReplacementPass());
-      // ADCE should be run after desc_sroa in order to remove potentially
-      // illegal types such as structures containing opaque types.
-      optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
-    }
-
     // Add compact ID pass.
     optimizer.RegisterPass(spvtools::CreateCompactIdsPass());
   } else {
@@ -11800,6 +12080,14 @@ bool SpirvEmitter::spirvToolsLegalize(std::vector<uint32_t> *mod,
   spvtools::OptimizerOptions options;
   options.set_run_validator(false);
   optimizer.RegisterLegalizationPasses();
+  // Add flattening of resources if needed.
+  if (spirvOptions.flattenResourceArrays ||
+      declIdMapper.requiresFlatteningCompositeResources()) {
+    optimizer.RegisterPass(spvtools::CreateDescriptorScalarReplacementPass());
+    // ADCE should be run after desc_sroa in order to remove potentially
+    // illegal types such as structures containing opaque types.
+    optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
+  }
   optimizer.RegisterPass(spvtools::CreateReplaceInvalidOpcodePass());
   optimizer.RegisterPass(spvtools::CreateCompactIdsPass());
 
@@ -11815,10 +12103,15 @@ SpirvEmitter::doUnaryExprOrTypeTraitExpr(const UnaryExprOrTypeTraitExpr *expr) {
     return nullptr;
   }
 
+  if (auto *constExpr = tryToEvaluateAsConst(expr)) {
+    constExpr->setRValue();
+    return constExpr;
+  }
+
   AlignmentSizeCalculator alignmentCalc(astContext, spirvOptions);
   uint32_t size = 0, stride = 0;
   std::tie(std::ignore, size) = alignmentCalc.getAlignmentAndSize(
-      expr->getArgumentType(), SpirvLayoutRule::Void,
+      expr->getArgumentType(), SpirvLayoutRule::Scalar,
       /*isRowMajor*/ llvm::None, &stride);
   auto *sizeConst = spvBuilder.getConstantInt(astContext.UnsignedIntTy,
                                               llvm::APInt(32, size));
