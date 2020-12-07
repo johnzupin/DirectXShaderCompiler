@@ -5,6 +5,7 @@
 #include "clang/Basic/SourceLocation.h"
 
 #include "llvm/ADT/StringMap.h"
+#include "llvm/ADT/MapVector.h"
 
 #include "dxc/DXIL/DxilCBuffer.h"
 
@@ -58,7 +59,8 @@ struct PatchConstantInfo {
 /// Use this class to represent HLSL cbuffer in high-level DXIL.
 class HLCBuffer : public hlsl::DxilCBuffer {
 public:
-  HLCBuffer() = default;
+  HLCBuffer(bool bIsView, bool bIsTBuf)
+      : bIsView(bIsView), bIsTBuf(bIsTBuf), bIsArray(false), ResultTy(nullptr) {}
   virtual ~HLCBuffer() = default;
 
   void AddConst(std::unique_ptr<DxilResourceBase> &pItem) {
@@ -70,11 +72,21 @@ public:
     return constants;
   }
 
+  bool IsView() { return bIsView; }
+  bool IsTBuf() { return bIsTBuf; }
+  bool IsArray() { return bIsArray; }
+  void SetIsArray() { bIsArray = true; }
+  llvm::Type *GetResultType() { return ResultTy; }
+  void SetResultType(llvm::Type *Ty) { ResultTy = Ty; }
+
 private:
   std::vector<std::unique_ptr<DxilResourceBase>>
       constants; // constants inside const buffer
+  bool bIsView;
+  bool bIsTBuf;
+  bool bIsArray;
+  llvm::Type *ResultTy;
 };
-
 // Scope to help transform multiple returns.
 struct Scope {
  enum class ScopeKind {
@@ -129,6 +141,18 @@ private:
   llvm::SmallVector<Scope, 16> scopes;
 };
 
+// Map from value to resource properties.
+// This only collect object variables(global/local/parameter), not object fields inside struct.
+// Object fields inside struct is saved by TypeAnnotation.
+struct DxilObjectProperties {
+  bool AddResource(llvm::Value *V, const hlsl::DxilResourceProperties &RP);
+  bool IsResource(llvm::Value *V);
+  hlsl::DxilResourceProperties GetResource(llvm::Value *V);
+
+  // MapVector for deterministic iteration order.
+  llvm::MapVector<llvm::Value *, hlsl::DxilResourceProperties> resMap;
+};
+
 // Align cbuffer offset in legacy mode (16 bytes per row).
 unsigned AlignBufferOffsetInLegacy(unsigned offset, unsigned size,
                                    unsigned scalarSizeInBytes,
@@ -146,9 +170,9 @@ void FinishEntries(hlsl::HLModule &HLM, const EntryFunctionInfo &Entry,
                        &patchConstantFunctionPropsMap);
 
 void FinishIntrinsics(
-    hlsl::HLModule &HLM, std::vector<std::pair<llvm::Function *, unsigned>> &intrinsicMap,
-    llvm::DenseMap<llvm::Value *, hlsl::DxilResourceProperties>
-        &valToResPropertiesMap);
+    hlsl::HLModule &HLM,
+    std::vector<std::pair<llvm::Function *, unsigned>> &intrinsicMap,
+    DxilObjectProperties &valToResPropertiesMap);
 
 void AddDxBreak(llvm::Module &M, const llvm::SmallVector<llvm::BranchInst*, 16> &DxBreaks);
 

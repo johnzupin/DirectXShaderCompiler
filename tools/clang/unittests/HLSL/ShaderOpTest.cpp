@@ -25,7 +25,7 @@
 #include "dxc/Support/dxcapi.use.h" // DxcDllSupport
 #include "dxc/DXIL/DxilConstants.h" // ComponentType
 #include "WexTestClass.h"           // TAEF
-#include "dxc/Test/HLSLTestUtils.h"          // LogCommentFmt
+#include "HLSLTestUtils.h"          // LogCommentFmt
 
 #include <stdlib.h>
 #include <DirectXMath.h>
@@ -443,7 +443,7 @@ void ShaderOpTest::CreatePipelineState() {
       UINT                          NodeMask;
       D3D12_CACHED_PIPELINE_STATE   CachedPSO;
       D3D12_PIPELINE_STATE_FLAGS    Flags;
-    } MDesc;
+    } MDesc = {};
 
     CComPtr<ID3D10Blob> pAS, pMS, pPS;
     pAS = map_get_or_null(m_Shaders, m_pShaderOp->AS);
