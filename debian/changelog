@@ -1,3 +1,254 @@
+directxshadercompiler (1.4.0.2274-502-1lunarg18.04-1) bionic; urgency=medium
+
+  [ tangogu ]
+  * Fix the link issue in readme.md (#3149)
+
+  [ Jaebaek Seo ]
+  * [spirv] generate OpenCL.DebugInfo.100 instructions (#3155)
+
+  [ Helena Kotas ]
+  * Remove VS checks that assume Visual Studio is installed on C: drive (#3157)
+
+  [ Ehsan ]
+  * [spirv] Update SPIRV-Tools and SPIRV-Headers. (#3156)
+
+  [ Xiang Li ]
+  * Update Constant/TextureBuffer implementation. (#3147)
+
+  [ Greg Roth ]
+  * Optimize compile times by not skipping allocas (#3168)
+
+  [ Jaebaek Seo ]
+  * [spirv] support non-existing header file include (#3167)
+
+  [ JiaoluAMD ]
+  * [spirv] Fix issues of RWByteAddressBuffer in the InitList (#3145)
+
+  [ Helena Kotas ]
+  * Fix dxilconv crash when initialization fails (#3172)
+
+  [ Jaebaek Seo ]
+  * [spirv] report error for invalid tex2d multiplication (#3175)
+
+  [ Jeff Noyle ]
+  * Don't instrument that! (#3176)
+
+  [ Xiang Li ]
+  * Not dup barrier in HL level. (#3181)
+
+  [ Adam Yang ]
+  * Disabled FoldCondBranchOnPHI in simplify cfg (#3180)
+
+  [ John Zupin ]
+  * packaging: update copyright
+
+  [ Helena Kotas ]
+  * DIA SDK lookup fixes (#3179)
+
+  [ Greg Roth ]
+  * Revert "Optimize compile times by not skipping allocas (#3168)" (#3183)
+
+  [ Helena Kotas ]
+  * Update version to 1.5.2010 (#3185)
+
+  [ Greg Roth ]
+  * Correct GV error message crash (#3161)
+
+  [ Jaebaek Seo ]
+  * [spirv] add DebugScope after compound statement (#3182)
+
+  [ Ehsan ]
+  * [spirv] Use sm 6.5 as 6.6 is not fully supported yet. (#3191)
+  * Make it easier to see (and download) artifacts (#3193)
+
+  [ Helena Kotas ]
+  * Add missing DxcEtw dependency to dxilconv (#3194)
+  * Cleanup and minor changes to improve integration with internal projects (#3199)
+
+  [ Jeff Noyle ]
+  * impl (#3200)
+  * Fix tests (#3195)
+
+  [ Junda Liu ]
+  * [SPIR-V] Add noinline support for SPIR-V generation (#3163)
+
+  [ Adam Yang ]
+  * Fixed some cases where O0 fails compilation (#3205)
+
+  [ Jaebaek Seo ]
+  * [spirv] allow debug info generation to use full optmization (#3201)
+
+  [ Adam Yang ]
+  * remove-dead-blocks handles switch. Split resource array before finalize. (#3184)
+  * Not assuming callee being a function in DVC (#3206)
+
+  [ Tex Riddell ]
+  * Skip extra argument copying at callsite for library targets (#3203)
+
+  [ Helena Kotas ]
+  * Fix build for ARM64EC dxilconv.dll, because _xgetbv is currently not a supported intrinsic for ARM64EC. (#3211)
+
+  [ Adam Yang ]
+  * Fixing store undef later in the compilation. (#3212)
+
+  [ Jaebaek Seo ]
+  * [spirv] handle sizeof using Clang's const folding (#3208)
+
+  [ Junda Liu ]
+  * Fix [[vk::push_constant]] on ConstantBuffer (#3215)
+
+  [ Minmin Gong ]
+  * Some improvements to cmake files of dxilconv (#2876)
+
+  [ Adam Yang ]
+  * Make sure bitpiece not generated that covers the entire variable (#3223)
+
+  [ Helena Kotas ]
+  * Add caps check for optional 16bit ops support to several execution tests. (#3222)
+
+  [ Adam Yang ]
+  * Bitpiece crash when value/addr are null (#3227)
+
+  [ Tex Riddell ]
+  * Fix regression in lib vector arg case when skipping copy-out (#3232)
+  * Fix precise propagation through various missing paths (#3224)
+
+  [ Junda Liu ]
+  * [spirv] globallycoherent should generate SPIR-V decoration Coherent (#3217)
+  * [spirv] Fix [[vk::push_constant]] on ConstantBuffer part II (#3216)
+
+  [ Helena Kotas ]
+  * Fix DIA SDK detection (#3231)
+
+  [ Jaebaek Seo ]
+  * [spirv] wrap instructions with OpNoLine (#3229)
+  * [spirv] add location for DebugDeclare (#3230)
+
+  [ Greg Roth ]
+  * New approach to avoid skipallocas (#3219)
+
+  [ Helena Kotas ]
+  * Fix DIA SDK detection for ARM64 and VS2017 (#3239)
+
+  [ Adam Yang ]
+  * Made exit values not have to dominate latch in structurize loop exit (#3220)
+
+  [ Greg Roth ]
+  * Initialize conversion remarks result (#3241)
+
+  [ Jaebaek Seo ]
+  * Revert "[spirv] add location for DebugDeclare (#3230)" (#3242)
+
+  [ Tex Riddell ]
+  * Fix lost debug info on DispatchMesh payload in AS (#3243)
+
+  [ Helena Kotas ]
+  * Minor refactoring to reduce size of dxilconv.dll (#3240)
+  * Support for ARM64EC and custom cmake (#3245)
+
+  [ Jaebaek Seo ]
+  * [spirv] emit OpLine at the end of entry function (#3244)
+
+  [ Greg Roth ]
+  * Handle scalar args to out vector params (#3246)
+
+  [ Helena Kotas ]
+  * Fix dxilconv crash when initialization fails (#3254)
+
+  [ Marijn Suijten ]
+  * Linux: Implement prefix-counted BSTR allocation in SysAllocStringLen (#3250)
+
+  [ Helena Kotas ]
+  * Fix hctbuild to enable passing of quoted values and values with parenthesis (#3256)
+
+  [ Ehsan ]
+  * [spirv] Move descriptor scalar replacement to legalization stage. (#3261)
+  * [spirv] Use isResourceType to cover SubpassInput. (#3253)
+  * [spirv] Fix compound MulAssign with type mismatches. (#3255)
+
+  [ rkarrenberg ]
+  * Enable generation of llvm.lifetime.start/.end intrinsics (#3034)
+
+  [ Marijn Suijten ]
+  * dxcisense: Allocate "TM" classes using IMalloc instead of new (#3258)
+
+  [ rkarrenberg ]
+  * Move force-zero-store-lifetimes flag to help-hidden, remove accidental check from test. (#3264)
+
+  [ Xiang Li ]
+  * Propagate memcpy src on srv. (#3270)
+
+  [ Jaebaek Seo ]
+  * [spirv] convert return type if memory layout is different (#3262)
+
+  [ Ehsan ]
+  * [spirv] Fix read/write to base struct member from derived struct (#3263)
+
+  [ Greg Roth ]
+  * Reword misleading type buffer atomic error message (#3268)
+
+  [ Marijn Suijten ]
+  * Remove unnecessary whitespace in files touched by #3062 (#3272)
+  * [linux-port] Support full IID comparison on GCC (#3062)
+
+  [ JiaoluAMD ]
+  * [SPIRV]Updates to final RayTracing semantics (#3279)
+
+  [ Ehsan ]
+  * [spirv] Fix issues related to struct inheritance memory layout (#3273)
+
+  [ JiaoluAMD ]
+  * [SPIRV] Add support hlsl export function attribute (#3234)
+
+  [ Jaebaek Seo ]
+  * [spirv] do not use WorkGroup storage class for hull shader output patch (#3271)
+
+  [ Ehsan ]
+  * Introduce the implicit 'vk' namespace (#3133)
+
+  [ Jeff Noyle ]
+  * PIX: Update debugging passes for certain language features (#3289)
+
+  [ Greg Roth ]
+  * Add conditionals around vk namespace usage (#3291)
+
+  [ Helena Kotas ]
+  * TAEF cmake fixes (#3290)
+
+  [ Adam Yang ]
+  * Fixed debug info alignment in min16 types. (#3257)
+  * Added new PDB interface (#3288)
+
+  [ Greg Roth ]
+  * Implement Shader Model 6.6 (#3293)
+
+  [ Ehsan ]
+  * [spirv] Update SPIRV-Tools and SPIRV-Headers. (#3296)
+
+  [ Greg Roth ]
+  * Make lifetimes test use 6.6 (#3297)
+
+  [ Jeff Noyle ]
+  * Fixes for adding -Od (#3292)
+
+  [ JiaoluAMD ]
+  * [SPIR-V]Support KHR_Ray_tracing terminate Ops (#3295)
+
+  [ Greg Roth ]
+  * Add missing LLVM library interdependencies (#3301)
+  * Correct Resource Views in Resource Execution Test (#3303)
+
+  [ Jesse Natalie ]
+  * Add UINT8 typedef to WinAdapter.h (#3302)
+
+  [ Ehsan ]
+  * Update SPIRV-Tools (fix for raytracing termination instructions). (#3306)
+
+  [ John Zupin ]
+  * packaging: update copyright
+
+ -- John Zupin <john@odin>  Tue, 08 Dec 2020 11:26:51 -0700
+
 directxshadercompiler (1.4.0.2274-413-1lunarg18.04-2) bionic; urgency=medium
 
   * packaging: updated copyright
