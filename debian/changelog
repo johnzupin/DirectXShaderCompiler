@@ -1,3 +1,212 @@
+directxshadercompiler (1.4.0.2274-585~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Helena Kotas ]
+  * Update version to 1.6.2012 (#3308)
+  * Disable voice in build script by default (#3307)
+
+  [ Adam Yang ]
+  * Fixed writing to RWTexture generating a load and store for each component (#3304)
+
+  [ Greg Roth ]
+  * Resources test Tex/Buffer mismatch fix (#3309)
+  * Correct QuadRead index (#3298)
+  * Correct ComputeSample Execution Test (#3300)
+
+  [ Ehsan ]
+  * [spirv] Forward declaration of function inside another. (#3310)
+
+  [ Vishal Sharma ]
+  * Update validation rule info in hctdb.py (#3311)
+
+  [ Xiang Li ]
+  * Add getElementStride to DxilResourceProperties. (#3312)
+
+  [ Helena Kotas ]
+  * Disable LLVMBuild.txt dependencies and DummyConfigureOutput writing for official builds (#3319)
+
+  [ Xiang Li ]
+  * set opClass to OP::OpCodeClass::NumOpClasses when not OP::GetOpCodeClass return false. (#3317)
+
+  [ Marijn Suijten ]
+  * SPIR-V: Emit RayTmaxKHR builtin for RayTCurrent IOP (#3320)
+
+  [ Xiang Li ]
+  * Fix crash in Sema::CheckDerivedToBaseConversion when Paths is empty. (#3327)
+
+  [ Ehsan ]
+  * [spirv] Support 64-bit interlocked intrinsics. (#3321)
+  * [spirv] Add SM 6.6 8-bit packed types and intrinsics (#3325)
+
+  [ Adam Yang ]
+  * PDB Utils returns hash struct and handles DXIL program header. (#3318)
+
+  [ Xiang Li ]
+  * Support NonUniformResourceIndex for dynamic resource. (#3333)
+
+  [ Greg Roth ]
+  * Skip gpudescriptorhandles where there is no RTV (#3329)
+  * Update dxexp to 6.6 (#3328)
+
+  [ Adam Yang ]
+  * Enabled loop exit structurizer by default. (#3334)
+  * PDB Util shouldn't fail on DXIL with no debug info (#3337)
+
+  [ Greg Roth ]
+  * Fix mesh and groupshared in ExecutionTest (#3339)
+  * Don't create static global for uninited local const (#3345)
+  * Allow adding object methods when in namespace (#3284)
+
+  [ Helena Kotas ]
+  * Minor changes to tests to silence warnings (#3342)
+
+  [ Xiang Li ]
+  * Call init function for entry of lib profiles. (#3350)
+
+  [ Greg Roth ]
+  * Refactor resource creation in resources exec test (#3349)
+
+  [ Xiang Li ]
+  * Use IsEntry when LowerStaticGlobalIntoAlloca. (#3353)
+  * Support CallInst when ReplaceStaticIndexingOnVector. (#3354)
+
+  [ Greg Roth ]
+  * Lifetime test: UAVcreation/raytracing conditionals (#3356)
+
+  [ Adam Yang ]
+  * Don't crash when querying hash when hash is empty (#3366)
+
+  [ Xiang Li ]
+  * Add annotateHandle when link lower shader model to shader model 6.6. (#3368)
+
+  [ Adam Yang ]
+  * Removed source from debug module. Support slim PDB. (#3348)
+  * Added the missing thread local IMalloc for possible memory allocation in some implementations (#3373)
+
+  [ Greg Roth ]
+  * Remove early aspirational language about DXIR standard (#3375)
+
+  [ Tex Riddell ]
+  * DxilConv: localize caching of handles instead of storing in resource obj (#3376)
+
+  [ Ehsan ]
+  * [spirv] Fix target env error message. (#3346)
+  * [spirv] Update SPIRV-Tools. (#3365)
+
+  [ Xiang Li ]
+  * Mutate resource to handle for shader model 6.6+. (#3374)
+  * When create annotateHandle, put it near to input handle so it could be optimized. (#3381)
+
+  [ Helena Kotas ]
+  * IsHelperLane() Execution Tests (#3367)
+
+  [ Tex Riddell ]
+  * Implement IsHelperLane() (#3382)
+
+  [ Jaebaek Seo ]
+  * [spirv] Fix failure caused by multiplying size() and int (#3379)
+
+  [ Tex Riddell ]
+  * Add ResourceKind/NumThreads to PSV0 (DxilPipelineStateValidation) (#3233)
+
+  [ Greg Roth ]
+  * silence sign warning on some systems (#3384)
+
+  [ Xiang Li ]
+  * Remove DxilCondenseResourcesPass. (#3386)
+
+  [ Ehsan ]
+  * [spirv] Fix storage class for ptr-to-ptr in Vulkan 1.2. (#3344)
+  * [spirv] Don't apply RelaxedPrecision to ops operating on bools (#3364)
+
+  [ Xiang Li ]
+  * Remove debug code. (#3390)
+
+  [ Tex Riddell ]
+  * Enable ISHELPERLANE_PLACEHOLDER in test until implementations catch up. (#3388)
+  * Remove Travis Build Status to unblock
+  * Disable linux requirement in Travis due to unresolved infra issue (#3393)
+
+  [ Xiang Li ]
+  * Remove empty loop. (#3391)
+
+  [ Helena Kotas ]
+  * Update highest shader model in Execution test (#3392)
+  * Remove extra argument from END_TEST_METHOD macro invocation (#3394)
+
+  [ Adam Yang ]
+  * Fixed global constructors evaluated at codegen aren't removed (#3389)
+
+  [ Xiang Li ]
+  * Change default type for 1<<x to int. (#3400)
+
+  [ Helena Kotas ]
+  * Fix broken execution tests (#3404)
+
+  [ Greg Roth ]
+  * Defined behavior on all wave sensitivity outcomes (#3405)
+  * Add hidden option to disable lifetime markers (#3406)
+
+  [ Xiang Li ]
+  * Allow delete self loop in JumpThreading. (#3409)
+
+  [ Tex Riddell ]
+  * Implement fallback path for IsHelper on SM < 6.6 (#3408)
+  * Re-enable IsHelperLane test since down-conversion is in (#3410)
+
+  [ Minmin Gong ]
+  * In the original code, there are chances to compare an iterator from m_CBsByName to m_StructuredBufferCBsByName.end(). It crashes if _ITERATOR_DEBUG_LEVEL is not 0. Fix it by comparing an iterator to the container it's from. (#3160)
+
+  [ Xiang Li ]
+  * Fix bug when lower NonUniformResourceIndex. (#3417)
+
+  [ Adam Yang ]
+  * Fixed the parameter for QuadReadLaneAt incorrectly being const (#3421)
+  * Added option to not generate nops (#3419)
+
+  [ Helena Kotas ]
+  * Lower the priority of HelperLaneTestWave (#3425)
+
+  [ Vishal Sharma ]
+  * Fix a bug in buffer store when storing matrix of size greater than four (#3422)
+  * Handle matrix type when expanding store intrinsics (#3418)
+
+  [ Helena Kotas ]
+  * Enable and fix warnings on execution tests (#3424)
+
+  [ Adam Yang ]
+  * Fixed some ConstantBuffer crashes. (#3427)
+
+  [ Greg Roth ]
+  * Add 2D quads to ComputeSample test (#3420)
+
+  [ Helena Kotas ]
+  * Fix crash in WaveSizeTest on GPUs with more then one wave size options (#3431)
+
+  [ Alex Paige ]
+  * Fixes for RWBuffer/groupshared to have right Format and StructureByte… (#3433)
+
+  [ Frank de Jong ]
+  * [spirv] Added support for [[vk::shader_record_ext]] (#3426)
+
+  [ Tex Riddell ]
+  * DxilConv: Fix interface translation regression (uses space != 0) (#3437)
+
+  [ Jeff Noyle ]
+  * PIX: Shader debug: don't instrument ray query handles (#3434)
+
+  [ Greg Roth ]
+  * correct quad2D compute samp test result count (#3446)
+
+  [ Justin Holewinski ]
+  * Fix AS/MS/PS interaction for AtomicsFloatTest (#3447)
+
+  [ Adam Yang ]
+  * Initialized the commitsha string ref with an empty string rather than leaving it null (#3453)
+  * Added an internal interface to set a compiler on PdbUtils. (#3452)
+  * Made nested unroll work. (#3436)
+
+ -- John Zupin <john@odin>  Mon, 22 Feb 2021 16:55:38 -0700
+
 directxshadercompiler (1.4.0.2274-502-1lunarg20.04-1) focal; urgency=medium
 
   [ tangogu ]
