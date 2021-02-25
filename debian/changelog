@@ -1,3 +1,9 @@
+directxshadercompiler (1.4.0.2274-585~rc2-1lunarg18.04-1) bionic; urgency=medium
+
+  * packaging: updated LunarG's copyrights
+
+ -- John Zupin <john@odin>  Thu, 25 Feb 2021 14:46:35 -0700
+
 directxshadercompiler (1.4.0.2274-585~rc1-1lunarg18.04-1) bionic; urgency=medium
 
   [ Helena Kotas ]
