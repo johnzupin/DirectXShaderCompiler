@@ -1,112 +1,298 @@
-Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: DirectXShaderCompiler
-Source: https://github.com/microsoft/DirectXShaderCompiler
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 
 Files: *
-Copyright:
-License: LLVM
+Copyright: 142, //
+           // expected-error{{incomplete class type
+           1953, // expected-warning {{no case matching constant switch condition
+           << R.getName() << "Attr(A->getLocation(), C
+           << R.getName() << "Attr(getLocation(), C
+           BinaryOperator(const_cast<Expr*>(LHS)
+           BinaryOperator(const_cast<Expr*>(LHS), const_cast<Expr*>(RHS)
+           BlockCommand<"copyright">
+           CXXBaseSpecifier[VBases.size()
+           CXXBindTemporaryExpr(Temp, SubExpr)
+           CXXConstCastExpr(EmptyShell())
+           CXXConstCastExpr(T, VK, Op, WrittenTy, L, RParenLoc, AngleBrackets)
+           CXXConstructExpr(C, CXXConstructExprClass, T, Loc, D
+           CXXCtorInitializer*[NumIvarInitializers
+           CXXDefaultArgExpr(CXXDefaultArgExprClass, Loc, Param)
+           CXXDefaultInitExpr(C, Loc, Field, Field->getType())
+           CXXDependentScopeMemberExpr(C, Base, BaseType
+           CXXDependentScopeMemberExpr(C, nullptr, QualType()
+           CXXRecordDecl::LambdaDefinitionData(D, nullptr, false, false
+           CXXTemporary(Destructor)
+           CallExpr(C, ICE, None, C.VoidTy, VK_RValue
+           ClassTemplateSpecializationDecl::
+           ClassTemplateSpecializationDecl::ExplicitSpecializationInfo
+           Common
+           CompoundLiteralExpr(SourceLocation(), unionTInfo, UnionType
+           CompoundStmt(C, Stmts, SourceLocation(), SourceLocation())
+           DependentDiagnostic(PDiag, DiagStorage)
+           Designator[NumDesignators
+           Designator[NumDesignators - 1 + NumNewDesignators
+           Designator[NumDesigs
+           FloatingLiteral(C, Empty)
+           FloatingLiteral(C, V, isexact, Type, L)
+           2000, Free Software Foundation, Inc
+           FunctionTemplateSpecializationInfo(FD, Template, TSK
+           HLSLBufferDecl
+           IdentifierInfo*[NumExprs
+           IfStmt(C, SourceLocation(), nullptr, Comparison, Body
+           InitListExpr(C, SourceLocation()
+           InitListExpr(C, lBraceLoc, None, rBraceLoc)
+           IntegerLiteral(C, V, type, l)
+           IntegerLiteral(Empty)
+           MemberSpecializationInfo(ED, TSK)
+           MemberSpecializationInfo(FD, TSK)
+           MemberSpecializationInfo(RD, TSK)
+           Microsoft
+           2015, Microsoft Corporation
+           2010-2011, NVIDIA CORPORATION
+           ObjCBoolLiteralExpr(Val, Ty, SourceLocation())
+           ObjCIvarRefExpr(const_cast<ObjCIvarDecl*>(IVar)
+           ParmVarDecl*[NewParamInfo.size()
+           PartialDiagnostic::Storage
+           Putting 'node' onto freeNodes
+           ReturnStmt(SourceLocation(), const_cast<Expr*>(RetVal)
+           Stmt*[NumArgs+PREARGS_START+NumPreArgs
+           Stmt*[NumExprs
+           Stmt*[NumStmts
+           Stmt*[PREARGS_START+NumPreArgs
+           Stmt*[Stmts.size()
+           Stmt*[TotalSize
+           Stmt*[args.size()
+           Stmt*[args.size()+PREARGS_START+NumPreArgs
+           Stmt*[exprs.size()
+           StringLiteral*[NumClobbers
+           StringLiteral*[NumExprs
+           StringRef[NumClobbers
+           StringRef[NumExprs
+           TemplateArgumentLoc(DefArg))
+           Token[NumAsmToks
+           UnaryOperator(LValToRval, UO_LNot, C.IntTy
+           UnaryOperator(const_cast<Expr*>(Arg), UO_Deref, Ty
+           2003-2015, University of <Illinois@Urbana-Champaign>
+           VarTemplateSpecializationDecl::ExplicitSpecializationInfo
+           are iboutlets
+           available for inlining. When we process
+           257, case 1: case; // expected-warning {{overflow
+           char[Length
+           char[size
+           int; // expected-error {{no matching function
+           only
+           struct LambdaDefinitionData(R, Info, Dependent, IsGeneric
+           2016-2032, uint_t[Length
+           1964, uint_t[NumWords
+License: llvm-release-license
+
+Files: test/YAMLParser/*
+License: Expat
+
+Files: tools/clang/docs/Block-ABI-Apple.rst
+       tools/clang/lib/Headers/Intrin.h
+       tools/clang/lib/Headers/__stddef_max_align_t.h
+       tools/clang/lib/Headers/__wmmintrin_aes.h
+       tools/clang/lib/Headers/__wmmintrin_pclmul.h
+       tools/clang/lib/Headers/adxintrin.h
+       tools/clang/lib/Headers/altivec.h
+       tools/clang/lib/Headers/ammintrin.h
+       tools/clang/lib/Headers/arm_acle.h
+       tools/clang/lib/Headers/avx2intrin.h
+       tools/clang/lib/Headers/avx512bwintrin.h
+       tools/clang/lib/Headers/avx512cdintrin.h
+       tools/clang/lib/Headers/avx512dqintrin.h
+       tools/clang/lib/Headers/avx512erintrin.h
+       tools/clang/lib/Headers/avx512fintrin.h
+       tools/clang/lib/Headers/avx512vlbwintrin.h
+       tools/clang/lib/Headers/avx512vldqintrin.h
+       tools/clang/lib/Headers/avx512vlintrin.h
+       tools/clang/lib/Headers/avxintrin.h
+       tools/clang/lib/Headers/bmi2intrin.h
+       tools/clang/lib/Headers/bmiintrin.h
+       tools/clang/lib/Headers/cpuid.h
+       tools/clang/lib/Headers/cuda_builtin_vars.h
+       tools/clang/lib/Headers/emmintrin.h
+       tools/clang/lib/Headers/f16cintrin.h
+       tools/clang/lib/Headers/float.h
+       tools/clang/lib/Headers/fma4intrin.h
+       tools/clang/lib/Headers/fmaintrin.h
+       tools/clang/lib/Headers/fxsrintrin.h
+       tools/clang/lib/Headers/htmintrin.h
+       tools/clang/lib/Headers/htmxlintrin.h
+       tools/clang/lib/Headers/ia32intrin.h
+       tools/clang/lib/Headers/immintrin.h
+       tools/clang/lib/Headers/inttypes.h
+       tools/clang/lib/Headers/iso646.h
+       tools/clang/lib/Headers/limits.h
+       tools/clang/lib/Headers/lzcntintrin.h
+       tools/clang/lib/Headers/mm3dnow.h
+       tools/clang/lib/Headers/mm_malloc.h
+       tools/clang/lib/Headers/mmintrin.h
+       tools/clang/lib/Headers/nmmintrin.h
+       tools/clang/lib/Headers/pmmintrin.h
+       tools/clang/lib/Headers/popcntintrin.h
+       tools/clang/lib/Headers/prfchwintrin.h
+       tools/clang/lib/Headers/rdseedintrin.h
+       tools/clang/lib/Headers/rtmintrin.h
+       tools/clang/lib/Headers/s390intrin.h
+       tools/clang/lib/Headers/shaintrin.h
+       tools/clang/lib/Headers/smmintrin.h
+       tools/clang/lib/Headers/stdalign.h
+       tools/clang/lib/Headers/stdarg.h
+       tools/clang/lib/Headers/stdatomic.h
+       tools/clang/lib/Headers/stdbool.h
+       tools/clang/lib/Headers/stddef.h
+       tools/clang/lib/Headers/stdint.h
+       tools/clang/lib/Headers/stdnoreturn.h
+       tools/clang/lib/Headers/tbmintrin.h
+       tools/clang/lib/Headers/tgmath.h
+       tools/clang/lib/Headers/tmmintrin.h
+       tools/clang/lib/Headers/unwind.h
+       tools/clang/lib/Headers/vadefs.h
+       tools/clang/lib/Headers/varargs.h
+       tools/clang/lib/Headers/vecintrin.h
+       tools/clang/lib/Headers/wmmintrin.h
+       tools/clang/lib/Headers/x86intrin.h
+       tools/clang/lib/Headers/xmmintrin.h
+       tools/clang/lib/Headers/xopintrin.h
+       tools/clang/lib/Headers/xtestintrin.h
+Copyright: 2008-2010, Apple, Inc
+           2014, Chandler Carruth
+           2009, Chris Lattner
+           2008, Eli Friedman
+           2009, Howard Hinnant
+License: Expat
 
 Files: debian/*
-Copyright: Copyright 2021 LunarG Inc.
-License: GPL-2+
- This package is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
- .
- This package is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- .
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <https://www.gnu.org/licenses/>
- .
- On Debian systems, the complete text of the GNU General
- Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
+Copyright: 2020, John Zupin <john@unknown>
+License: UnknownCopyrighted
 
-License: LLVM
- University of Illinois/NCSA
- Open Source License
- .
- Copyright (c) 2003-2015 University of Illinois at Urbana-Champaign.
- All rights reserved.
- .
- Developed by:
- .
-     LLVM Team
- .
-     University of Illinois at Urbana-Champaign
- .
-     http://llvm.org
- .
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal with
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- of the Software, and to permit persons to whom the Software is furnished to do
- so, subject to the following conditions:
- .
-     * Redistributions of source code must retain the above copyright notice,
-       this list of conditions and the following disclaimers.
- .
-     * Redistributions in binary form must reproduce the above copyright notice,
-       this list of conditions and the following disclaimers in the
-       documentation and/or other materials provided with the distribution.
- .
-     * Neither the names of the LLVM Team, University of Illinois at
-       Urbana-Champaign, nor the names of its contributors may be used to
-       endorse or promote products derived from this Software without specific
-       prior written permission.
- .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
- CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
- SOFTWARE.
- .
- ==============================================================================
- Copyrights and Licenses for Third Party Software Distributed with LLVM:
- ==============================================================================
- The LLVM software contains code written by third parties.  Such software will
- have its own individual LICENSE.TXT file in the directory in which it appears.
- This file will describe the copyrights, license, and restrictions which apply
- to that code.
- .
- The disclaimer of warranty in the University of Illinois Open Source License
- applies to all code in the LLVM Distribution, and nothing in any of the
- other licenses gives permission to use the names of the LLVM Team or the
- University of Illinois to endorse or promote products derived from this
- Software.
- .
- The following pieces of software have additional or alternate copyrights,
- licenses, and/or restrictions:
- .
- Program             Directory
- -------             ---------
- Autoconf            llvm/autoconf
-		     llvm/projects/ModuleMaker/autoconf
- Google Test         llvm/utils/unittest/googletest
- OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
- pyyaml tests        llvm/test/YAMLParser/{*.data, LICENSE.TXT}
- ARM contributions   llvm/lib/Target/ARM/LICENSE.TXT
- md5 contributions   llvm/lib/Support/MD5.cpp llvm/include/llvm/Support/MD5.h
+Files: lib/Support/COPYRIGHT.regex
+       lib/Support/regcclass.h
+       lib/Support/regcname.h
+       lib/Support/regcomp.c
+       lib/Support/regengine.inc
+       lib/Support/regerror.c
+       lib/Support/regex2.h
+       lib/Support/regex_impl.h
+       lib/Support/regexec.c
+       lib/Support/regfree.c
+       lib/Support/regutils.h
+Copyright: 1992-1994, Henry Spencer
+License: BSD-3-clause
 
-License: BSD-3-Clause
-  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-  .  
-  1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Files: lib/Miniz/*
+Copyright: 2016, Martin Raiber
+           2013-2014, RAD Game Tools and Valve Software
+           2010-2014, Rich Geldreich and Tenacious Software LLC
+           laws, the author or authors
+License: Expat
 
-License: MIT
-  Copyright <YEAR> <COPYRIGHT HOLDER>
-  .
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-  .
-  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-  .  
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Files: lib/Miniz/CMakeLists.txt
+       lib/Miniz/LLVMBuild.txt
+Copyright: Microsoft Corporation
+License: Expat
+Comment: No explicit license found, using license(s) from:
+ lib/Miniz/LICENSE.TXT
+
+Files: include/llvm/Support/ConvertUTF.h
+       lib/Support/ConvertUTF.c
+Copyright: 2001-2004, Unicode, Inc
+License: Unicode
+
+Files: ThirdPartyNotices.txt
+Copyright: 1992-1994, Henry Spencer
+           2006, Kirill Simonov
+           2003-2015, University of <Illinois@Urbana-Champaign>
+           2004, eXtensible Systems, Inc
+License: BSD-3-clause or Expat
+
+Files: lib/Support/regstrlcpy.c
+Copyright: 1998, Todd C. Miller <Todd.Miller@courtesan.com>
+License: ISC
+
+Files: test/YAMLParser/LICENSE.txt
+Copyright: 2006, Kirill Simonov
+License: Expat
+
+Files: autoconf/*
+License: GPL-2+ with AutoConf exception
+
+License: BSD-3-clause
+ Copyright <YEAR> <COPYRIGHT HOLDER>
+ .
+ Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ .
+ 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ .
+ 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+
+License: GPL-2+ with AutoConf exception
+ Autoconf Exception
+ .
+ As a special exception, the Free Software Foundation gives unlimited permission to copy, distribute and modify the configure scripts that are the output of Autoconf. You need not follow the terms of the GNU General Public License when using or distributing such scripts, even though portions of the text of Autoconf appear in them. The GNU General Public License (GPL) does govern all other use of the material that constitutes the Autoconf program.
+ .
+ Certain portions of the Autoconf source text are designed to be copied (in certain cases, depending on the input) into the output of Autoconf. We call these the "data" portions. The rest of the Autoconf source text consists of comments plus executable code that decides which of the data portions to output in any given case. We call these comments and executable code the "non-data" portions. Autoconf never copies any of the non-data portions into its output.
+ .
+ This special exception to the GPL applies to versions of Autoconf released by the Free Software Foundation. When you make and distribute a modified version of Autoconf, you may extend this special exception to the GPL to apply to your modified version as well, *unless* your modified version has the potential to copy into its output some of the text that was the non-data portion of the version that you started with. (In other words, unless your change moves or copies text from the non-data portions to the data portions.) If your modification has such potential, you must delete any notice of this special exception to the GPL from your modified version.
+
+License: ISC
+ Copyright <YEAR> <OWNER>
+ .
+ Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: Unicode
+ NOTICE TO USER: Carefully read the following legal agreement.
+ BY DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING UNICODE INC.'S
+ DATA FILES ("DATA FILES"), AND/OR SOFTWARE ("SOFTWARE"),
+ YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+ TERMS AND CONDITIONS OF THIS AGREEMENT.
+ IF YOU DO NOT AGREE, DO NOT DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE
+ THE DATA FILES OR SOFTWARE.
+ .
+ COPYRIGHT AND PERMISSION NOTICE
+ .
+ Copyright © 1991-2021 Unicode, Inc. All rights reserved.
+ Distributed under the Terms of Use in https://www.unicode.org/copyright.html.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of the Unicode data files and any associated documentation
+ (the "Data Files") or Unicode software and any associated documentation
+ (the "Software") to deal in the Data Files or Software
+ without restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, and/or sell copies of
+ the Data Files or Software, and to permit persons to whom the Data Files
+ or Software are furnished to do so, provided that either
+ (a) this copyright and permission notice appear with all copies
+ of the Data Files or Software, or
+ (b) this copyright and permission notice appear in associated
+ Documentation.
+ .
+ THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF
+ ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS
+ NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
+ DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ PERFORMANCE OF THE DATA FILES OR SOFTWARE.
+ .
+ Except as contained in this notice, the name of a copyright holder
+ shall not be used in advertising or otherwise to promote the sale,
+ use or other dealings in these Data Files or Software without prior
+ written authorization of the copyright holder.
