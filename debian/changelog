@@ -1,3 +1,385 @@
+directxshadercompiler (1.4.0.2274-728~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Vishal Sharma ]
+  * Fix handling of matrix in StoreVertexOutput (#3441)
+
+  [ Greg Roth ]
+  * Fix bad test cast/ fix 32-bit platform problems (#3451)
+
+  [ Vishal Sharma ]
+  * Fix issues with structured buffer load lowering (#3454)
+
+  [ Xiang Li ]
+  * Collect resource property for temp arg resource like call(conde?sampler0:sampler1). (#3458)
+
+  [ Sean Baxter ]
+  * Update HLMatrixType.cpp (#3415)
+
+  [ Xiang Li ]
+  * Fix assert when use glc resource as call arg. (#3459)
+
+  [ Jeff Noyle ]
+  * Fix (#3445)
+
+  [ Vishal Sharma ]
+  * Load remainder buffer elements in the end (#3462)
+
+  [ Helena Kotas ]
+  * Update version to 1.6.2102 (#3466)
+
+  [ Vishal Sharma ]
+  * Fix issues with matrix (append|consume) for (Append|Consume)StructuredBuffer (#3460)
+  * Update append/consume test (#3468)
+
+  [ Greg Roth ]
+  * Correct disasm printing of sized tex2dms (#3473)
+
+  [ Jaebaek Seo ]
+  * [spirv] remove groupshared from tests with PS (#3474)
+
+  [ Greg Roth ]
+  * Check for basic adaptor for unsupported warp test (#3471)
+
+  [ Jaebaek Seo ]
+  * [spirv] do not accept variable for OpImage* Offset (#3456)
+
+  [ Vishal Sharma ]
+  * Fix handling of [RW]ByteAddressBuffer load involving matrix type (#3469)
+
+  [ Adam Yang ]
+  * Added shader reflection part to source-only PDB. (#3467)
+
+  [ Jaebaek Seo ]
+  * [spirv] update SPIRV-Tools and SPIRV-Headers submodules (#3450)
+
+  [ Helena Kotas ]
+  * Fix BarycentricsTest test (#3476)
+
+  [ Jaebaek Seo ]
+  * [spirv] support optional use of base vertex instance (#3478)
+
+  [ Justin Holewinski ]
+  * HelperLaneTestWave: Compile shaders for SM 6.6 when testing SM 6.6 (#3482)
+
+  [ Xiang Li ]
+  * Avoid cbuffer copy for special pattern. (#3483)
+
+  [ Greg Roth ]
+  * Fix crashing from null elements producing errors (#3487)
+  * Avoid trying to get disubprogram without debug MD (#3488)
+
+  [ Adam Yang ]
+  * Fixed entry point string being empty when the commandline didn't specify /E (#3477)
+
+  [ Greg Roth ]
+  * Enable exec tests for 6.2 that warp supports (#3490)
+  * Add barycentric shader flag when used (#3491)
+
+  [ Xiang Li ]
+  * Check wave sensitive on operand of gradient ops instead of gradient ops. (#3489)
+
+  [ Adam Yang ]
+  * Fixed pdbutils recompilation failure when the main file is in a relative path. (#3486)
+
+  [ Xiang Li ]
+  * Fix dup name. (#3492)
+
+  [ Greg Roth ]
+  * Replace placeholder sm66 runtime check (#3497)
+
+  [ Vishal Sharma ]
+  * Fix crash in refract intrinsic lowering (#3498)
+
+  [ Jeff Sooknarine ]
+  * Fix PackUnpackTest on HW without 16-bit support (#3495)
+
+  [ Greg Roth ]
+  * Error for groupshared outside of compute (#3472)
+
+  [ Vishal Sharma ]
+  * Fix byte-offset calculation when writing to RWByteAddressBuffer with elements greater than four (#3485)
+
+  [ Greg Roth ]
+  * Consider ranges when counting UAVs for 64UAV (#3470)
+
+  [ Vishal Sharma ]
+  * Respect matrix orientation when doing store op in RWByteAddressBuffer (#3484)
+
+  [ Greg Roth ]
+  * Resolve groupshared test order reporting issue (#3502)
+
+  [ Tex Riddell ]
+  * Fix Dynamic Resources when used with -Od (#3499)
+
+  [ Vishal Sharma ]
+  * Report error for unsupported types of SV semantics (#3043)
+
+  [ Xiang Li ]
+  * Don't replace readfirstlane in GVN::propagateEquality. (#3504)
+
+  [ David Peixotto ]
+  * Add support for specifying overload arg index in extension function (#3510)
+
+  [ Greg Roth ]
+  * Add used by atomics resource flag (#3513)
+  * DerivativesTest: quad2D layout and refactor (#3506)
+
+  [ Tex Riddell ]
+  * Fix uninitialized m_bHasAtomic64Use in DxilResource. (#3516)
+
+  [ Vishal Sharma ]
+  * Remove unneeded asserts (#3514)
+
+  [ Greg Roth ]
+  * 64-bit atomics usage resource flags (#3518)
+  * Correct 64-bit atomics on heap resource flags (#3520)
+  * Set shader flags for dynamic resources (#3521)
+  * Remove unneded, incompatible function inheritance (#3523)
+  * Correct atomics on heap usage for libs (#3525)
+
+  [ seppala2 ]
+  * [spirv] Add vk::image_format attribute for Buffers, RWBuffers and RWTextures (#3395)
+
+  [ Xiang Li ]
+  * Use vector size from vector type when dynamic indexing cb vector. (#3530)
+
+  [ Vishal Sharma ]
+  * Fix crashes related to handling of constexpr cast involving vector types (#3524)
+
+  [ Greg Roth ]
+  * Split atomics tests into heap/root types (#3526)
+
+  [ Adam Yang ]
+  * Added recompile function on PdbUtils that just hands back compilation result. (#3529)
+  * Added IDxcVersionInfo3 for custom version string (#3517)
+
+  [ Tex Riddell ]
+  * Validate CBuffer size to max of 65536 bytes (#3507)
+
+  [ Greg Roth ]
+  * Errors on non-immediate load/gather offsets (#3283)
+
+  [ Tex Riddell ]
+  * Revert "Report error for unsupported types of SV semantics (#3043)" (#3532)
+  * Update version to 1.6.2104 (#3534)
+
+  [ Jeff Sooknarine ]
+  * Add CHECK_HR around CreatePipelineState (#3539)
+
+  [ Greg Roth ]
+  * Return Scatterer object for argument values (#3540)
+
+  [ Justin Holewinski ]
+  * Check for Resource Binding Tier 3 before running DynamicResources test (#3545)
+
+  [ Greg Roth ]
+  * Infer wave-sensitivity of cyclic dependencies (#3543)
+  * Fix unbound arrays flattened type compare (#3544)
+  * Check for Resource Binding Tier 3 before running DynamicResources test (#3549)
+  * Wave sensitivity unused var errors (#3551)
+
+  [ Preston Hamlin ]
+  * Add missing RTV to QuadReadTest XML (#3554)
+
+  [ Xiang Li ]
+  * Take care case dynamic indexing on vector start with offset. (#3558)
+
+  [ Adam Yang ]
+  * Made -Zs the flag for slim PDB. Added -Qpdb_in_private. (#3541)
+
+  [ Greg Roth ]
+  * Correct WaveSensitivity debug test iterations (#3562)
+  * ComputeSampleTest: reset test between runs (#3561)
+
+  [ Atte Seppälä ]
+  * [spirv] Generate RelaxedPrecision decorations also for arrays of minimum precision variables (#3546)
+
+  [ Greg Roth ]
+  * Rename 64-bit atomic heap resource support bit (#3567)
+
+  [ Xiang Li ]
+  * Support -export-shaders-only for linker. (#3571)
+
+  [ Adam Yang ]
+  * Fixed some potential O0 failures (#3569)
+  * Fixed a bug reading version string from PDB. Implemented IDxcVersionInfo3 for DxcCompiler. (#3570)
+  * Fixed version header potentially missing in some configs (#3574)
+
+  [ Michael Haidl ]
+  * DXC extension for DXR Payload Access Qualifiers (#3171)
+
+  [ Tex Riddell ]
+  * FileChecker improvements: VFS, %dxl, FileCheck -D, error reporting (#3576)
+  * Texture2DMS fixes: missing ResProp data; reflection default NumSamples = 0 (#3578)
+
+  [ Xiang Li ]
+  * Add -link to dxc. (#3577)
+
+  [ Vishal Sharma ]
+  * Fix a misfiring assert due to unused static const involving matrix type (#3582)
+
+  [ Helena Kotas ]
+  * Use Visual Studio 2019 in AppVeyor (#3587)
+
+  [ Tex Riddell ]
+  * Filecheck: Allow empty stderr input; replace last couple errs() uses (#3588)
+  * Fix coverage bing used to init dx.ishelper when only discard is used (#3589)
+
+  [ Helena Kotas ]
+  * Use D3D12 headers from the same Windows 10 SDK version as cmake is using (#3586)
+
+  [ John Zupin ]
+  * packaging: update debian/copyright file
+
+  [ Tex Riddell ]
+  * Fix const error check for object subscript operator (#3580)
+
+  [ Adam Yang ]
+  * Added way for caller to replace args in PDB utils (#3595)
+
+  [ Vishal Sharma ]
+  * Fix constexpr cast involving matrix type (#3593)
+
+  [ Tex Riddell ]
+  * Add constant evaluation for clamp() (#3581)
+
+  [ Greg Roth ]
+  * ShaderOpTest limit commandlist6 to where supported (#3600)
+
+  [ Adam Yang ]
+  * Fixed arg pairs not correct for old source in module pdbs (#3599)
+
+  [ Jaebaek Seo ]
+  * [spirv] update SPIRV-Tools and SPIRV-Headers (#3597)
+
+  [ Greg Roth ]
+  * Exec test - WAR SM feature check on older runtime (#3603)
+  * Add dxc exception handler (#3604)
+  * Correct exception handler sprintf for 32-bit (#3608)
+  * Rename payload qualifier field to not match type (#3607)
+
+  [ Adam Yang ]
+  * Internal validator error messages don't need /Zi anymore. (#3606)
+
+  [ Tex Riddell ]
+  * Fix Dxil validator compat and test issues (#3610)
+  * Fix LifetimeIntrinsicTest issues (#3609)
+  * Generate descriptions for resources with no names (#3598)
+  * Roll back llvm::ArrayRef dependency in ExecutionTest (#3613)
+
+  [ Helena Kotas ]
+  * Enable experimental shaders option in HLK tests (#3601)
+  * Fix artifacts download link (#3614)
+
+  [ Ehsan ]
+  * Roll back #3393. (#3621)
+
+  [ Jeff Noyle ]
+  * PIX SM 6.6 resource access tracking (#3594)
+
+  [ Adam Yang ]
+  * Added deleted constructor for null type for StringRef (#3618)
+
+  [ Helena Kotas ]
+  * Add d3d12TokenizedProgramFormat.hpp header from the Windows Driver kit (#3617)
+
+  [ Tex Riddell ]
+  * Validator/Dxil version error improvements (#3623)
+
+  [ Greg Roth ]
+  * Only keep legacy struct types from resources (#3624)
+
+  [ Tex Riddell ]
+  * Disallow CreateHandle in SM66+ and library targets (#3629)
+
+  [ Greg Roth ]
+  * Remove unneeded atomicstest dependency (#3631)
+
+  [ Tex Riddell ]
+  * Remove artificial FL12 requirement for CreateDevice (#3633)
+
+  [ Jeff Noyle ]
+  * PIX passes: Centralize handle-generation code and update for 6.6 (#3628)
+
+  [ Greg Roth ]
+  * convert recoverable exceptions to c++ (#3636)
+
+  [ Helena Kotas ]
+  * Enable debugging from kernel mode (#3637)
+  * Add load library error to dxc exception handler; add header with exception error codes (#3639)
+
+  [ Tex Riddell ]
+  * Fix dxa/dxv options, crashes, support signing (#3622)
+
+  [ Greg Roth ]
+  * Allow removal of trivially dead convergent marker (#3640)
+
+  [ Adam Yang ]
+  * Fixed a bug in pdb where -W[...] type options are split into two tokens (#3646)
+
+  [ Jaebaek Seo ]
+  * Fix build failure with undefined variable (#3647)
+  * Add warning for VFACE semantic (#3626)
+
+  [ Vishal Sharma ]
+  * Update BaseAlignLog2 field in ResourceProperties for StructuredBuffer (#3652)
+
+  [ Greg Roth ]
+  * Prevent sinking coord calculation for sample (#3655)
+  * No sinking coord calc for sample in libs (#3658)
+
+  [ Helena Kotas ]
+  * Fix crash on undeclared identifier inside a vector (#3653)
+
+  [ Jeff Noyle ]
+  * PIX: Null check before dyn_cast (#3654)
+
+  [ Greg Roth ]
+  * Constrain convergent_cs mesh test threads (#3662)
+
+  [ Adam Yang ]
+  * Fixed a potential codegen difference with Zi (#3665)
+
+  [ Jaebaek Seo ]
+  * [spirv] reply on spirv-val for variable offset for OpImage* validation (#3656)
+
+  [ Xiang Li ]
+  * Save root sig for entry for lib. (#3669)
+
+  [ David Peixotto ]
+  * Parameterize the OP, OC, OCC values in the hctdb opcode table gen (#3673)
+
+  [ Xiang Li ]
+  * Bump shader model to 6.7 (#3679)
+
+  [ Junda Liu ]
+  * [spirv] Add VK_KHR_variable_rate_fragment_shading SPIR-V support (#3664)
+
+  [ Jaebaek Seo ]
+  * [spirv] Use object of correct base class for method call (#3671)
+
+  [ Michael Haidl ]
+  * DiagnosticsEngine incorrectly handles DiagnoceOnce diagnostics and asserts/crashes (#3683)
+
+  [ Tex Riddell ]
+  * Move ExecutionTest setup out of area shared with HLK code. (#3682)
+
+  [ Jaebaek Seo ]
+  * [spirv] update SPIRV-Tools and SPIRV-Headers (#3689)
+
+  [ Greg Roth ]
+  * Update README.md with new appveyor information
+  * fix readme.md typo
+
+  [ Jaebaek Seo ]
+  * [spirv] update SPIRV-Tools submodule (#3694)
+
+  [ John Zupin ]
+  * packaging: rebased patches
+  * packaging: fix override error - created patch
+
+ -- John Zupin <john@odin>  Tue, 27 Apr 2021 18:41:41 -0600
+
 directxshadercompiler (1.4.0.2274-585~rc2-1lunarg20.04-1) focal; urgency=medium
 
   * packaging: updated LunarG's copyrights
