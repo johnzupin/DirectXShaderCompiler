@@ -1,3 +1,4 @@
 usr/include/
 usr/share/dxc/
 usr/lib/dxc/*.a
+include/dxc/ usr/include/
