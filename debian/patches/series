@@ -3,3 +3,4 @@
 0003-update-tools-clang-CML.txt-file-to-update-install-ta.patch
 0004-update-install-targest-for-llvm-files.patch
 0005-update-the-RPATH-setting.patch
+0006-fix-override-error.patch
