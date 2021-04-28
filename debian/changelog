@@ -1,3 +1,9 @@
+directxshadercompiler (1.4.0.2274-728~rc2-1lunarg20.04-1) focal; urgency=medium
+
+  * packaging: updated to install dxc headers from repo
+
+ -- John Zupin <john@odin>  Wed, 28 Apr 2021 14:49:45 -0600
+
 directxshadercompiler (1.4.0.2274-728~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Vishal Sharma ]
