@@ -1,4 +1,4 @@
-usr/include/
 usr/share/dxc/
 usr/lib/dxc/*.a
-include/dxc/ usr/include/
+include/dxc/dxcapi.h usr/include/dxc/
+include/dxc/Support/WinAdapter.h usr/include/dxc/Support/
