@@ -1,3 +1,10 @@
+directxshadercompiler (1.4.0.2274-728~rc3-1lunarg20.04-1) focal; urgency=medium
+
+  * packaging: update copyright file
+  * ubuntu: now only include 2 header files
+
+ -- John Zupin <john@odin>  Mon, 03 May 2021 11:12:50 -0600
+
 directxshadercompiler (1.4.0.2274-728~rc2-1lunarg20.04-1) focal; urgency=medium
 
   * packaging: updated to install dxc headers from repo
