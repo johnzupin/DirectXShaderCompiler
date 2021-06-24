@@ -7,7 +7,7 @@ Subject: update the RPATH setting
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b0d49a9..68fb57a 100644
+index 5c5ef37..1d2ce59 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -555,7 +555,7 @@ if (APPLE)
