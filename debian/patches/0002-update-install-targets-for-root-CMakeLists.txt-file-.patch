@@ -7,7 +7,7 @@ Subject: update install targets for root CMakeLists.txt file to include/dxc/
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a636cf5..b0d49a9 100644
+index e7da978..5c5ef37 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -714,7 +714,7 @@ add_subdirectory(cmake/modules)
@@ -28,7 +28,7 @@ index a636cf5..b0d49a9 100644
      COMPONENT llvm-headers
      FILES_MATCHING
      PATTERN "*.def"
-@@ -750,4 +750,4 @@ endif()
+@@ -756,4 +756,4 @@ endif (HLSL_OFFICIAL_BUILD)
  
  if (NOT "${DXC_CMAKE_ENDS_INCLUDE}" STREQUAL "")
    include(${DXC_CMAKE_ENDS_INCLUDE})
