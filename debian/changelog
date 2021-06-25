@@ -1,3 +1,178 @@
+directxshadercompiler (1.4.0.2274-798~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Xiang Li ]
+  * When exit_block is false block, use !exit_cond as exit_cond in RemoveUnstructedLoopExit. (#3701)
+  * Add -dumprs to dxa. (#3703)
+
+  [ Helena Kotas ]
+  * Add -cmake-system-version argument to hctbuild.cmd to enable setting of target Windows version (min WinSDK version) (#3704)
+
+  [ Greg Roth ]
+  * Correct iteration over users for gather offsets (#3709)
+
+  [ Helena Kotas ]
+  * dxexp: add explicit dependency on D3D12 (#3710)
+
+  [ Tex Riddell ]
+  * Fix detection of inner UDT ptr used by lowered intrinsic (DispatchMesh) (#3713)
+
+  [ Greg Roth ]
+  * Split gather offsets into separate test (#3712)
+  * Add cases for new dxc exeptions (#3691)
+
+  [ Jaebaek Seo ]
+  * [spirv] update SPIRV-Tools submodule (#3718)
+  * [spirv] update SPIRV-Tools submodule (#3719)
+
+  [ Greg Roth ]
+  * Add sample code for error handling to testing (#3678)
+
+  [ Adam Yang ]
+  * Added an pdb writer overload that doesn't take any input blobs (#3715)
+
+  [ Vishal Sharma ]
+  * Fix heap corruption due to dependency on StringRef (#3723)
+
+  [ Jaebaek Seo ]
+  * [spirv] No temporary variable for local resource variable argument passing (#3721)
+  * [spirv] Fix bug of CTBuffer DX memory layout with matrix (#3672)
+
+  [ Helena Kotas ]
+  * Disable regeneration target for official builds as they always run a full clean build. (#3725)
+
+  [ Adam Yang ]
+  * Fixed linker not putting subprogram of inlined functions into CU (#3716)
+
+  [ Helena Kotas ]
+  * Enable random order of hctbuild arguments (#3741)
+
+  [ Jeff Noyle ]
+  * PIX: Change insertion point to after referenced value (#3746)
+
+  [ Jaebaek Seo ]
+  * [spirv] Make sure asuint() argument is r-value (#3747)
+  * [spirv] fix use-after-free bug (#3748)
+  * [spirv] always use r-value for flat conversion target (#3750)
+
+  [ Xiang Li ]
+  * Don't widen type for hlsl in IndVarSimplify. (#3752)
+  * Skip structurize when only 1 ret. (#3754)
+
+  [ Jeff Noyle ]
+  * PIX: Allow debug of enum classes (#3756)
+
+  [ Xiang Li ]
+  * When AddOpcodeParamForIntrinsic, support intrinsic which returns a resource (#3762)
+  * Add min limit for intrinsic stats. (#3761)
+
+  [ Greg Roth ]
+  * Add InstCombine to Loop Delete followup passes (#3749)
+
+  [ Tex Riddell ]
+  * Fix vec1 in vector conditional causing a bad cast in codegen (#3763)
+
+  [ Greg Roth ]
+  * Allow variable offsets to gathers (#3764)
+
+  [ Vishal Sharma ]
+  * Add option to override semantic defines (#3766)
+
+  [ Jaebaek Seo ]
+  * [spirv] support image with minimum precision scalar data types (#3758)
+  * [spirv] do not set result type for OpImageWrite (#3757)
+  * [spirv] set AST result type for OpImageWrite but do not set RelaxedPrecision
+
+  [ Adam Yang ]
+  * Fixed some debug locations with line 0 (#3784)
+
+  [ Jaebaek Seo ]
+  * [spirv] update SPIRV-Tools and SPIRV-Headers submodules (#3788)
+
+  [ Tex Riddell ]
+  * Support replace for BAB.Load<>() in LowerMemcpy (#3791)
+
+  [ Jeff Noyle ]
+  * PIX: Find correct type of struct members, add instructions only after phi nodes, add logging (#3786)
+
+  [ Tex Riddell ]
+  * Fix bugs with ConstantBuffer resource object usage (#3796)
+
+  [ Jaebaek Seo ]
+  * [spirv] emit correct OpEntryPoint operands for multiple entry functions (#3789)
+
+  [ Greg Roth ]
+  * Update legacy structs during compile (#3659)
+
+  [ Jaebaek Seo ]
+  * [spirv] fix build failure caused by vector ctor (#3800)
+
+  [ Michael Haidl ]
+  * Minor fix for PAQ diagnostics (#3755)
+
+  [ Marijn Suijten ]
+  * [Linux] Import some LLVM fixes for GCC warnings (#3794)
+
+  [ Tex Riddell ]
+  * Fold bitcast-to-base into GEP in MergeGepUse, plus refactor and resource fixes (#3801)
+
+  [ Preston Hamlin ]
+  * Fix mesh groupshared atomics test bug (#3806)
+
+  [ Greg Roth ]
+  * Give Asdouble some love (i64 cast and folding) (#3666)
+
+  [ Atte Seppälä ]
+  * Remove execinfo.h include in WinAdapter.h (#3797)
+
+  [ Jeff Noyle ]
+  * PIX: Entry point can be null for DXBC->DXIL hull shader (#3805)
+
+  [ Tex Riddell ]
+  * Fix const var init with NRVO (#3803)
+
+  [ nv-jdeligiannis ]
+  * Allowing use of const static variables in library exports (#3780)
+
+  [ Adam Yang ]
+  * Fixed int16_t type name in debug info (#3804)
+
+  [ Lukas Hermanns ]
+  * [spirv] support SPV_EXT_shader_image_int64 extension for 64-bit integer resource (#3787)
+
+  [ Tex Riddell ]
+  * Fix issues with resource array aliasing support (#3810)
+
+  [ Jaebaek Seo ]
+  * [spirv] separate triggering legalization and passing before-legalize-hlsl (#3816)
+  * [spirv] update SPIRV-Tools and SPIRV-Headers submodules (#3817)
+  * [spirv] set needsLegalization as true when variable offset is found (#3820)
+
+  [ Jeff Noyle ]
+  * PIX: Check SM66 handle types for dynamic indexing (#3819)
+
+  [ Greg Roth ]
+  * QuadRead Test fix dependencies and groupIndex (#3825)
+
+  [ JZ ]
+  * Adding information for DirectX landing page
+
+  [ Greg Roth ]
+  * Set up CI with Azure Pipelines
+  * Correct typos in azure pipeline
+  * Find CMake config for azdo
+  * correcting relative path for predifined linux configs
+  * adding debug info for lack of a better option
+  * fix cmake for azdo
+  * trying to fix ninja for azdo
+  * letting azdo find build dir (maybe)
+  * let azdo find source dir
+  * adjust relative dirs for build and testing
+
+  [ John Zupin ]
+  * packaging: rebased packages
+
+ -- John Zupin <john@odin>  Fri, 25 Jun 2021 14:52:18 -0600
+
 directxshadercompiler (1.4.0.2274-728~rc3-1lunarg20.04-1) focal; urgency=medium
 
   * packaging: update copyright file
