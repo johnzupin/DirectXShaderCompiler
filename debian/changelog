@@ -1,3 +1,108 @@
+directxshadercompiler (1.4.0.2274-833~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Greg Roth ]
+  * Replace Travis CI with Azdo (#3838)
+
+  [ Preston Hamlin ]
+  * Fix atomics resource declaration issue (#3833)
+
+  [ Tex Riddell ]
+  * Fix bitcast-to-base pattern for library function argument (#3845)
+
+  [ danbrown-amd ]
+  * Handles empty embedded struct as first field of struct. (#3827)
+
+  [ Helena Kotas ]
+  * Update version to 1.6.2106 (#3851)
+
+  [ Tex Riddell ]
+  * Add missing pass to hctdb.py for clean generated file updates (#3853)
+
+  [ Jeff Noyle ]
+  * PIX: Don't seek beyond terminator instructions (value-to-declare pass) (#3855)
+
+  [ Greg Roth ]
+  * Correct detection of contradictory opt enables (#3857)
+
+  [ Jaebaek Seo ]
+  * [spirv] fix memory layout bug for StructuredBuffer (#3751)
+
+  [ Greg Roth ]
+  * Add /bigobj flag on big spirvtest object (#3858)
+
+  [ otanter-at-ubi ]
+  * Fixed HandleBits struct to support more than 255 includes and paths longer than 255 chars (#3846)
+
+  [ Tim Corringham ]
+  * Amend hctdb_instrhelp.py for case-sensitive filesystems (#3864)
+
+  [ Greg Roth ]
+  * Update minimum SDK (#3865)
+
+  [ Natalie Chouinard ]
+  * [spirv] Fix null pointer dereference (#3861)
+
+  [ Jaebaek Seo ]
+  * [spirv] support clip/cull distance stage vars with array types (#3868)
+
+  [ Lukas Hermanns ]
+  * Fix command line parsing on empty string. (#3848)
+
+  [ Jaebaek Seo ]
+  * [spirv] support unittests with inlined HLSL code (#3869)
+
+  [ Natalie Chouinard ]
+  * [spirv] Add null check to binary op processing (#3862)
+
+  [ Jaebaek Seo ]
+  * [spirv] report SV_Position with invalid type (#3875)
+  * [spirv] update SPIRV-Tools and SPIRV-Headers submodules (#3878)
+
+  [ Brian Favela ]
+  * Add 'fourf16' as a valid OpFunc (for future changes) (#3879)
+
+  [ Tex Riddell ]
+  * Strip Byte Order Markers (BOMs) and fix some related issues (#3880)
+
+  [ Greg Roth ]
+  * Add windows builds to azdo (#3882)
+
+  [ Jaebaek Seo ]
+  * [spirv] report stage variable with duplicated location and index (#3881)
+
+  [ Jeff Sooknarine ]
+  * Document that ComputeSample PS is a dummy (#3884)
+
+  [ Lukas Hermanns ]
+  * Add attr::HLSLShader to list of HLSL attributes in IsHLSLAttr() (#3895)
+
+  [ David Peixotto ]
+  * Fix crash when structurizing multi-return loops (#3896)
+
+  [ Adam Yang ]
+  * Fixed debug info disappearing for aggregate variables. (#3897)
+
+  [ Tex Riddell ]
+  * Fix issues in DxilMutateResourceToHandle. (#3900)
+
+  [ Greg Roth ]
+  * Update Readme.md to the default VS 2019 suggestion
+
+  [ Jeff Noyle ]
+  * PIX: Add thread ID to amplification shader payload (#3904)
+
+  [ Natalie Chouinard ]
+  * [spirv] Add support for casting from floatM to floatMx1 (#3905)
+
+  [ Jaebaek Seo ]
+  * Support const vector argument for isnan(), atan2() (#3908)
+  * [spirv] update SPIRV-Tools and SPIRV-Headers submodules (#3909)
+
+  [ Grace Jennings ]
+  * Add --version flag to print dxc version info (#3912)
+
+ -- John Zupin <john@odin>  Mon, 30 Aug 2021 09:23:22 -0600
+
 directxshadercompiler (1.4.0.2274-798~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Xiang Li ]
