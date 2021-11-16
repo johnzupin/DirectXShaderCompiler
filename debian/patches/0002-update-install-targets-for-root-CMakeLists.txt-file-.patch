@@ -3,14 +3,14 @@ Date: Fri, 19 Jun 2020 15:22:33 -0600
 Subject: update install targets for root CMakeLists.txt file to include/dxc/
 
 ---
- CMakeLists.txt | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e7da978..5c5ef37 100644
+index 5d53394..dc438e6 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -714,7 +714,7 @@ add_subdirectory(cmake/modules)
+@@ -726,7 +726,7 @@ add_subdirectory(cmake/modules)
  
  if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
    install(DIRECTORY include/llvm include/llvm-c
@@ -19,7 +19,7 @@ index e7da978..5c5ef37 100644
      COMPONENT llvm-headers
      FILES_MATCHING
      PATTERN "*.def"
-@@ -726,7 +726,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+@@ -738,7 +738,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
      )
  
    install(DIRECTORY ${LLVM_INCLUDE_DIR}/llvm
@@ -28,10 +28,3 @@ index e7da978..5c5ef37 100644
      COMPONENT llvm-headers
      FILES_MATCHING
      PATTERN "*.def"
-@@ -756,4 +756,4 @@ endif (HLSL_OFFICIAL_BUILD)
- 
- if (NOT "${DXC_CMAKE_ENDS_INCLUDE}" STREQUAL "")
-   include(${DXC_CMAKE_ENDS_INCLUDE})
--endif()
-\ No newline at end of file
-+endif()
