@@ -7,6 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// Do not change the inclusion order between "dxc/Support/*" files.
+// clang-format off
 #include "EmitVisitor.h"
 #include "dxc/Support/Global.h"
 #include "dxc/Support/WinIncludes.h"
@@ -19,17 +21,22 @@
 #include "clang/SPIRV/SpirvInstruction.h"
 #include "clang/SPIRV/SpirvType.h"
 #include "clang/SPIRV/String.h"
+// clang-format on
 
 namespace {
+
+static const uint32_t kMaximumCharOpSource = 0xFFFA;
+static const uint32_t kMaximumCharOpSourceContinued = 0xFFFD;
+
+// Since OpSource does not have a result id, this is used to mark it was emitted
+static const uint32_t kEmittedSourceForOpSource = 1; 
 
 /// Chops the given original string into multiple smaller ones to make sure they
 /// can be encoded in a sequence of OpSourceContinued instructions following an
 /// OpSource instruction.
 void chopString(llvm::StringRef original,
-                llvm::SmallVectorImpl<llvm::StringRef> *chopped) {
-  const uint32_t maxCharInOpSource = 0xFFFFu - 5u; // Minus operands and nul
-  const uint32_t maxCharInContinue = 0xFFFFu - 2u; // Minus opcode and nul
-
+                llvm::SmallVectorImpl<llvm::StringRef> *chopped,
+                uint32_t maxCharInOpSource, uint32_t maxCharInContinue) {
   chopped->clear();
   if (original.size() > maxCharInOpSource) {
     chopped->push_back(llvm::StringRef(original.data(), maxCharInOpSource));
@@ -79,6 +86,23 @@ bool isOpLineLegalForOp(spv::Op op) {
   case spv::Op::OpDecorationGroup:
   case spv::Op::OpDecorateStringGOOGLE:
   case spv::Op::OpMemberDecorateStringGOOGLE:
+    return false;
+  default:
+    return true;
+  }
+}
+
+/// Returns true if DebugLine instruction can be emitted for the given OpCode.
+/// As a nonsemantic OpExtInst, there are several more ops that it cannot appear
+/// before than an OpLine. Assumes illegal ops for OpLine have already been
+/// eliminated.
+bool isDebugLineLegalForOp(spv::Op op) {
+  switch (op) {
+  case spv::Op::OpFunction:
+  case spv::Op::OpFunctionParameter:
+  case spv::Op::OpLabel:
+  case spv::Op::OpVariable:
+  case spv::Op::OpPhi:
     return false;
   default:
     return true;
@@ -179,6 +203,15 @@ uint32_t EmitVisitor::getOrCreateOpStringId(llvm::StringRef str) {
   return getOrAssignResultId<SpirvInstruction>(opString);
 }
 
+uint32_t EmitVisitor::getLiteralEncodedForDebugInfo(uint32_t val) {
+  if (spvOptions.debugInfoVulkan) {
+    return typeHandler.getOrCreateConstantInt(
+        llvm::APInt(32, val), context.getUIntType(32), /*isSpecConst */ false);
+  } else {
+    return val;
+  }
+}
+
 void EmitVisitor::emitDebugNameForInstruction(uint32_t resultId,
                                               llvm::StringRef debugName) {
   // Most instructions do not have a debug name associated with them.
@@ -223,10 +256,15 @@ void EmitVisitor::emitDebugLine(spv::Op op, const SourceLocation &loc,
   if (!isOpLineLegalForOp(op))
     return;
 
-  // DebugGlobalVariable and DebugLocalVariable of OpenCL.DebugInfo.100 already
-  // has the line and the column information. We do not want to emit OpLine
-  // for global variables and local variables. Instead, we want to emit OpLine
-  // for their initialization if exists.
+  // If emitting Debug[No]Line, since it is an nonsemantic OpExtInst, it can
+  // only appear in blocks after any OpPhi or OpVariable.
+  if (spvOptions.debugInfoVulkan && !isDebugLineLegalForOp(op))
+    return;
+
+  // DebugGlobalVariable and DebugLocalVariable of rich DebugInfo already has
+  // the line and the column information. We do not want to emit OpLine for
+  // global variables and local variables. Instead, we want to emit OpLine for
+  // their initialization if exists.
   if (op == spv::Op::OpVariable)
     return;
 
@@ -235,7 +273,15 @@ void EmitVisitor::emitDebugLine(spv::Op op, const SourceLocation &loc,
   if (loc == SourceLocation()) {
     if (!isDebugScope && (debugLine != 0 || debugColumn != 0)) {
       curInst.clear();
-      curInst.push_back(static_cast<uint32_t>(spv::Op::OpNoLine));
+      if (spvOptions.debugInfoVulkan) {
+        curInst.push_back(static_cast<uint32_t>(spv::Op::OpExtInst));
+        curInst.push_back(typeHandler.emitType(context.getVoidType()));
+        curInst.push_back(takeNextId());
+        curInst.push_back(debugInfoExtInstId);
+        curInst.push_back(104u); // DebugNoLine
+      } else {
+        curInst.push_back(static_cast<uint32_t>(spv::Op::OpNoLine));
+      }
       curInst[0] |= static_cast<uint32_t>(curInst.size()) << 16;
       section->insert(section->end(), curInst.begin(), curInst.end());
     }
@@ -278,26 +324,47 @@ void EmitVisitor::emitDebugLine(spv::Op op, const SourceLocation &loc,
     debugColumn = column;
   }
 
+  if (emittedSource[fileId] == 0) {
+    if (!spvOptions.debugInfoVulkan) {
+      SpirvString *fileNameInst =
+          new (context) SpirvString(/*SourceLocation*/ {}, fileName);
+      visit(fileNameInst);
+      SpirvSource *src = new (context)
+          SpirvSource(/*SourceLocation*/ {}, spv::SourceLanguage::HLSL,
+                      hlslVersion, fileNameInst, "");
+      visit(src);
+      spvInstructions.push_back(src);
+      spvInstructions.push_back(fileNameInst);
+    } else {
+      SpirvDebugSource *src = new (context) SpirvDebugSource(fileName, "");
+      visit(src);
+      spvInstructions.push_back(src);
+    }
+  }
+
   curInst.clear();
-  curInst.push_back(static_cast<uint32_t>(spv::Op::OpLine));
-  curInst.push_back(fileId);
-  curInst.push_back(line);
-  curInst.push_back(column);
+  if (!spvOptions.debugInfoVulkan) {
+    curInst.push_back(static_cast<uint32_t>(spv::Op::OpLine));
+    curInst.push_back(fileId);
+    curInst.push_back(line);
+    curInst.push_back(column);
+  } else {
+    curInst.push_back(static_cast<uint32_t>(spv::Op::OpExtInst));
+    curInst.push_back(typeHandler.emitType(context.getVoidType()));
+    curInst.push_back(takeNextId());
+    curInst.push_back(debugInfoExtInstId);
+    curInst.push_back(103u); // DebugLine
+    curInst.push_back(emittedSource[fileId]);
+	// TODO(greg-lunarg): Emit true last line and column
+    uint32_t lineEncode = getLiteralEncodedForDebugInfo(line);
+    curInst.push_back(lineEncode);
+    curInst.push_back(lineEncode); // Last line
+    uint32_t columnEncode = getLiteralEncodedForDebugInfo(column);
+    curInst.push_back(columnEncode);
+    curInst.push_back(columnEncode); // Last column
+  }
   curInst[0] |= static_cast<uint32_t>(curInst.size()) << 16;
   section->insert(section->end(), curInst.begin(), curInst.end());
-
-  if (dumpedFiles.count(fileId) == 0) {
-    SpirvString *fileNameInst =
-        new (context) SpirvString(/*SourceLocation*/ {}, fileName);
-    visit(fileNameInst);
-    SpirvSource *src = new (context)
-        SpirvSource(/*SourceLocation*/ {}, spv::SourceLanguage::HLSL,
-                    hlslVersion, fileNameInst, "");
-    visit(src);
-    spvInstructions.push_back(fileNameInst);
-    spvInstructions.push_back(src);
-    dumpedFiles.insert(fileId);
-  }
 }
 
 void EmitVisitor::initInstruction(SpirvInstruction *inst) {
@@ -398,9 +465,10 @@ bool EmitVisitor::visit(SpirvFunction *fn, Phase phase) {
     initInstruction(spv::Op::OpFunction, fn->getSourceLocation());
     curInst.push_back(returnTypeId);
     curInst.push_back(getOrAssignResultId<SpirvFunction>(fn));
-    curInst.push_back(fn->isNoInline() ?
-        static_cast<uint32_t>(spv::FunctionControlMask::DontInline) :
-        static_cast<uint32_t>(spv::FunctionControlMask::MaskNone));
+    curInst.push_back(
+        fn->isNoInline()
+            ? static_cast<uint32_t>(spv::FunctionControlMask::DontInline)
+            : static_cast<uint32_t>(spv::FunctionControlMask::MaskNone));
     curInst.push_back(functionTypeId);
     finalizeInstruction(&mainBinary);
     emitDebugNameForInstruction(getOrAssignResultId<SpirvFunction>(fn),
@@ -457,9 +525,16 @@ bool EmitVisitor::visit(SpirvExtension *ext) {
 
 bool EmitVisitor::visit(SpirvExtInstImport *inst) {
   initInstruction(inst);
-  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst));
-  encodeString(inst->getExtendedInstSetName());
+  uint32_t resultId = getOrAssignResultId<SpirvInstruction>(inst);
+  curInst.push_back(resultId);
+  StringRef setName = inst->getExtendedInstSetName();
+  encodeString(setName);
   finalizeInstruction(&preambleBinary);
+  // Remember id if needed later for DebugLine
+  if ((spvOptions.debugInfoVulkan &&
+       setName.equals("NonSemantic.Shader.DebugInfo.100")) ||
+      (!spvOptions.debugInfoVulkan && setName.equals("OpenCL.DebugInfo.100")))
+    debugInfoExtInstId = resultId;
   return true;
 }
 
@@ -520,9 +595,12 @@ bool EmitVisitor::visit(SpirvSource *inst) {
       debugMainFileId = fileId;
   }
 
-  if (dumpedFiles.count(fileId) != 0)
+  if (emittedSource[fileId] != 0)
     return true;
-  dumpedFiles.insert(fileId);
+
+  // If generating OpSource, no result id is generated so just need to
+  // remember it was emitted.
+  emittedSource[fileId] = kEmittedSourceForOpSource;
 
   initInstruction(inst);
   curInst.push_back(static_cast<uint32_t>(inst->getSourceLanguage()));
@@ -539,7 +617,8 @@ bool EmitVisitor::visit(SpirvSource *inst) {
   if (spvOptions.debugInfoSource && inst->hasFile()) {
     text = ReadSourceCode(inst->getFile()->getString());
     if (!text.empty()) {
-      chopString(text, &choppedSrcCode);
+      chopString(text, &choppedSrcCode, kMaximumCharOpSource,
+                 kMaximumCharOpSourceContinued);
       if (!choppedSrcCode.empty()) {
         firstSnippet = llvm::Optional<llvm::StringRef>(choppedSrcCode.front());
       }
@@ -591,7 +670,14 @@ bool EmitVisitor::visit(SpirvModuleProcessed *inst) {
 
 bool EmitVisitor::visit(SpirvDecoration *inst) {
   initInstruction(inst);
-  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getTarget()));
+  if (inst->getTarget()) {
+    curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getTarget()));
+  } else {
+    assert(inst->getTargetFunc() != nullptr);
+    curInst.push_back(
+        getOrAssignResultId<SpirvFunction>(inst->getTargetFunc()));
+  }
+
   if (inst->isMemberDecoration())
     curInst.push_back(inst->getMemberIndex());
   curInst.push_back(static_cast<uint32_t>(inst->getDecoration()));
@@ -1242,10 +1328,82 @@ bool EmitVisitor::visit(SpirvDebugInfoNone *inst) {
   return true;
 }
 
+void EmitVisitor::generateDebugSource(uint32_t fileId, uint32_t textId,
+                                      SpirvDebugSource *inst) {
+  initInstruction(inst);
+  curInst.push_back(typeHandler.emitType(context.getVoidType()));
+  uint32_t resultId = getOrAssignResultId<SpirvInstruction>(inst);
+  curInst.push_back(resultId);
+  curInst.push_back(debugInfoExtInstId);
+  curInst.push_back(inst->getDebugOpcode());
+  curInst.push_back(fileId);
+  if (textId)
+    curInst.push_back(textId);
+  finalizeInstruction(&richDebugInfo);
+  emittedSource[fileId] = resultId;
+}
+
+void EmitVisitor::generateDebugSourceContinued(uint32_t textId,
+                                               SpirvDebugSource *inst) {
+  initInstruction(spv::Op::OpExtInst, /* SourceLocation */ {});
+  curInst.push_back(inst->getResultTypeId());
+  curInst.push_back(takeNextId());
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
+  curInst.push_back(102u); // DebugSourceContinued
+  curInst.push_back(textId);
+  finalizeInstruction(&richDebugInfo);
+}
+
+void EmitVisitor::generateChoppedSource(uint32_t fileId, SpirvDebugSource *inst) {
+  // Chop up the source into multiple segments if it is too long.
+  llvm::Optional<llvm::StringRef> firstSnippet = llvm::None;
+  llvm::SmallVector<llvm::StringRef, 2> choppedSrcCode;
+  std::string text;
+  uint32_t textId = 0;
+  if (spvOptions.debugInfoSource) {
+    text = ReadSourceCode(inst->getFile());
+    if (!text.empty()) {
+      // Maximum characters for DebugSource and DebugSourceContinued
+      // OpString literal minus terminating null.
+      uint32_t maxChar = spvOptions.debugSourceLen * sizeof(uint32_t) - 1;
+      chopString(text, &choppedSrcCode, maxChar, maxChar);
+      if (!choppedSrcCode.empty()) {
+        firstSnippet = llvm::Optional<llvm::StringRef>(choppedSrcCode.front());
+      }
+    }
+    if (firstSnippet.hasValue())
+      textId = getOrCreateOpStringId(firstSnippet.getValue());
+  }
+  // Generate DebugSource
+  generateDebugSource(fileId, textId, inst);
+
+  // Now emit DebugSourceContinued for the [second:last] snippets.
+  for (uint32_t i = 1; i < choppedSrcCode.size(); ++i) {
+    textId = getOrCreateOpStringId(choppedSrcCode[i]);
+    generateDebugSourceContinued(textId, inst);
+  }
+}
+
 bool EmitVisitor::visit(SpirvDebugSource *inst) {
+  // Emit the OpString for the file name.
   uint32_t fileId = getOrCreateOpStringId(inst->getFile());
   if (!debugMainFileId)
     debugMainFileId = fileId;
+
+  if (emittedSource[fileId] != 0)
+    return true;
+
+  if (spvOptions.debugInfoVulkan) {
+    generateChoppedSource(fileId, inst);
+    return true;
+  }
+  // OpenCL.DebugInfo.100
+  // TODO(greg-lunarg): This logic does not currently handle text that is too
+  // long for a string. In this case, the entire compiler returns without
+  // producing a SPIR-V file. Once DebugSourceContinued is added to
+  // OpenCL.DebugInfo.100, the logic below can be removed and the
+  // NonSemantic.Shader.DebugInfo.100 logic above can be used for both cases.
   uint32_t textId = 0;
   if (spvOptions.debugInfoSource) {
     auto text = ReadSourceCode(inst->getFile());
@@ -1254,7 +1412,8 @@ bool EmitVisitor::visit(SpirvDebugSource *inst) {
   }
   initInstruction(inst);
   curInst.push_back(inst->getResultTypeId());
-  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst));
+  uint32_t resultId = getOrAssignResultId<SpirvInstruction>(inst);
+  curInst.push_back(resultId);
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
   curInst.push_back(inst->getDebugOpcode());
@@ -1262,6 +1421,7 @@ bool EmitVisitor::visit(SpirvDebugSource *inst) {
   if (textId)
     curInst.push_back(textId);
   finalizeInstruction(&richDebugInfo);
+  emittedSource[fileId] = resultId;
   return true;
 }
 
@@ -1272,11 +1432,12 @@ bool EmitVisitor::visit(SpirvDebugCompilationUnit *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
   curInst.push_back(inst->getDebugOpcode());
-  curInst.push_back(inst->getSpirvVersion());
-  curInst.push_back(inst->getDwarfVersion());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getSpirvVersion()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getDwarfVersion()));
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getDebugSource()));
-  curInst.push_back(static_cast<uint32_t>(inst->getLanguage()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(
+      static_cast<uint32_t>(inst->getLanguage())));
   finalizeInstruction(&richDebugInfo);
   return true;
 }
@@ -1289,8 +1450,8 @@ bool EmitVisitor::visit(SpirvDebugLexicalBlock *inst) {
       getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
   curInst.push_back(inst->getDebugOpcode());
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSource()));
-  curInst.push_back(inst->getLine());
-  curInst.push_back(inst->getColumn());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getLine()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getColumn()));
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getParentScope()));
   finalizeInstruction(&richDebugInfo);
@@ -1328,12 +1489,12 @@ bool EmitVisitor::visit(SpirvDebugFunctionDeclaration *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getDebugType()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSource()));
-  curInst.push_back(inst->getLine());
-  curInst.push_back(inst->getColumn());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getLine()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getColumn()));
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getParentScope()));
   curInst.push_back(linkageNameId);
-  curInst.push_back(inst->getFlags());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getFlags()));
   finalizeInstruction(&richDebugInfo);
   return true;
 }
@@ -1351,21 +1512,39 @@ bool EmitVisitor::visit(SpirvDebugFunction *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getDebugType()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSource()));
-  curInst.push_back(inst->getLine());
-  curInst.push_back(inst->getColumn());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getLine()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getColumn()));
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getParentScope()));
   curInst.push_back(linkageNameId);
-  curInst.push_back(inst->getFlags());
-  curInst.push_back(inst->getScopeLine());
-  auto *fn = inst->getSpirvFunction();
-  if (fn) {
-    curInst.push_back(getOrAssignResultId<SpirvFunction>(fn));
-  } else {
-    curInst.push_back(
-        getOrAssignResultId<SpirvInstruction>(inst->getDebugInfoNone()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getFlags()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getScopeLine()));
+  /// Only emit the function Id for OpenCL debug info, Vulkan debug info
+  /// disallows forward references
+  if (!spvOptions.debugInfoVulkan) {
+    auto *fn = inst->getSpirvFunction();
+    if (fn) {
+      curInst.push_back(getOrAssignResultId<SpirvFunction>(fn));
+    } else {
+      curInst.push_back(
+          getOrAssignResultId<SpirvInstruction>(inst->getDebugInfoNone()));
+    }
   }
   finalizeInstruction(&richDebugInfo);
+  return true;
+}
+
+bool EmitVisitor::visit(SpirvDebugFunctionDefinition *inst) {
+  initInstruction(inst);
+  curInst.push_back(inst->getResultTypeId());
+  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst));
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
+  curInst.push_back(inst->getDebugOpcode());
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getDebugFunction()));
+  curInst.push_back(getOrAssignResultId<SpirvFunction>(inst->getFunction()));
+  finalizeInstruction(&mainBinary);
   return true;
 }
 
@@ -1379,7 +1558,10 @@ bool EmitVisitor::visit(SpirvDebugTypeBasic *inst) {
   curInst.push_back(inst->getDebugOpcode());
   curInst.push_back(typeNameId);
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSize()));
-  curInst.push_back(inst->getEncoding());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getEncoding()));
+  // Vulkan needs flag operand. TODO(greg-lunarg): Set flag correctly.
+  if (spvOptions.debugInfoVulkan)
+    curInst.push_back(getLiteralEncodedForDebugInfo(0));
   finalizeInstruction(&richDebugInfo);
   return true;
 }
@@ -1393,7 +1575,7 @@ bool EmitVisitor::visit(SpirvDebugTypeVector *inst) {
   curInst.push_back(inst->getDebugOpcode());
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getElementType()));
-  curInst.push_back(inst->getElementCount());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getElementCount()));
   finalizeInstruction(&richDebugInfo);
   return true;
 }
@@ -1428,7 +1610,7 @@ bool EmitVisitor::visit(SpirvDebugTypeFunction *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
   curInst.push_back(inst->getDebugOpcode());
-  curInst.push_back(inst->getDebugFlags());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getDebugFlags()));
   if (inst->getReturnType()) {
     curInst.push_back(
         getOrAssignResultId<SpirvInstruction>(inst->getReturnType()));
@@ -1456,10 +1638,10 @@ bool EmitVisitor::visit(SpirvDebugTypeComposite *inst) {
       getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
   curInst.push_back(inst->getDebugOpcode());
   curInst.push_back(typeNameId);
-  curInst.push_back(inst->getTag());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getTag()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSource()));
-  curInst.push_back(inst->getLine());
-  curInst.push_back(inst->getColumn());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getLine()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getColumn()));
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getParentScope()));
   curInst.push_back(linkageNameId);
@@ -1469,7 +1651,7 @@ bool EmitVisitor::visit(SpirvDebugTypeComposite *inst) {
   } else {
     curInst.push_back(size);
   }
-  curInst.push_back(inst->getDebugFlags());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getDebugFlags()));
   for (auto *member : inst->getMembers()) {
     curInst.push_back(getOrAssignResultId<SpirvInstruction>(member));
   }
@@ -1495,13 +1677,18 @@ bool EmitVisitor::visit(SpirvDebugTypeMember *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getDebugType()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSource()));
-  curInst.push_back(inst->getLine());
-  curInst.push_back(inst->getColumn());
-  curInst.push_back(
-      getOrAssignResultId<SpirvInstruction>(inst->getParentScope()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getLine()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getColumn()));
+  /// Only emit the parent reference for OpenCL debug info. Vulkan debug info
+  /// breaks reference cycle between DebugTypeComposite and DebugTypeMember,
+  /// with only the composite referencing its members and not the reverse.
+  if (!spvOptions.debugInfoVulkan) {
+    curInst.push_back(
+        getOrAssignResultId<SpirvInstruction>(inst->getParentScope()));
+  }
   curInst.push_back(offset);
   curInst.push_back(size);
-  curInst.push_back(inst->getDebugFlags());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getDebugFlags()));
   finalizeInstruction(&richDebugInfo);
   return true;
 }
@@ -1534,8 +1721,8 @@ bool EmitVisitor::visit(SpirvDebugTypeTemplateParameter *inst) {
       getOrAssignResultId<SpirvInstruction>(inst->getActualType()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getValue()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSource()));
-  curInst.push_back(inst->getLine());
-  curInst.push_back(inst->getColumn());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getLine()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getColumn()));
   finalizeInstruction(&richDebugInfo);
   return true;
 }
@@ -1552,14 +1739,15 @@ bool EmitVisitor::visit(SpirvDebugLocalVariable *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getDebugType()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSource()));
-  curInst.push_back(inst->getLine());
-  curInst.push_back(inst->getColumn());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getLine()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getColumn()));
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getParentScope()));
-  curInst.push_back(inst->getFlags());
-  if (inst->getArgNumber().hasValue())
-    curInst.push_back(inst->getArgNumber().getValue());
-
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getFlags()));
+  if (inst->getArgNumber().hasValue()) {
+    curInst.push_back(
+        getLiteralEncodedForDebugInfo(inst->getArgNumber().getValue()));
+  }
   finalizeInstruction(&richDebugInfo);
   return true;
 }
@@ -1593,13 +1781,13 @@ bool EmitVisitor::visit(SpirvDebugGlobalVariable *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getDebugType()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getSource()));
-  curInst.push_back(inst->getLine());
-  curInst.push_back(inst->getColumn());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getLine()));
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getColumn()));
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getParentScope()));
   curInst.push_back(linkageNameId);
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getVariable()));
-  curInst.push_back(inst->getFlags());
+  curInst.push_back(getLiteralEncodedForDebugInfo(inst->getFlags()));
   if (inst->getStaticMemberDebugDecl().hasValue())
     curInst.push_back(getOrAssignResultId<SpirvInstruction>(
         inst->getStaticMemberDebugDecl().getValue()));
@@ -1648,6 +1836,32 @@ bool EmitVisitor::visit(SpirvReadClock *inst) {
 
 bool EmitVisitor::visit(SpirvRayTracingTerminateOpKHR *inst) {
   initInstruction(inst);
+  finalizeInstruction(&mainBinary);
+  return true;
+}
+
+bool EmitVisitor::visit(SpirvIntrinsicInstruction *inst) {
+  initInstruction(inst);
+  if (inst->hasResultType()) {
+    curInst.push_back(inst->getResultTypeId());
+    curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst));
+  }
+  if (inst->getInstructionSet()) {
+    curInst.push_back(
+        getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
+    curInst.push_back(inst->getInstruction());
+  }
+
+  for (const auto operand : inst->getOperands()) {
+    // TODO: Handle Literals with other types.
+    auto literalOperand = dyn_cast<SpirvConstantInteger>(operand);
+    if (literalOperand && literalOperand->getLiteral()) {
+      curInst.push_back(literalOperand->getValue().getZExtValue());
+    } else {
+      curInst.push_back(getOrAssignResultId<SpirvInstruction>(operand));
+    }
+  }
+
   finalizeInstruction(&mainBinary);
   return true;
 }
@@ -1702,11 +1916,15 @@ uint32_t EmitTypeHandler::getOrCreateConstantBool(SpirvConstantBoolean *inst) {
   const auto index = static_cast<uint32_t>(inst->getValue());
   const bool isSpecConst = inst->isSpecConstant();
 
-  // SpecConstants are not unique. We should not reuse them. e.g. it is possible
-  // to have multiple OpSpecConstantTrue instructions.
+  // The values of special constants are not unique. We should not reuse their
+  // values.
   if (!isSpecConst && emittedConstantBools[index]) {
-    // Already emitted this constant. Reuse.
+    // Already emitted this constant value. Reuse.
     inst->setResultId(emittedConstantBools[index]->getResultId());
+  } else if (isSpecConst && emittedSpecConstantInstructions.find(inst) !=
+                                emittedSpecConstantInstructions.end()) {
+    // We've already emitted this SpecConstant. Reuse.
+    return inst->getResultId();
   } else {
     // Constant wasn't emitted in the past.
     const uint32_t typeId = emitType(inst->getResultType());
@@ -1715,8 +1933,11 @@ uint32_t EmitTypeHandler::getOrCreateConstantBool(SpirvConstantBoolean *inst) {
     curTypeInst.push_back(getOrAssignResultId<SpirvInstruction>(inst));
     finalizeTypeInstruction();
     // Remember this constant for the future (if not a spec constant)
-    if (!isSpecConst)
+    if (isSpecConst) {
+      emittedSpecConstantInstructions.insert(inst);
+    } else {
       emittedConstantBools[index] = inst;
+    }
   }
 
   return inst->getResultId();
@@ -1783,8 +2004,8 @@ uint32_t EmitTypeHandler::getOrCreateConstantFloat(SpirvConstantFloat *inst) {
   auto valueTypePair = std::pair<uint64_t, const SpirvType *>(
       valueToUse.bitcastToAPInt().getZExtValue(), type);
 
-  // SpecConstant instructions are not unique, so we should not re-use existing
-  // spec constants.
+  // The values of special constants are not unique. We should not reuse their
+  // values.
   if (!isSpecConst) {
     // If this constant has already been emitted, return its result-id.
     auto foundResultId = emittedConstantFloats.find(valueTypePair);
@@ -1793,6 +2014,10 @@ uint32_t EmitTypeHandler::getOrCreateConstantFloat(SpirvConstantFloat *inst) {
       inst->setResultId(existingConstantResultId);
       return existingConstantResultId;
     }
+  } else if (emittedSpecConstantInstructions.find(inst) !=
+             emittedSpecConstantInstructions.end()) {
+    // We've already emitted this SpecConstant. Reuse.
+    return inst->getResultId();
   }
 
   // Start constructing the instruction
@@ -1830,8 +2055,11 @@ uint32_t EmitTypeHandler::getOrCreateConstantFloat(SpirvConstantFloat *inst) {
   finalizeTypeInstruction();
 
   // Remember this constant for future (if not a SpecConstant)
-  if (!isSpecConst)
+  if (isSpecConst) {
+    emittedSpecConstantInstructions.insert(inst);
+  } else {
     emittedConstantFloats[valueTypePair] = constantResultId;
+  }
 
   return constantResultId;
 }
@@ -1843,8 +2071,8 @@ EmitTypeHandler::getOrCreateConstantInt(llvm::APInt value,
   auto valueTypePair =
       std::pair<uint64_t, const SpirvType *>(value.getZExtValue(), type);
 
-  // SpecConstant instructions are not unique, so we should not re-use existing
-  // spec constants.
+  // The values of special constants are not unique. We should not reuse their
+  // values.
   if (!isSpecConst) {
     // If this constant has already been emitted, return its result-id.
     auto foundResultId = emittedConstantInts.find(valueTypePair);
@@ -1854,6 +2082,10 @@ EmitTypeHandler::getOrCreateConstantInt(llvm::APInt value,
         constantInstruction->setResultId(existingConstantResultId);
       return existingConstantResultId;
     }
+  } else if (emittedSpecConstantInstructions.find(constantInstruction) !=
+             emittedSpecConstantInstructions.end()) {
+    // We've already emitted this SpecConstant. Reuse.
+    return constantInstruction->getResultId();
   }
 
   assert(isa<IntegerType>(type));
@@ -1905,9 +2137,12 @@ EmitTypeHandler::getOrCreateConstantInt(llvm::APInt value,
 
   finalizeTypeInstruction();
 
-  // Remember this constant for future (not needed for SpecConstants)
-  if (!isSpecConst)
+  // Remember this constant for future
+  if (isSpecConst) {
+    emittedSpecConstantInstructions.insert(constantInstruction);
+  } else {
     emittedConstantInts[valueTypePair] = constantResultId;
+  }
 
   return constantResultId;
 }
@@ -1939,11 +2174,18 @@ EmitTypeHandler::getOrCreateConstantComposite(SpirvConstantComposite *inst) {
               return false;
           return true;
         });
+  } else if (emittedSpecConstantInstructions.find(inst) !=
+             emittedSpecConstantInstructions.end()) {
+    return inst->getResultId();
   }
 
   if (!isSpecConst && found != emittedConstantComposites.end()) {
     // We have already emitted this constant. Reuse.
     inst->setResultId((*found)->getResultId());
+  } else if (isSpecConst && emittedSpecConstantInstructions.find(inst) !=
+                                emittedSpecConstantInstructions.end()) {
+    // We've already emitted this SpecConstant. Reuse.
+    return inst->getResultId();
   } else {
     // Constant wasn't emitted in the past.
     const uint32_t typeId = emitType(inst->getResultType());
@@ -1954,9 +2196,12 @@ EmitTypeHandler::getOrCreateConstantComposite(SpirvConstantComposite *inst) {
       curTypeInst.push_back(getOrAssignResultId<SpirvInstruction>(constituent));
     finalizeTypeInstruction();
 
-    // Remember this constant for the future (if not a spec constant)
-    if (!isSpecConst)
+    // Remember this constant for the future
+    if (isSpecConst) {
+      emittedSpecConstantInstructions.insert(inst);
+    } else {
       emittedConstantComposites.push_back(inst);
+    }
   }
 
   return inst->getResultId();
@@ -2171,8 +2416,7 @@ uint32_t EmitTypeHandler::emitType(const SpirvType *type) {
     finalizeTypeInstruction();
   }
   // RayQueryType KHR type
-  else if (const auto *rayQueryType =
-               dyn_cast<RayQueryTypeKHR>(type)) {
+  else if (const auto *rayQueryType = dyn_cast<RayQueryTypeKHR>(type)) {
     initTypeInstruction(spv::Op::OpTypeRayQueryKHR);
     curTypeInst.push_back(id);
     finalizeTypeInstruction();
