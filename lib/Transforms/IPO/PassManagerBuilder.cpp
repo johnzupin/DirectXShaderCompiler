@@ -373,6 +373,8 @@ void PassManagerBuilder::populateModulePassManager(
 
     if (!HLSLHighLevel) {
       MPM.add(createDxilConvergentClearPass());
+      MPM.add(createDxilEraseDeadRegionPass());
+      MPM.add(createDeadCodeEliminationPass());
       MPM.add(createDxilRemoveDeadBlocksPass());
       MPM.add(createDxilNoOptSimplifyInstructionsPass());
       MPM.add(createGlobalOptimizerPass());
@@ -380,8 +382,8 @@ void PassManagerBuilder::populateModulePassManager(
       MPM.add(createDeadCodeEliminationPass());
       MPM.add(createGlobalDCEPass());
       MPM.add(createDxilMutateResourceToHandlePass());
+      MPM.add(createDxilCleanupDynamicResourceHandlePass());
       MPM.add(createDxilLowerCreateHandleForLibPass());
-      MPM.add(createDxilCleanupAnnotateHandlePass());
       MPM.add(createDxilTranslateRawBuffer());
       MPM.add(createDxilLegalizeSampleOffsetPass());
       MPM.add(createDxilNoOptLegalizePass());
@@ -670,9 +672,7 @@ void PassManagerBuilder::populateModulePassManager(
 
   // HLSL Change Begins.
   if (!HLSLHighLevel) {
-    if (OptLevel > 0)
-      MPM.add(createDxilEraseDeadRegionPass());
-
+    MPM.add(createDxilEraseDeadRegionPass());
     MPM.add(createDxilConvergentClearPass());
     MPM.add(createDeadCodeEliminationPass()); // DCE needed after clearing convergence
                                               // annotations before CreateHandleForLib
@@ -683,8 +683,8 @@ void PassManagerBuilder::populateModulePassManager(
     MPM.add(createDeadCodeEliminationPass());
     MPM.add(createGlobalDCEPass());
     MPM.add(createDxilMutateResourceToHandlePass());
+    MPM.add(createDxilCleanupDynamicResourceHandlePass());
     MPM.add(createDxilLowerCreateHandleForLibPass());
-    MPM.add(createDxilCleanupAnnotateHandlePass());
     MPM.add(createDxilTranslateRawBuffer());
     // Always try to legalize sample offsets as loop unrolling
     // is not guaranteed for higher opt levels.

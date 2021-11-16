@@ -128,6 +128,11 @@ def fno_diagnostics_show_option : Flag<["-"], "fno-diagnostics-show-option">, Gr
 def fdiagnostics_show_category_EQ : Joined<["-"], "fdiagnostics-show-category=">, Group<hlslcomp_Group>;
 def ferror_limit_EQ : Joined<["-"], "ferror-limit=">, Group<hlslcomp_Group>, Flags<[CoreOption]>;
 
+def import_binding_table : JoinedOrSeparate<["-", "/"], "import-binding-table">, Group<hlsloptz_Group>, Flags<[CoreOption, DriverOption, HelpHidden]>,
+  HelpText<"Import a binding table to specify resource bindings.">;
+def binding_table_define : Separate<["-", "/"], "binding-table-define">, Group<hlsloptz_Group>, Flags<[CoreOption, DriverOption, HelpHidden]>,
+  HelpText<"Import a binding table from a define to specify resource bindings.">;
+
 def funsafe_math_optimizations : Flag<["-"], "funsafe-math-optimizations">,
   Group<hlsloptz_Group>;
 def fno_unsafe_math_optimizations : Flag<["-"], "fno-unsafe-math-optimizations">,
@@ -249,7 +254,7 @@ def pack_optimized : Flag<["-", "/"], "pack-optimized">, Group<hlslcomp_Group>, 
 def pack_optimized_ : Flag<["-", "/"], "pack_optimized">, Group<hlslcomp_Group>, Flags<[CoreOption, HelpHidden]>,
   HelpText<"Optimize signature packing assuming identical signature provided for each connecting stage">;
 def hlsl_version : Separate<["-", "/"], "HV">, Group<hlslcomp_Group>, Flags<[CoreOption, RewriteOption]>,
-  HelpText<"HLSL version (2016, 2017, 2018). Default is 2018">;
+  HelpText<"HLSL version (2016, 2017, 2018, 2021). Default is 2018">;
 def no_warnings : Flag<["-", "/"], "no-warnings">, Group<hlslcomp_Group>, Flags<[CoreOption, RewriteOption]>,
   HelpText<"Suppress warnings">;
 def rootsig_define : Separate<["-", "/"], "rootsig-define">, Group<hlslcomp_Group>, Flags<[CoreOption]>,
@@ -285,6 +290,12 @@ def enable_lifetime_markers : Flag<["-", "/"], "enable-lifetime-markers">, Group
   HelpText<"Enable generation of lifetime markers">;
 def disable_lifetime_markers : Flag<["-", "/"], "disable-lifetime-markers">, Group<hlslcomp_Group>, Flags<[CoreOption, HelpHidden]>,
   HelpText<"Disable generation of lifetime markers where they would be otherwise (6.6+)">;
+def enable_templates: Flag<["-", "/"], "enable-templates">, Group<hlslcomp_Group>, Flags<[CoreOption, HelpHidden]>,
+  HelpText<"Enable template support for HLSL.">;
+def enable_operator_overloading: Flag<["-", "/"], "enable-operator-overloading">, Group<hlslcomp_Group>, Flags<[CoreOption, HelpHidden]>,
+  HelpText<"Enable operator overloading support for HLSL.">;
+def strict_udt_casting: Flag<["-", "/"], "strict-udt-casting">, Group<hlslcomp_Group>, Flags<[CoreOption, HelpHidden]>,
+  HelpText<"Require explicit casts between different structure types with compatible layouts.">;
 def enable_payload_qualifiers : Flag<["-", "/"], "enable-payload-qualifiers">, Group<hlslcomp_Group>, Flags<[CoreOption, RewriteOption, DriverOption]>,
   HelpText<"Enables support for payload access qualifiers for raytracing payloads in SM 6.6.">;
 def disable_payload_qualifiers : Flag<["-", "/"], "disable-payload-qualifiers">, Group<hlslcomp_Group>, Flags<[CoreOption, RewriteOption, DriverOption]>,
@@ -336,6 +347,8 @@ def fspv_target_env_EQ : Joined<["-"], "fspv-target-env=">, Group<spirv_Group>, 
   HelpText<"Specify the target environment: vulkan1.0 (default) or vulkan1.1">;
 def fspv_flatten_resource_arrays: Flag<["-"], "fspv-flatten-resource-arrays">, Group<spirv_Group>, Flags<[CoreOption, DriverOption]>,
   HelpText<"Flatten arrays of resources so each array element takes one binding number">;
+def fspv_reduce_load_size: Flag<["-"], "fspv-reduce-load-size">, Group<spirv_Group>, Flags<[CoreOption, DriverOption]>,
+  HelpText<"Replaces loads of composite objects to reduce memory pressure for the loads">;
 def fvk_auto_shift_bindings: Flag<["-"], "fvk-auto-shift-bindings">, Group<spirv_Group>, Flags<[CoreOption, DriverOption]>,
   HelpText<"Apply fvk-*-shift to resources without an explicit register assignment.">;
 def Wno_vk_ignored_features : Joined<["-"], "Wno-vk-ignored-features">, Group<spirv_Group>, Flags<[CoreOption, DriverOption, HelpHidden]>,
@@ -366,7 +379,9 @@ def _SLASH_WX : Flag<["-", "/"], "WX">, Flags<[CoreOption]>, Group<hlslcomp_Grou
 def VD : Flag<["-", "/"], "Vd">, Flags<[CoreOption]>, Group<hlslcomp_Group>,
   HelpText<"Disable validation">;
 def _SLASH_Zi : Flag<["-", "/"], "Zi">, Flags<[CoreOption]>, Group<hlslcomp_Group>,
-  HelpText<"Enable debug information">;
+  HelpText<"Enable debug information. Cannot be used together with -Zs">;
+def Zs : Flag<["-", "/"], "Zs">, Flags<[CoreOption]>, Group<hlslcomp_Group>,
+  HelpText<"Generate small PDB with just sources and compile options. Cannot be used together with -Zi">;
 def recompile : Flag<["-", "/"], "recompile">, Flags<[CoreOption]>, Group<hlslcomp_Group>,
   HelpText<"recompile from DXIL container with Debug Info or Debug Info bitcode file">;
 def Zpr : Flag<["-", "/"], "Zpr">, Flags<[CoreOption]>, Group<hlslcomp_Group>,
@@ -427,8 +442,6 @@ def Qstrip_priv : Flag<["-", "/"], "Qstrip_priv">, Flags<[DriverOption]>, Group<
   HelpText<"Strip private data from shader bytecode  (must be used with /Fo <file>)">;
 def Qsource_in_debug_module : Flag<["-", "/"], "Qsource_in_debug_module">, Flags<[CoreOption, HelpHidden]>, Group<hlslutil_Group>,
   HelpText<"Generate old PDB format.">;
-def Zs : Flag<["-", "/"], "Zs">, Flags<[CoreOption]>, Group<hlslutil_Group>,
-  HelpText<"Generate small PDB with just sources and compile options.">;
 def Qpdb_in_private : Flag<["-", "/"], "Qpdb_in_private">, Flags<[CoreOption, HelpHidden]>, Group<hlslutil_Group>,
   HelpText<"Store PDB in private user data.">;
 
@@ -446,6 +459,12 @@ def Qkeep_reflect_in_dxil : Flag<["-", "/"], "Qkeep_reflect_in_dxil">,
 def Qstrip_reflect_from_dxil : Flag<["-", "/"], "Qstrip_reflect_from_dxil">,
   Flags<[CoreOption, HelpHidden]>, Group<hlslutil_Group>,
   HelpText<"Strip reflection data from shader bytecode  (must be used with /Fo <file>)">;
+
+def enable_short_circuit : Flag<["-", "/"], "enable-short-circuit">, Flags<[CoreOption, HelpHidden]>, Group<hlslcomp_Group>,
+  HelpText<"Operators '&&', '||', and '?:' will short circuit, only accepting scalar inputs.  Use and(), or(), and select() intrinsics in place of non-short-circuiting vector operators.">;
+
+def enable_bitfields : Flag<["-", "/"], "enable-bitfields">, Flags<[CoreOption, HelpHidden]>, Group<hlslcomp_Group>,
+  HelpText<"Enables bitfields on struct members">;
 
 /*
 def shtemplate : JoinedOrSeparate<["-", "/"], "shtemplate">, MetaVarName<"<file>">, Group<hlslcomp_Group>,
@@ -495,5 +514,7 @@ def rw_remove_unused_functions : Flag<["-", "/"], "remove-unused-functions">, Gr
   HelpText<"Remove unused functions and types">;
 def rw_line_directive : Flag<["-", "/"], "line-directive">, Group<hlslrewrite_Group>, Flags<[RewriteOption]>,
   HelpText<"Add line directive">;
+def rw_decl_global_cb : Flag<["-", "/"], "decl-global-cb">, Group<hlslrewrite_Group>, Flags<[RewriteOption]>,
+  HelpText<"Collect all global constants outside cbuffer declarations into cbuffer GlobalCB { ... }. Still experimental, not all dependency scenarios handled.">;
 // Also removed: compress, decompress, /Gch (child effect), /Gpp (partial precision)
 // /Op - no support for preshaders.
