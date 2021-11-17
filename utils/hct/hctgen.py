@@ -51,6 +51,8 @@ def writeCodeTag(args):
   return 0
   
 def openOutput(args):
+  if not os.path.isdir(os.path.dirname(args.output)):
+    os.mkdir(os.path.dirname(args.output))
   return open(args.output, 'w', newline=getNewline(args))
 
 def printHeader(out, filename):
