@@ -1,3 +1,270 @@
+directxshadercompiler (1.4.0.2274-947~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Tim Corringham ]
+  * Template support (#3533)
+
+  [ Jaebaek Seo ]
+  * [spirv] use rvalue for array index (#3616)
+
+  [ Tim Corringham ]
+  * [templates] Fix issues with dependent template names (#3634)
+
+  [ Jaebaek Seo ]
+  * [spirv] add unit test to check function template instance (#3688)
+  * [spirv] Handle class template instance (#3687)
+
+  [ Helena Kotas ]
+  * Fix test failure on AddMulOps.hlsl
+  * Code review feedback
+
+  [ danbrown-amd ]
+  * Enables HLSL bitfields. (#3847)
+  * Warns when semantic name same as integral/enum identifier. (#3866)
+
+  [ Tex Riddell ]
+  * -strict-udt-casting prevents implicit casts between unrelated structs (#3891)
+  * Add -enable-short-circuit option for operators &&, ||, :? (#3892)
+
+  [ Jaebaek Seo ]
+  * Initial support of operator overloading (#3859)
+
+  [ Adam Yang ]
+  * Added binding table file to specify resource binding (#3843)
+  * Short circuit tests. (#3917)
+
+  [ JiaoluAMD ]
+  * [SPIRV] Add linkageAttributes decorates (#3915)
+
+  [ Xiang Li ]
+  * Change umax(a,0) to a. (#3922)
+
+  [ Greg Roth ]
+  * Correctly handle comma operator w/matrices (#3921)
+
+  [ JiaoluAMD ]
+  * [SPIRV] Update the spirv tools to the later commit (#3923)
+
+  [ Adam Yang ]
+  * Fixed debug info in unrolled loops. (#3926)
+
+  [ Xiang Li ]
+  * Fix issue when updateCounter for dynamic resource, also remove createHandleForLib on handle type when not a library. (#3935)
+
+  [ Jaebaek Seo ]
+  * [spirv] support vk::combinedImageSampler (#3920)
+
+  [ Greg Roth ]
+  * Update macos for azure (#3937)
+  * Add an explicit python version (#3938)
+
+  [ Jaebaek Seo ]
+  * [spirv] add -fspv-reduce-load-size option (#3931)
+
+  [ Natalie Chouinard ]
+  * [spirv] Add support for RValues with OpaqueArrayType
+
+  [ Helena Kotas ]
+  * Add azure pipelines entry points for master branch builds (#3940)
+  * Update version to 1.6.2109 (#3939)
+
+  [ Natalie Chouinard ]
+  * [spirv] Support bool* as texture template type
+
+  [ David Peixotto ]
+  * Allow calling DxcInitThreadMalloc again after calling DxcCleanupThreadMalloc (#3941)
+
+  [ Thomas Roughton ]
+  * [SPIR-V] Fix an issue with duplicate specialisation constants (#3929)
+
+  [ Adam Yang ]
+  * NoUnwind fix. HLExtIntrinsic collision fix. (#3942)
+  * Reflection interface now accepts a DXIL program header. (#3946)
+
+  [ Grace Jennings ]
+  * Added unused output target warning and moved usage mask fill location (#3947)
+
+  [ David Peixotto ]
+  * Fix check in dxc extra output processing for non-blob output (#3957)
+
+  [ Lukas Hermanns ]
+  * Fix build when `SUPPORT_QUERY_GIT_COMMIT_INFO` is disabled (#3745)
+
+  [ Greg Roth ]
+  * Limit Sema intrinsic checks to builtin "op" table (#3963)
+
+  [ Tex Riddell ]
+  * Fix bugs in signature reflection, add signatures to dumper and tests (#3961)
+
+  [ Jeff Noyle ]
+  * PIX: Disambiguate mesh shader activity based on full XYZ dispatch paramete… (#3960)
+
+  [ Tex Riddell ]
+  * Fix cbuffer variable usage in reflection for SM 6.6 (#3966)
+
+  [ JiaoluAMD ]
+  * Expand AttrKind from 8bit to 32 bits (#3967)
+  * [SPIRV] Add support of the GL_EXT_spirv_intrinsics (#3949)
+
+  [ Adam Yang ]
+  * Fixed an assert when a dxil error happens with global variable (#3974)
+
+  [ Xiang Li ]
+  * Always update end scope when structurize returns. (#3977)
+
+  [ Chris B ]
+  * [NFC] Add additional helper methods for DXT::ResourceKind (#3975)
+
+  [ Greg Roth ]
+  * Enable -HV 2021 (#3982)
+
+  [ Jaebaek Seo ]
+  * [spirv] update SPIRV-Tools and SPIRV-Headers submodules (#3979)
+
+  [ Tex Riddell ]
+  * Follow HLSL rule for shift ops during constant folding (#3976)
+  * Fix missing RDAT function resource usage by recursing constant users (#3983)
+
+  [ Grace Jennings ]
+  * Consistent order gradient ops warnings. (#3984)
+
+  [ Adam Yang ]
+  * Fixed structurized return when there are phi's from shortcircuiting. (#3981)
+
+  [ Jeff Noyle ]
+  * PIX: Changes to run PIX passes on libraries. Also add raygen shader debugging prolog (#3985)
+
+  [ Adam Yang ]
+  * Od fixes sep2021 (#3990)
+
+  [ Chris B ]
+  * [NFC] Silence a few new clang warnings (#3989)
+  * Convert cmake-predefined-config-params to cache (#3918)
+
+  [ Greg Roth ]
+  * Properly handle parsed HLSL tokens (#3993)
+
+  [ Adam Yang ]
+  * Checking the called object is a function in MS validation. (#3995)
+
+  [ Chris B ]
+  * Fix cast construction in template instantiation for Constant and Texture buffers (#3991)
+  * [Templates] Resolve literal types to 32-bit types (#3994)
+
+  [ Adam Yang ]
+  * -Zs now appears next to Zi in the help text (#3996)
+  * Better way to check if a CallInst is a debug inst (#3997)
+
+  [ Greg Roth ]
+  * Use a type-appropriate 2.0 for reflect (#3998)
+
+  [ Chris B ]
+  * Enable building llvm-dis (#3999)
+  * Fix llvm::BitVector::resize (#4008)
+
+  [ Jaebaek Seo ]
+  * [spirv] update SPIRV-Tools and SPIRV-Headers submodules (#4010)
+
+  [ Greg Roth ]
+  * Only define global heap variables in 6.6+ (#4011)
+
+  [ Chris B ]
+  * Fix triple normailization (#4009)
+
+  [ Xiang Li ]
+  * Allow namespace in cbuffer. (#4013)
+  * Add rewrite pass to create global cb. (#4000)
+
+  [ Chris B ]
+  * [templates] Instantiate HLSL Annotations (#4007)
+
+  [ Helena Kotas ]
+  * Update version to 1.6.2110 (#4016)
+
+  [ Greg Fischer ]
+  * [spirv] Add support for NonSemantic.Shader.DebugInfo.100 generation (#4006)
+
+  [ Chris B ]
+  * Restore LLVM Testing Infrastructure (#4012)
+  * Make it possible to enable building LLVM & Clang unit tests (#4020)
+  * Adding line ending settings to .gitattributes (#4026)
+  * Change FileCheck flag from -input to -input-file (#4024)
+  * Enable building LLVM testing tools (#4023)
+
+  [ Vishal Sharma ]
+  * Stop adding unintended LLVM function attributes (#3992)
+
+  [ Xiang Li ]
+  * Fix issue when index is not 32bit in NonUniformResourceIndex. (#4027)
+
+  [ Chris B ]
+  * Convert Windows 1252 to UTF-8 (#4033)
+  * Conditionalize dxilconv pass inclusion in opt (#4034)
+
+  [ Xiang Li ]
+  * Support vs2022 build. (#4031)
+
+  [ Greg Fischer ]
+  * Add Shader.DebugInfo.100 support for DebugSourceContinued (#4030)
+
+  [ Jaebaek Seo ]
+  * [spirv] Support flattening descriptor array accessed by var index (#4042)
+
+  [ Chris B ]
+  * NFC. Cleanup CMake warnings (#4045)
+
+  [ JiaoluAMD ]
+  * [SPIRV] Add support of [[vk::ext_decorate]] (#4035)
+
+  [ Atte Seppälä ]
+  * Enable legalization when the vk::image_format attribute is used (#4048)
+
+  [ Chris B ]
+  * Get LLVM Unit Tests Passing (#4021)
+
+  [ Adam Yang ]
+  * Added -binding-table-define (#4044)
+
+  [ Greg Fischer ]
+  * Add Shader.DebugInfo.100 support for DebugLine and DebugNoLine (#4043)
+
+  [ Jaebaek Seo ]
+  * [spirv] separate resource from cbuffer (#4040)
+
+  [ Chris B ]
+  * Automate generating of intrinsic code (#4001)
+  * Adding a missing include (#4056)
+  * Require Windows 7 Everywhere (#4057)
+  * NFC. Document -update-generated-sources flag (#4059)
+  * Fix capitalization of RUN in SPIR-V tests (#4054)
+
+  [ Jaebaek Seo ]
+  * [spirv] use 'RUN:' instead of 'Run:' for unittests (#4061)
+
+  [ Chris B ]
+  * [WSL] Support using one checkout for Win & WSL (#4060)
+  * Add back HlslIntrinsicOp.h (#4062)
+
+  [ Xiang Li ]
+  * Support phi on dynamic resource. (#4052)
+
+  [ Jaebaek Seo ]
+  * [spirv] test preservation of RelaxedPrecision for resource in struct (#4064)
+
+  [ Chris B ]
+  * Workaround autocrlf=input (#4072)
+  * Minor fix for dependencies of generated sources (#4065)
+
+  [ Tex Riddell ]
+  * Fix leak from HLMatrixLowerPass when cleaning up temp functions (#4074)
+
+  [ John Zupin ]
+  * packaging: update to use cmake cache file
+  * packaging: rebased patches
+  * packaging: disable building llvm tools
+  * packaging: new patch to fix python
+
+ -- John Zupin <john@odin>  Tue, 16 Nov 2021 17:47:53 -0700
+
 directxshadercompiler (1.4.0.2274-833~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Greg Roth ]
