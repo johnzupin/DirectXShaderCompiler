@@ -83,7 +83,7 @@ Copyright: 2008-2010, Apple, Inc
 License: Expat
 
 Files: debian/*
-Copyright: 2020, John Zupin <john@unknown>
+Copyright: 2022, LunarG, Inc <johnz@lunarg.com>
 License: UnknownCopyrighted
 
 Files: lib/Support/COPYRIGHT.regex
