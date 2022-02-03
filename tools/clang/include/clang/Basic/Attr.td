@@ -1029,7 +1029,15 @@ def VKCounterBinding : InheritableAttr {
 def VKDecorateExt : InheritableAttr {
   let Spellings = [CXX11<"vk", "ext_decorate">];
   let Subjects = SubjectList<[Function, Var, ParmVar, Field, TypedefName], ErrorDiag>;
-  let Args = [UnsignedArgument<"decorate">, VariadicUnsignedArgument<"literal">];
+  let Args = [UnsignedArgument<"decorate">, VariadicUnsignedArgument<"literals">];
+  let LangOpts = [SPIRV];
+  let Documentation = [Undocumented];
+}
+
+def VKDecorateIdExt : InheritableAttr {
+  let Spellings = [CXX11<"vk", "ext_decorate_id">];
+  let Subjects = SubjectList<[Function, Var, ParmVar, Field, TypedefName], ErrorDiag>;
+  let Args = [UnsignedArgument<"decorate">, VariadicExprArgument<"arguments">];
   let LangOpts = [SPIRV];
   let Documentation = [Undocumented];
 }
@@ -1037,7 +1045,7 @@ def VKDecorateExt : InheritableAttr {
 def VKDecorateStringExt : InheritableAttr {
   let Spellings = [CXX11<"vk", "ext_decorate_string">];
   let Subjects = SubjectList<[Function, Var, ParmVar, Field, TypedefName], ErrorDiag>;
-  let Args = [UnsignedArgument<"decorate">, StringArgument<"literals">];
+  let Args = [UnsignedArgument<"decorate">, VariadicStringArgument<"arguments">];
   let LangOpts = [SPIRV];
   let Documentation = [Undocumented];
 }
@@ -1046,6 +1054,14 @@ def VKExtensionExt : InheritableAttr {
   let Spellings = [CXX11<"vk", "ext_extension">];
   let Subjects = SubjectList<[Function], ErrorDiag>;
   let Args = [StringArgument<"name">];
+  let LangOpts = [SPIRV];
+  let Documentation = [Undocumented];
+}
+
+def VKStorageClassExt : InheritableAttr {
+  let Spellings = [CXX11<"vk", "ext_storage_class">];
+  let Subjects = SubjectList<[Var, ParmVar], ErrorDiag>;
+  let Args = [UnsignedArgument<"stclass">];
   let LangOpts = [SPIRV];
   let Documentation = [Undocumented];
 }
@@ -1133,6 +1149,14 @@ def VKLiteralExt : InheritableAttr {
 def VKReferenceExt : InheritableAttr {
   let Spellings = [CXX11<"vk", "ext_reference">];
   let Subjects = SubjectList<[ParmVar], ErrorDiag>;
+  let LangOpts = [SPIRV];
+  let Documentation = [Undocumented];
+}
+
+def VKTypeDefExt : InheritableAttr {
+  let Spellings = [CXX11<"vk", "ext_type_def">];
+  let Subjects = SubjectList<[Function], ErrorDiag>;
+  let Args = [UnsignedArgument<"id">, UnsignedArgument<"opcode">];
   let LangOpts = [SPIRV];
   let Documentation = [Undocumented];
 }

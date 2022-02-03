@@ -258,6 +258,7 @@ static void addHLSLPasses(bool HLSLHighLevel, unsigned OptLevel, bool OnlyWarnOn
   // mem2reg
   // Special Mem2Reg pass that skips precise marker.
   MPM.add(createDxilConditionalMem2RegPass(NoOpt));
+  MPM.add(createDxilDeleteRedundantDebugValuesPass());
 
   // Clean up inefficiencies that can cause unnecessary live values related to
   // lifetime marker cleanup blocks. This is the earliest possible location
@@ -391,6 +392,7 @@ void PassManagerBuilder::populateModulePassManager(
       MPM.add(createDxilFinalizeModulePass());
       MPM.add(createComputeViewIdStatePass());
       MPM.add(createDxilDeadFunctionEliminationPass());
+      MPM.add(createDxilDeleteRedundantDebugValuesPass());
       MPM.add(createNoPausePassesPass());
       MPM.add(createDxilEmitMetadataPass());
     }
@@ -443,8 +445,11 @@ void PassManagerBuilder::populateModulePassManager(
   }
   if (!DisableUnitAtATime)
     MPM.add(createFunctionAttrsPass());       // Set readonly/readnone attrs
+
+#if 0  // HLSL Change Starts: Disable ArgumentPromotion
   if (OptLevel > 2)
     MPM.add(createArgumentPromotionPass());   // Scalarize uninlined fn args
+#endif // HLSL Change Ends
 
   // Start of function pass.
   // Break up aggregate allocas, using SSAUpdater.
@@ -692,6 +697,7 @@ void PassManagerBuilder::populateModulePassManager(
     MPM.add(createDxilFinalizeModulePass());
     MPM.add(createComputeViewIdStatePass());
     MPM.add(createDxilDeadFunctionEliminationPass());
+    MPM.add(createDxilDeleteRedundantDebugValuesPass());
     MPM.add(createNoPausePassesPass());
     MPM.add(createDxilValidateWaveSensitivityPass());
     MPM.add(createDxilEmitMetadataPass());
@@ -700,6 +706,7 @@ void PassManagerBuilder::populateModulePassManager(
   addExtensionsToPM(EP_OptimizerLast, MPM);
 }
 
+#if 0 // HLSL Change: No LTO
 void PassManagerBuilder::addLTOOptimizationPasses(legacy::PassManagerBase &PM) {
   // Provide AliasAnalysis services for optimizations.
   addInitialAliasAnalysisPasses(PM);
@@ -834,6 +841,7 @@ void PassManagerBuilder::populateLTOPassManager(legacy::PassManagerBase &PM) {
   if (VerifyOutput)
     PM.add(createVerifierPass());
 }
+#endif
 
 inline PassManagerBuilder *unwrap(LLVMPassManagerBuilderRef P) {
     return reinterpret_cast<PassManagerBuilder*>(P);
@@ -910,6 +918,7 @@ LLVMPassManagerBuilderPopulateModulePassManager(LLVMPassManagerBuilderRef PMB,
   Builder->populateModulePassManager(*MPM);
 }
 
+#if 0 // HLSL Change: No LTO
 void LLVMPassManagerBuilderPopulateLTOPassManager(LLVMPassManagerBuilderRef PMB,
                                                   LLVMPassManagerRef PM,
                                                   LLVMBool Internalize,
@@ -924,3 +933,4 @@ void LLVMPassManagerBuilderPopulateLTOPassManager(LLVMPassManagerBuilderRef PMB,
 
   Builder->populateLTOPassManager(*LPM);
 }
+#endif
