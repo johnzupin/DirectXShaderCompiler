@@ -936,7 +936,7 @@ class db_dxil(object):
             db_dxil_param(8, "i32", "offset0", "optional offset, applicable to Texture1D, Texture1DArray, and as part of offset1"),
             db_dxil_param(9, "i32", "offset1", "optional offset, applicable to Texture2D, Texture2DArray, and as part of offset2"),
             db_dxil_param(10, "i32", "channel", "channel to sample"),
-            db_dxil_param(11, "f", "compareVale", "value to compare with")],
+            db_dxil_param(11, "f", "compareValue", "value to compare with")],
             counters=('tex_cmp',))
         next_op_idx += 1
 
@@ -2117,6 +2117,7 @@ class db_dxil(object):
         add_pass('hlsl-dxil-convergent-mark', 'DxilConvergentMark', 'Mark convergent', [])
         add_pass('hlsl-dxil-convergent-clear', 'DxilConvergentClear', 'Clear convergent before dxil emit', [])
         add_pass('hlsl-dxil-eliminate-output-dynamic', 'DxilEliminateOutputDynamicIndexing', 'DXIL eliminate ouptut dynamic indexing', [])
+        add_pass('dxil-delete-redundant-debug-values', 'DxilDeleteRedundantDebugValues', 'Dxil Delete Redundant Debug Values', [])
         add_pass('hlsl-dxilfinalize', 'DxilFinalizeModule', 'HLSL DXIL Finalize Module', [])
         add_pass('hlsl-dxilemit', 'DxilEmitMetadata', 'HLSL DXIL Metadata Emit', [])
         add_pass('hlsl-dxilload', 'DxilLoadMetadata', 'HLSL DXIL Metadata Load', [])
@@ -2158,8 +2159,8 @@ class db_dxil(object):
         add_pass('instcombine', 'InstructionCombiningPass', 'Combine redundant instructions', [])
         add_pass('prune-eh', 'PruneEH', 'Remove unused exception handling info', [])
         add_pass('functionattrs', 'FunctionAttrs', 'Deduce function attributes', [])
-        add_pass('argpromotion', 'ArgPromotion', "Promote 'by reference' arguments to scalars", [
-            {'n':'maxElements', 't':'unsigned', 'c':1}])
+        # add_pass('argpromotion', 'ArgPromotion', "Promote 'by reference' arguments to scalars", [
+        #     {'n':'maxElements', 't':'unsigned', 'c':1}])
         add_pass('jump-threading', 'JumpThreading', 'Jump Threading', [
             {'n':'Threshold', 't':'int', 'c':1},
             {'n':'jump-threading-threshold', 'i':'BBDuplicateThreshold', 't':'unsigned', 'd':'Max block size to duplicate for jump threading'}])

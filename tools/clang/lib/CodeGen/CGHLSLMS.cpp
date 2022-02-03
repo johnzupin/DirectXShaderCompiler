@@ -899,7 +899,8 @@ static unsigned AlignBaseOffset(unsigned baseOffset, unsigned size, QualType Ty,
   }
   if (BT) {
     if (BT->getKind() == clang::BuiltinType::Kind::Double ||
-        BT->getKind() == clang::BuiltinType::Kind::LongLong)
+        BT->getKind() == clang::BuiltinType::Kind::LongLong ||
+        BT->getKind() == clang::BuiltinType::Kind::ULongLong)
       scalarSizeInBytes = 8;
     else if (BT->getKind() == clang::BuiltinType::Kind::Half ||
              BT->getKind() == clang::BuiltinType::Kind::Short ||
@@ -2440,7 +2441,7 @@ void CGMSHLSLRuntime::AddHLSLFunctionInfo(Function *F, const FunctionDecl *FD) {
   }
 
   // Add target-dependent experimental function attributes
-  for (const auto &Attr : FD->specific_attrs<HLSLExperimentalAttr>()) {
+  for (const HLSLExperimentalAttr *Attr : FD->specific_attrs<HLSLExperimentalAttr>()) {
     F->addFnAttr(Twine("exp-", Attr->getName()).str(), Attr->getValue());
   }
 
