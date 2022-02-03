@@ -7,7 +7,7 @@ Subject: fix python script when running make
  1 file changed, 2 insertions(+)
 
 diff --git a/utils/hct/hctgen.py b/utils/hct/hctgen.py
-index 61da281..e7fd857 100755
+index da417a0..b9f763f 100755
 --- a/utils/hct/hctgen.py
 +++ b/utils/hct/hctgen.py
 @@ -51,6 +51,8 @@ def writeCodeTag(args):
