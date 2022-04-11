@@ -297,6 +297,7 @@ Supported extensions
 * SPV_EXT_shader_stencil_support
 * SPV_AMD_shader_explicit_vertex_parameter
 * SPV_GOOGLE_hlsl_functionality1
+* SPV_GOOGLE_user_type
 * SPV_NV_mesh_shader
 
 Vulkan specific attributes
@@ -358,6 +359,21 @@ interface variables:
   main([[vk::location(N)]] float4 input: A) : B
   { ... }
 
+Macro for SPIR-V
+----------------
+
+If SPIR-V CodeGen is enabled and ``-spirv`` flag is used as one of the command
+line options (meaning that "generates SPIR-V code"), it defines an implicit
+macro ``__spirv__``. For example, this macro definition can be used for SPIR-V
+specific part of the HLSL code:
+
+.. code:: hlsl
+
+  #ifdef __spirv__
+  [[vk::binding(X, Y), vk::counter_binding(Z)]]
+  #endif
+  RWStructuredBuffer<S> mySBuffer;
+
 SPIR-V version and extension
 ----------------------------
 
@@ -367,11 +383,11 @@ environment (hence SPIR-V version) and SPIR-V extension control:
 - ``-fspv-target-env=``: for specifying SPIR-V target environment
 - ``-fspv-extension=``: for specifying allowed SPIR-V extensions
 
-``-fspv-target-env=`` only accepts ``vulkan1.0`` and ``vulkan1.1`` right now.
-If such an option is not given, the CodeGen defaults to ``vulkan1.0``. When
-targeting ``vulkan1.0``, trying to use features that are only available
-in Vulkan 1.1 (SPIR-V 1.3), like `Shader Model 6.0 wave intrinsics`_, will
-trigger a compiler error.
+``-fspv-target-env=`` accepts a Vulkan target environment (see ``-help`` for
+supported values). If such an option is not given, the CodeGen defaults to
+``vulkan1.0``. When targeting ``vulkan1.0``, trying to use features that are only
+available in Vulkan 1.1 (SPIR-V 1.3), like `Shader Model 6.0 wave intrinsics`_,
+will trigger a compiler error.
 
 If ``-fspv-extension=`` is not specified, the CodeGen will select suitable
 SPIR-V extensions to translate the source code. Otherwise, only extensions
@@ -561,6 +577,18 @@ HLSL semantic strings are by default not emitted into the SPIR-V binary module.
 If you need them, by specifying ``-fspv-reflect``, the compiler will use
 the ``Op*DecorateStringGOOGLE`` instruction in `SPV_GOOGLE_hlsl_funtionality1 <https://github.com/KhronosGroup/SPIRV-Registry/blob/master/extensions/GOOGLE/SPV_GOOGLE_hlsl_functionality1.asciidoc>`_
 extension to emit them.
+
+HLSL User Types
+~~~~~~~~~~~~~~~
+
+HLSL type information is by default not emitted into the SPIR-V binary module.
+If you need them, by specifying ``-fspv-reflect``, the compiler will emit
+``OpDecorateString*`` instructions with a ``UserTypeGOOGLE`` decoration and the
+`SPV_GOOGLE_user_type <https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/GOOGLE/SPV_GOOGLE_user_type.asciidoc>`_
+extension. A string name for the unambiguous type of the decorated object will
+be included in the user's source using the lowercase type name followed by
+template params. For example, ``Texture2DMSArray<float4, 64> arr`` would be
+decorated with ``OpDecorateString %arr UserTypeGOOGLE "texture2dmsarray:<float4,64>"``.
 
 Counter buffers for RW/Append/Consume StructuredBuffer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1568,6 +1596,23 @@ call. So annotating a variable or struct member with ``SV_ClipDistanceX`` means
 requiring the ``ClipDistance`` capability in the generated SPIR-V.
 
 Variables decorated with ``SV_CullDistanceX`` are mapped similarly as above.
+
+Signature packing
+~~~~~~~~~~~~~~~~~
+
+In usual, Vulkan drivers have a limitation of the number of available locations.
+It varies depending on the device. To avoid the driver crash caused by the
+limitation, we added an experimental signature packing support using Component
+decoration (see the Vulkan spec "15.1.5. Component Assignment").
+``-pack-optimized`` is the command line option to enable it.
+
+In a high level, for a stage variable that needs ``M`` components in ``N``
+locations e.g., stage variable ``float3 foo[2]`` needs 3 components in 2
+locations, we find a minimum ``K`` where each of ``N`` continuous locations in
+``[K, K + N)`` has ``M`` continuous unused Component slots. We create a Location
+decoration instruction for the stage variable with ``K`` and a Component
+decoration instruction with the first unused component number of the
+``M`` continuous unused Component slots.
 
 HLSL register and Vulkan binding
 --------------------------------
@@ -3804,6 +3849,16 @@ Example:
     uint Value = vk::RawBufferLoad(Address);
     return asfloat(Value);
   }
+
+Inline SPIR-V (HLSL version of GL_EXT_spirv_intrinsics)
+=======================================================
+
+GL_EXT_spirv_intrinsics is an extension of GLSL that allows users to embed
+arbitrary SPIR-V instructions in the GLSL code similar to the concept of
+inline assembly in the C code. We support the HLSL version of
+GL_EXT_spirv_intrinsics. See
+`wiki <https://github.com/microsoft/DirectXShaderCompiler/wiki/GL_EXT_spirv_intrinsics-for-SPIR-V-code-gen>`_
+for the details.
 
 Supported Command-line Options
 ==============================

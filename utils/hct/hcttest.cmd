@@ -1,5 +1,5 @@
 @echo off
-setlocal ENABLEDELAYEDEXPANSION
+setlocal ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
 
 if "%BUILD_CONFIG%"=="" (
   set BUILD_CONFIG=Debug
@@ -25,6 +25,7 @@ set MANUAL_FILE_CHECK_PATH=
 set TEST_MANUAL_FILE_CHECK=0
 set SINGLE_FILE_CHECK_NAME=0
 set CUSTOM_BIN_SET=
+set USE_AGILITY_SDK=
 
 rem Begin SPIRV change
 set TEST_SPIRV=0
@@ -142,13 +143,15 @@ if "%1"=="-clean" (
   set BUILD_CONFIG=Release
 ) else if /i "%1"=="-Debug" (
   set BUILD_CONFIG=Debug
-) else if "%1"=="-x86" (
+) else if /i "%1"=="-x86" (
   rem Allow BUILD_ARCH override.  This may be used by HCT_EXTRAS scripts.
   set BUILD_ARCH=Win32
-) else if "%1"=="-x64" (
+) else if /i "%1"=="-x64" (
   set BUILD_ARCH=x64
-) else if "%1"=="-arm" (
+) else if /i "%1"=="-arm" (
   set BUILD_ARCH=ARM
+) else if /i "%1"=="-arm64" (
+  set BUILD_ARCH=ARM64
 ) else if "%1"=="-adapter" (
   set TEST_ADAPTER= /p:"Adapter=%~2"
   shift /1
@@ -277,6 +280,11 @@ rem End SPIRV change
 
 echo Running HLSL tests ...
 
+if "%BUILD_ARCH%"=="ARM64" (
+    rem ARM64 TAEF has an issue when running ARM64X tests with /parallel flag
+    set PARALLEL_OPTION=
+)
+
 if exist "%HCT_EXTRAS%\hcttest-before.cmd" (
   call "%HCT_EXTRAS%\hcttest-before.cmd" %TEST_DIR%
   if errorlevel 1 (
@@ -298,26 +306,29 @@ if "%TEST_CMD%"=="1" (
 )
 
 if "%TEST_EXEC%"=="1" (
+  call :copyagility
+)
+
+if "%TEST_EXEC%"=="1" (
   echo Sniffing for D3D12 configuration ...
-  call :runte clang-hlsl-tests.dll /p:"HlslDataDir=%HLSL_SRC_DIR%\tools\clang\test\HLSL" /name:ExecutionTest::BasicTriangleTest /runIgnoredTests /p:"ExperimentalShaders=*" %TEST_ADAPTER%
-  rem  /p:"ExperimentalShaders=*"
+  call :runte clang-hlsl-tests.dll /p:"HlslDataDir=%HLSL_SRC_DIR%\tools\clang\test\HLSL" /name:ExecutionTest::BasicTriangleTest /runIgnoredTests /p:"ExperimentalShaders=*" %TEST_ADAPTER% %USE_AGILITY_SDK%
   set RES_EXEC=!ERRORLEVEL!
   if errorlevel 1 (
     if not "%TEST_EXEC_REQUIRED%"=="1" (
       echo Basic triangle test failed.
       echo Assuming this is an environmental limitation not a regression
       set TEST_EXEC=0
-    ) else (
-      echo Basic triangle test succeeded. Proceeding with execution tests.
     )
+  ) else (
+    echo Basic triangle test succeeded. Proceeding with execution tests.
   )
 )
 
 if "%TEST_EXEC%"=="1" (
   if "%TEST_EXEC_FUTURE%"=="1" (
-    call :runte clang-hlsl-tests.dll /p:"HlslDataDir=%HLSL_SRC_DIR%\tools\clang\test\HLSL" /select:"@Name='%TEST_EXEC_FILTER%' AND @Priority=2" /runIgnoredTests /p:"ExperimentalShaders=*" %TEST_ADAPTER% %ADDITIONAL_OPTS%
+    call :runte clang-hlsl-tests.dll /p:"HlslDataDir=%HLSL_SRC_DIR%\tools\clang\test\HLSL" /select:"@Name='%TEST_EXEC_FILTER%' AND @Priority=2" /runIgnoredTests /p:"ExperimentalShaders=*" %TEST_ADAPTER% %USE_AGILITY_SDK% %ADDITIONAL_OPTS%
   ) else (
-    call :runte clang-hlsl-tests.dll /p:"HlslDataDir=%HLSL_SRC_DIR%\tools\clang\test\HLSL" /select:"@Name='%TEST_EXEC_FILTER%' AND @Priority<2" /runIgnoredTests /p:"ExperimentalShaders=*" %TEST_ADAPTER% %ADDITIONAL_OPTS%
+    call :runte clang-hlsl-tests.dll /p:"HlslDataDir=%HLSL_SRC_DIR%\tools\clang\test\HLSL" /select:"@Name='%TEST_EXEC_FILTER%' AND @Priority<2" /runIgnoredTests /p:"ExperimentalShaders=*" %TEST_ADAPTER% %USE_AGILITY_SDK% %ADDITIONAL_OPTS%
   )
   set RES_EXEC=!ERRORLEVEL!
 )
@@ -398,6 +409,7 @@ echo current BUILD_ARCH=%BUILD_ARCH%.  Override with:
 echo   -x86 targets an x86 build (aka. Win32)
 echo   -x64 targets an x64 build (aka. Win64)
 echo   -arm targets an ARM build
+echo   -arm64 targets an ARM64 build
 echo.
 echo target(s):
 echo  clang         - run clang tests.
@@ -435,8 +447,13 @@ rem %2 - first argument to te
 rem %3 - second argument to te
 rem %4 - third argument to te
 
-echo te /labMode /miniDumpOnCrash /unicodeOutput:false /outputFolder:%TEST_DIR% %LOG_FILTER% %PARALLEL_OPTION% %TEST_DIR%\%*
-call te /labMode /miniDumpOnCrash /unicodeOutput:false /outputFolder:%TEST_DIR% %LOG_FILTER% %PARALLEL_OPTION% %TEST_DIR%\%*
+if "%HLSL_TAEF_DIR%"=="" (
+  set TE=te
+) else (
+  set TE="%HLSL_TAEF_DIR%\%BUILD_ARCH:Win32=x86%\te"
+)
+echo %TE% /miniDumpOnCrash /unicodeOutput:false /outputFolder:%TEST_DIR% %LOG_FILTER% %PARALLEL_OPTION% %TEST_DIR%\%*
+call %TE% /miniDumpOnCrash /unicodeOutput:false /outputFolder:%TEST_DIR% %LOG_FILTER% %PARALLEL_OPTION% %TEST_DIR%\%*
 
 if errorlevel 1 (
   call :showtesample %*
@@ -472,3 +489,27 @@ if not "%2"=="" (
   )
 )
 goto :eof
+
+:copyagility
+if "%HLSL_AGILITYSDK_DIR%"=="" (
+  exit /b 0
+)
+set USE_AGILITY_SDK=/p:D3D12SDKVersion=1
+if "%HLSL_TAEF_DIR%"=="" (
+  echo HLSL_AGILITYSDK_DIR set, but no HLSL_TAEF_DIR set, no AgilitySDK will be copied
+  exit /b 1
+)
+set FULL_AGILITY_PATH=
+if exist "%HLSL_AGILITYSDK_DIR%\build\native\bin\%BUILD_ARCH:Win32=x86%\D3D12Core.dll" (
+  set FULL_AGILITY_PATH=%HLSL_AGILITYSDK_DIR%\build\native\bin\%BUILD_ARCH:Win32=x86%
+) else if exist "%HLSL_AGILITYSDK_DIR%\%BUILD_ARCH:Win32=x86%\D3D12Core.dll" (
+  set FULL_AGILITY_PATH=%HLSL_AGILITYSDK_DIR%\%BUILD_ARCH:Win32=x86%
+) else if exist "%HLSL_AGILITYSDK_DIR%\D3D12Core.dll" (
+  set FULL_AGILITY_PATH=%HLSL_AGILITYSDK_DIR%
+) else (
+  echo HLSL_AGILITYSDK_DIR is set, but unable to resolve path to binaries
+  exit /b 1
+)
+mkdir "%HLSL_TAEF_DIR%\%BUILD_ARCH:Win32=x86%\D3D12" 1>nul 2>nul
+call %HCT_DIR%\hctcopy.cmd "%FULL_AGILITY_PATH%" "%HLSL_TAEF_DIR%\%BUILD_ARCH:Win32=x86%\D3D12" D3D12Core.dll d3d12SDKLayers.dll
+exit /b %ERRORLEVEL%

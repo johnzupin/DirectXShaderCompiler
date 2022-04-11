@@ -1731,6 +1731,10 @@ TEST_F(FileTest, SpirvLegalizationStructuredBufferInStruct) {
   setBeforeHLSLLegalization();
   runFileTest("spirv.legal.sbuffer.struct.hlsl");
 }
+TEST_F(FileTest, SpirvLegalizationStructuredBufferInStructVk1p2) {
+  setBeforeHLSLLegalization();
+  runFileTest("spirv.legal.sbuffer.struct.vulkan1p2.hlsl");
+}
 TEST_F(FileTest, SpirvLegalizationConstantBuffer) {
   runFileTest("spirv.legal.cbuffer.hlsl");
 }
@@ -2535,6 +2539,10 @@ TEST_F(FileTest, RayTracingKHRClosestHit) {
   runFileTest("raytracing.khr.closesthit.hlsl");
 }
 
+TEST_F(FileTest, RayTracingKHRClosestHitVulkan1p1Spirv1p4) {
+  runFileTest("raytracing.khr.closesthit.vulkan1.1spirv1.4.hlsl");
+}
+
 TEST_F(FileTest, RayTracingAccelerationStructure) {
   runFileTest("raytracing.acceleration-structure.hlsl");
 }
@@ -2925,9 +2933,11 @@ float4 PSMain(PSInput input) : SV_TARGET
 
 std::string getVertexPositionTypeTestShader(const std::string &subType,
                                             const std::string &positionType,
-                                            const std::string &check) {
-  const std::string command(R"(// RUN: %dxc -T vs_6_0 -E main)");
-  const std::string code = command + subType + R"(
+                                            const std::string &check,
+                                            bool use16bit) {
+  const std::string code = std::string(R"(// RUN: %dxc -T vs_6_2 -E main)") +
+                           (use16bit ? R"( -enable-16bit-types)" : R"()") + R"(
+)" + subType + R"(
 struct output {
 )" + positionType + R"(
 };
@@ -2942,33 +2952,37 @@ output main() : SV_Position
 }
 
 const char *kInvalidPositionTypeForVSErrorMessage =
-    "// CHECK: error: semantic Position must be float4 or a composite type "
-    "recursively including only float4";
+    "// CHECK: error: SV_Position must be a 4-component 32-bit float vector or "
+    "a composite which recursively contains only such a vector";
 
 TEST_F(FileTest, PositionInVSWithArrayType) {
-  runCodeTest(getVertexPositionTypeTestShader(
-                  "", "float x[4];", kInvalidPositionTypeForVSErrorMessage),
-              Expect::Failure);
+  runCodeTest(
+      getVertexPositionTypeTestShader(
+          "", "float x[4];", kInvalidPositionTypeForVSErrorMessage, false),
+      Expect::Failure);
 }
 TEST_F(FileTest, PositionInVSWithDoubleType) {
-  runCodeTest(getVertexPositionTypeTestShader(
-                  "", "double4 x;", kInvalidPositionTypeForVSErrorMessage),
-              Expect::Failure);
+  runCodeTest(
+      getVertexPositionTypeTestShader(
+          "", "double4 x;", kInvalidPositionTypeForVSErrorMessage, false),
+      Expect::Failure);
 }
 TEST_F(FileTest, PositionInVSWithIntType) {
   runCodeTest(getVertexPositionTypeTestShader(
-                  "", "int4 x;", kInvalidPositionTypeForVSErrorMessage),
+                  "", "int4 x;", kInvalidPositionTypeForVSErrorMessage, false),
               Expect::Failure);
 }
 TEST_F(FileTest, PositionInVSWithMatrixType) {
-  runCodeTest(getVertexPositionTypeTestShader(
-                  "", "float1x4 x;", kInvalidPositionTypeForVSErrorMessage),
-              Expect::Failure);
+  runCodeTest(
+      getVertexPositionTypeTestShader(
+          "", "float1x4 x;", kInvalidPositionTypeForVSErrorMessage, false),
+      Expect::Failure);
 }
 TEST_F(FileTest, PositionInVSWithInvalidFloatVectorType) {
-  runCodeTest(getVertexPositionTypeTestShader(
-                  "", "float3 x;", kInvalidPositionTypeForVSErrorMessage),
-              Expect::Failure);
+  runCodeTest(
+      getVertexPositionTypeTestShader(
+          "", "float3 x;", kInvalidPositionTypeForVSErrorMessage, false),
+      Expect::Failure);
 }
 TEST_F(FileTest, PositionInVSWithInvalidInnerStructType) {
   runCodeTest(getVertexPositionTypeTestShader(
@@ -2976,7 +2990,8 @@ TEST_F(FileTest, PositionInVSWithInvalidInnerStructType) {
 struct InvalidType {
   float3 x;
 };)",
-                  "InvalidType x;", kInvalidPositionTypeForVSErrorMessage),
+                  "InvalidType x;", kInvalidPositionTypeForVSErrorMessage,
+                  false),
               Expect::Failure);
 }
 TEST_F(FileTest, PositionInVSWithValidInnerStructType) {
@@ -2987,7 +3002,43 @@ struct validType {
                                               "validType x;", R"(
 // CHECK: %validType = OpTypeStruct %v4float
 // CHECK:    %output = OpTypeStruct %validType
-)"));
+)",
+                                              false));
+}
+TEST_F(FileTest, PositionInVSWithValidFloatType) {
+  runCodeTest(getVertexPositionTypeTestShader("", "float4 x;", R"(
+// CHECK:    %output = OpTypeStruct %v4float
+)",
+                                              false));
+}
+TEST_F(FileTest, PositionInVSWithValidMin10Float4Type) {
+  runCodeTest(getVertexPositionTypeTestShader("", "min10float4 x;", R"(
+// CHECK:    %output = OpTypeStruct %v4float
+)",
+                                              false));
+}
+TEST_F(FileTest, PositionInVSWithValidMin16Float4Type) {
+  runCodeTest(getVertexPositionTypeTestShader("", "min16float4 x;", R"(
+// CHECK:    %output = OpTypeStruct %v4float
+)",
+                                              false));
+}
+TEST_F(FileTest, PositionInVSWithValidHalf4Type) {
+  runCodeTest(getVertexPositionTypeTestShader("", "half4 x;", R"(
+// CHECK:    %output = OpTypeStruct %v4float
+)",
+                                              false));
+}
+TEST_F(FileTest, PositionInVSWithInvalidHalf4Type) {
+  runCodeTest(getVertexPositionTypeTestShader(
+                  "", "half4 x;", kInvalidPositionTypeForVSErrorMessage, true),
+              Expect::Failure);
+}
+TEST_F(FileTest, PositionInVSWithInvalidMin10Float4Type) {
+  runCodeTest(
+      getVertexPositionTypeTestShader(
+          "", "min10float4 x;", kInvalidPositionTypeForVSErrorMessage, true),
+      Expect::Failure);
 }
 TEST_F(FileTest, ShaderDebugInfoFunction) {
   runFileTest("shader.debug.function.hlsl");
@@ -3000,6 +3051,9 @@ TEST_F(FileTest, ShaderDebugInfoSource) {
 }
 TEST_F(FileTest, ShaderDebugInfoSourceContinued) {
   runFileTest("shader.debug.sourcecontinued.hlsl");
+}
+TEST_F(FileTest, ShaderDebugInfoRuntimeArray) {
+  runFileTest("shader.debug.runtimearray.hlsl");
 }
 TEST_F(FileTest, ShaderDebugInfoLine) {
   runFileTest("shader.debug.line.hlsl");
@@ -3028,6 +3082,33 @@ TEST_F(FileTest, ShaderDebugInfoLineVariables) {
 TEST_F(FileTest, RayQueryInitExpr) { runFileTest("rayquery_init_expr.hlsl"); }
 TEST_F(FileTest, RayQueryInitExprError) {
   runFileTest("rayquery_init_expr_error.hlsl", Expect::Failure);
+}
+
+TEST_F(FileTest, VolatileInterfaceInRayGenVk1p1) {
+  runFileTest("volatile.interface.raygen.vk1p1.hlsl");
+}
+TEST_F(FileTest, VolatileInterfaceInRayGenVk1p2) {
+  runFileTest("volatile.interface.raygen.vk1p2.hlsl");
+}
+TEST_F(FileTest, VolatileInterfaceInRayGenVk1p3) {
+  runFileTest("volatile.interface.raygen.vk1p3.hlsl");
+}
+
+TEST_F(FileTest, DefineSpirvMacro) {
+  runFileTest("ifdef.spirv.hlsl", Expect::Failure);
+}
+
+TEST_F(FileTest, SignaturePacking) { runFileTest("signature.packing.hlsl"); }
+TEST_F(FileTest, SignaturePackingHS) {
+  runFileTest("signature.packing.hs.hlsl");
+}
+TEST_F(FileTest, SourceCodeWithoutFilePath) {
+  const std::string command(R"(// RUN: %dxc -T ps_6_0 -E PSMain -Zi)");
+  const std::string code = command + R"(
+float4 PSMain(float4 color : COLOR) : SV_TARGET { return color; }
+// CHECK: float4 PSMain(float4 color : COLOR) : SV_TARGET { return color; }
+)";
+  runCodeTest(code);
 }
 
 } // namespace
