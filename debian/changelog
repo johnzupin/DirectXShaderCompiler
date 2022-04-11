@@ -1,3 +1,276 @@
+directxshadercompiler (1.4.0.2274-1123~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Jaebaek Seo ]
+  * [spirv] add documentation for inline SPIR-V (#4201)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Handle storage buffer interfaces in structs (#4188)
+
+  [ Jaebaek Seo ]
+  * [spirv] propagate Volatile semantics for raytracing interface vars (#4207)
+
+  [ Grace Jennings ]
+  * FixIt for HLSL 2021 logical operations && and || (#4202)
+
+  [ Natalie Chouinard ]
+  * Add initial dxil2spv executable (#4199)
+
+  [ Jeff Noyle ]
+  * PIX: Handle zeroInitializer for SM6.6 resource handles. (#4210)
+
+  [ Jaebaek Seo ]
+  * Fix build failure for Linux clang 13.0.0-9+build1 (#4213)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Add basic dxil2spv CI test (#4209)
+
+  [ Greg Roth ]
+  * Correct validation error for col/row of storeoutput (#4214)
+
+  [ Xiang Li ]
+  * Merge resource props for global resource. (#4211)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Construct minimal SPIR-V module (#4216)
+  * [dxil2spv] Add initial testing (#4222)
+
+  [ Tex Riddell ]
+  * Renormalize line endings to lf in index. (#4223)
+
+  [ Xiang Li ]
+  * Allow HLSLOptimizationToggles to control lifetime marker. (#4220)
+
+  [ Jaebaek Seo ]
+  * [spirv] add predefined macro '__spirv' (#4225)
+
+  [ Jeff Noyle ]
+  * PIX: return more info from shader-access-tracking (#4224)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Add CompilerInstance object (#4229)
+
+  [ Xiang Li ]
+  * Change type of Sentinel to PHINode since it will be PHINode. (#4228)
+
+  [ Tex Riddell ]
+  * Globally disable NRVO for HLSL; Merge resprops for resource return (#4232)
+
+  [ David Peixotto ]
+  * Fix non-deterministic output when overriding semantic defines (#4235)
+
+  [ Chris B ]
+  * Pass compiler options to preprocessor (#4234)
+
+  [ Tex Riddell ]
+  * Fix DxilProgramSignature size alignment. (#4237)
+  * Allow unaligned private data size, by keeping it at end of container. (#4239)
+
+  [ Grace Jennings ]
+  * Support -setprivate, -setrootsignature, and -Qstrip_priv to compile API (#4230)
+
+  [ Tex Riddell ]
+  * Fix ReplaceMemcpy IR corruption on constant user replacement. (#4245)
+  * Fix bug with HLSL case-insensitive attribute parsing (#4014)
+
+  [ Adam Yang ]
+  * Taught DxilEraseDeadRegion to handle more general loops. (#4246)
+
+  [ Xiang Li ]
+  * Change getPassName return type to StringRef. (#4247)
+
+  [ Chris B ]
+  * Refactor HLSLVersion to enum (#4238)
+
+  [ Jeff Noyle ]
+  * PIX: Shader debugging instrumentation for HS+DS (#4251)
+  * PIX: avoid crash on enumerated types without int base type (#4254)
+
+  [ Natalie Chouinard ]
+  * [spirv] Update SPIRV-Tools and SPIRV-Headers submodules (#4253)
+  * [spirv] Append template params to UserTypeGOOGLE (#4248)
+
+  [ Greg Roth ]
+  * Rename UTF16 to Wide (#4242)
+
+  [ Greg Fischer ]
+  * [spirv] Generate correct Shader.DebugInfo for runtime arrays. (#4258)
+
+  [ Tex Riddell ]
+  * Implement Shader Model 6.7 (#4260)
+
+  [ Xiang Li ]
+  * WriteSemanticDefines before clang codeGen to update codeGen option (#4261)
+
+  [ Helena Kotas ]
+  * User Windows SDK version from VSDevCmd for all platforms (#4259)
+
+  [ Jaebaek Seo ]
+  * [spirv] change __spirv definition to __spirv__ (#4270)
+
+  [ Tex Riddell ]
+  * Highest SM need not be gated by SDk headers. (#4268)
+  * Enable Agility SDK from execution test arguments. (#4269)
+
+  [ Xiang Li ]
+  * Support resource array in UpdateStructTypeForLegacyLayout on lib profile. (#4266)
+
+  [ Chris B ]
+  * [SM6.7] QuadAny/All execution test (1/2) (#4264)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Add stage IO variables (#4271)
+  * [spirv] Replace some uses of std::string (#4274)
+
+  [ Adam Yang ]
+  * Delete dbg.declare in scopes where the alloca is unused (#4272)
+
+  [ Tex Riddell ]
+  * ShaderOpTest: Use DXC to compile root signature instead of FXC (#4279)
+  * ShaderOpTest: Optionally create root signature from shader instead of XML (#4278)
+  * ShaderOpTest: Add sampler parsing and desc support (#4281)
+  * Only set ResMayNotAlias flag when on DXIL 1.7 (#4276)
+
+  [ Natalie Chouinard ]
+  * [spirv] Relax SV_Position type requirements (#4275)
+
+  [ Tex Riddell ]
+  * Return empty string from CGDebugInfo::getCurrentDirname() (#4265)
+  * Uniquely detect low 16-bit usage properly for tbuffer (#4250)
+  * [linux] Fix incorrect REGDB_E_CLASSNOTREG value (#4241)
+  * Fix extra case in root signature parsing (#4280)
+  * ShaderOpTest: Fixes for sampler, HLSLHost, and texture init (#4282)
+
+  [ Greg Roth ]
+  * Enable Container Builder on *nix (#4244)
+
+  [ Tex Riddell ]
+  * Missing break in CreateHandleFromHeap case caused unwanted shader flags (#4292)
+  * DxExp: Fix raytracing tier (#4267)
+  * Exec tests: change string entry setting pattern (#4296)
+  * ExecutionTest: Autofill Path/Version for AgilitySDK (#4277)
+  * New HLSL_AGILITYSDK_DIR and HLSLHost dependency copying help. (#4297)
+
+  [ Chris B ]
+  * Extending QuadAnyAll test for MS and AS (#4287)
+
+  [ Helena Kotas ]
+  * Minor hcttest.cmd fix - add quotes in if condition in case HLSL_TAEF_DIR is empty (#4300)
+
+  [ Greg Roth ]
+  * ExecutionTest Programmable Sample Offsets (#4285)
+  * ExecutionTest for SampleCmpLevel (#4286)
+  * Fix AtomicsShared64 ExecutionTest (#4303)
+
+  [ Xiang Li ]
+  * Replace Type::getVectorNumElements with FixedVectorType::getNumElements. (#4301)
+  * Enable 'using' keyword. (#4302)
+
+  [ Tex Riddell ]
+  * DxilValueCache::MayBranchTo: handle phi from switch properly (#4306)
+
+  [ Chris B ]
+  * Clean up debug preprocessor macros (#4305)
+
+  [ Helena Kotas ]
+  * Disable tests that have issues on ARM64 (#4308)
+
+  [ Tex Riddell ]
+  * Fix WARP/Basic Display Adapter detection for more scenarios. (#4309)
+
+  [ Xiang Li ]
+  * Add warning for 'using' keyword before hlsl2021. (#4312)
+
+  [ Helena Kotas ]
+  * Fix ARM64 exclusion of CodeGenFloatingPointEnvironment test (#4316)
+
+  [ Chris B ]
+  * Make external sema source handle type completion (#4317)
+
+  [ Jaebaek Seo ]
+  * [spirv] Update SPIRV-Tools and SPIRV-Headers submodules (#4322)
+
+  [ Lukas Hermanns ]
+  * Fix typo: 'vulkan1.3' was linked to SPV_ENV_UNIVERSAL_1_6 (#4243)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Read file directly into llvm::MemoryBuffer (#4304)
+
+  [ Joshua Batista ]
+  * User/jbatista/pass correct enumkind00 (#4324)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Implement simple entry function creation (#4323)
+
+  [ Helena Kotas ]
+  * Remove LLVMHLSL dependency from IPO and ScalarOpts (#4326)
+
+  [ Greg Roth ]
+  * Implement Integer Sampling (#4329)
+
+  [ Tex Riddell ]
+  * DxilConv: Pad copied IO signature parts (#4330)
+  * Remove HLSL modifiers from basic type cases in ParseCastExpression (#4325)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] SPIR-V validation and related fixes (#4328)
+
+  [ Helena Kotas ]
+  * Remove test output files; update .gitignore (#4333)
+  * Add -arm64 argument to hcttest; exclude tests with issues on ARM64 & WARP (#4320)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Add passthrough vertex shader and test (#4337)
+  * [spirv] Improve ray tracing capability error (#4335)
+
+  [ Helena Kotas ]
+  * Exclude one more test that is failing on ARM64 (#4343)
+
+  [ Jeff Noyle ]
+  * Pix hull shader debug (#4342)
+
+  [ Grace Jennings ]
+  * Added a DXC_OUT_REMARKS output kind for display include process (#4336)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Add error checking to file tests (#4344)
+  * [dxil2spv] Add initial compute shader support (#4345)
+
+  [ Jaebaek Seo ]
+  * [spirv] Update SPIRV-Tools and SPIRV-Headers (#4352)
+
+  [ Xiang Li ]
+  * remove unused member for db_dxil_inst. (#4355)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Add support for dx.op.threadId (#4354)
+
+  [ Jaebaek Seo ]
+  * [spirv] fix source info bug for in-memory source code (#4362)
+
+  [ Grace Jennings ]
+  * Updating the .NET version from 4.5(deprecated) to 4.8 to build on Windows11 with VS2022 (#4366)
+
+  [ Jaebaek Seo ]
+  * [spirv] support signature packing (#4361)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Allow Vulkan 1.1 with SPIR-V 1.4 as a target environment (#4364)
+
+  [ Marijn Suijten ]
+  * [SPIR-V] Omit BufferBlock on SPIR-V 1.4 (~ Vulkan 1.1) instead of Vulkan 1.2 (#4370)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Fix build warning (#4371)
+  * Update SPIRV-Tools submodule to canary release (#4376)
+
+  [ Adam Yang ]
+  * Handling dbg.value pointer case in O1. (#4375)
+
+  [ Natalie Chouinard ]
+  * Update SPIRV-Tools submodule (#4380)
+
+ -- john <john@odin>  Mon, 11 Apr 2022 14:08:13 -0600
+
 directxshadercompiler (1.4.0.2274-1016~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Tex Riddell ]
