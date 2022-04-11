@@ -53,6 +53,7 @@ enum class Extension {
   KHR_ray_query,
   EXT_shader_image_int64,
   KHR_physical_storage_buffer,
+  KHR_vulkan_memory_model,
   Unknown,
 };
 
@@ -105,6 +106,14 @@ public:
   /// Returns true if the target environment is Vulkan 1.1 or above.
   /// Returns false otherwise.
   bool isTargetEnvVulkan1p1OrAbove();
+
+  /// Returns true if the target environment is SPIR-V 1.4 or above.
+  /// Returns false otherwise.
+  bool isTargetEnvSpirv1p4OrAbove();
+
+  /// Returns true if the target environment is Vulkan 1.1 with SPIR-V 1.4 or
+  /// above. Returns false otherwise.
+  bool isTargetEnvVulkan1p1Spirv1p4OrAbove();
 
   /// Returns true if the target environment is Vulkan 1.2 or above.
   /// Returns false otherwise.

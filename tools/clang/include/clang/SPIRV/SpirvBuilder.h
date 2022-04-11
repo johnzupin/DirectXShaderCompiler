@@ -52,6 +52,8 @@ class SpirvBuilder {
 public:
   SpirvBuilder(ASTContext &ac, SpirvContext &c, const SpirvCodeGenOptions &,
                FeatureManager &featureMgr);
+  SpirvBuilder(SpirvContext &c, const SpirvCodeGenOptions &,
+               FeatureManager &featureMgr);
   ~SpirvBuilder() = default;
 
   // Forbid copy construction and assignment
@@ -72,6 +74,9 @@ public:
   SpirvFunction *createSpirvFunction(QualType returnType, SourceLocation,
                                      llvm::StringRef name, bool isPrecise,
                                      bool isNoInline = false);
+  SpirvFunction *createSpirvFunction(const SpirvType *returnType,
+                                     SourceLocation, llvm::StringRef name,
+                                     bool isPrecise, bool isNoInline = false);
 
   /// \brief Begins building a SPIR-V function by allocating a SpirvFunction
   /// object. Returns the pointer for the function on success. Returns nullptr
@@ -79,6 +84,10 @@ public:
   ///
   /// At any time, there can only exist at most one function under building.
   SpirvFunction *beginFunction(QualType returnType, SourceLocation,
+                               llvm::StringRef name = "",
+                               bool isPrecise = false, bool isNoInline = false,
+                               SpirvFunction *func = nullptr);
+  SpirvFunction *beginFunction(const SpirvType *returnType, SourceLocation,
                                llvm::StringRef name = "",
                                bool isPrecise = false, bool isNoInline = false,
                                SpirvFunction *func = nullptr);
@@ -572,7 +581,7 @@ public:
   /// \brief Adds an entry point for the module under construction. We only
   /// support a single entry point per module for now.
   inline void addEntryPoint(spv::ExecutionModel em, SpirvFunction *target,
-                            std::string targetName,
+                            llvm::StringRef targetName,
                             llvm::ArrayRef<SpirvVariable *> interfaces);
 
   /// \brief Sets the shader model version, source file name, and source file
@@ -603,7 +612,11 @@ public:
   /// Note: the corresponding pointer type of the given type will not be
   /// constructed in this method.
   SpirvVariable *addStageIOVar(QualType type, spv::StorageClass storageClass,
-                               std::string name, bool isPrecise,
+                               llvm::StringRef name, bool isPrecise,
+                               SourceLocation loc);
+  SpirvVariable *addStageIOVar(const SpirvType *type,
+                               spv::StorageClass storageClass,
+                               llvm::StringRef name, bool isPrecise,
                                SourceLocation loc);
 
   /// \brief Adds a stage builtin variable whose value is of the given type.
@@ -611,6 +624,10 @@ public:
   /// Note: The corresponding pointer type of the given type will not be
   /// constructed in this method.
   SpirvVariable *addStageBuiltinVar(QualType type,
+                                    spv::StorageClass storageClass,
+                                    spv::BuiltIn, bool isPrecise,
+                                    SourceLocation loc);
+  SpirvVariable *addStageBuiltinVar(const SpirvType *type,
                                     spv::StorageClass storageClass,
                                     spv::BuiltIn, bool isPrecise,
                                     SourceLocation loc);
@@ -633,6 +650,9 @@ public:
 
   /// \brief Decorates the given target with the given location.
   void decorateLocation(SpirvInstruction *target, uint32_t location);
+
+  /// \brief Decorates the given target with the given component.
+  void decorateComponent(SpirvInstruction *target, uint32_t component);
 
   /// \brief Decorates the given target with the given index.
   void decorateIndex(SpirvInstruction *target, uint32_t index, SourceLocation);
@@ -715,6 +735,8 @@ public:
   /// and add the context to the list of constants in the module.
   SpirvConstant *getConstantInt(QualType type, llvm::APInt value,
                                 bool specConst = false);
+  SpirvConstant *getConstantInt(const SpirvType *type, llvm::APInt value,
+                                bool specConst = false);
   SpirvConstant *getConstantFloat(QualType type, llvm::APFloat value,
                                   bool specConst = false);
   SpirvConstant *getConstantBool(bool value, bool specConst = false);
@@ -732,6 +754,7 @@ public:
 
 public:
   std::vector<uint32_t> takeModule();
+  std::vector<uint32_t> takeModuleForDxilToSpv();
 
 protected:
   /// Only friend classes are allowed to add capability/extension to the module
@@ -792,7 +815,7 @@ private:
                                               SpirvInstruction *var);
 
 private:
-  ASTContext &astContext;
+  ASTContext *astContext;
   SpirvContext &context; ///< From which we allocate various SPIR-V object
   FeatureManager &featureManager;
 
@@ -825,7 +848,7 @@ private:
 
   // To avoid generating multiple OpStrings for the same string literal
   // the SpirvBuilder will generate and reuse them.
-  llvm::DenseMap<std::string, SpirvString *, StringMapInfo> stringLiterals;
+  llvm::DenseMap<llvm::StringRef, SpirvString *, StringMapInfo> stringLiterals;
 
   /// Mapping of CTBuffers including matrix 1xN with FXC memory layout to their
   /// clone variables. We need it to avoid multiple clone variables for the same
@@ -857,7 +880,7 @@ void SpirvBuilder::setMemoryModel(spv::AddressingModel addrModel,
 }
 
 void SpirvBuilder::addEntryPoint(spv::ExecutionModel em, SpirvFunction *target,
-                                 std::string targetName,
+                                 llvm::StringRef targetName,
                                  llvm::ArrayRef<SpirvVariable *> interfaces) {
   mod->addEntryPoint(new (context) SpirvEntryPoint(
       target->getSourceLocation(), em, target, targetName, interfaces));
