@@ -1,3 +1,181 @@
+directxshadercompiler (1.4.0.2274-1187~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Chris B ]
+  * Complete builtin types when used as array params (#4379)
+
+  [ Xiang Li ]
+  * Reenable NRVO when no precise and global coherent. (#4381)
+
+  [ Jeff Noyle ]
+  * PIX: Incorrect index for CreateHandleFromBinding (#4382)
+
+  [ Jaebaek Seo ]
+  * [spirv] support 'T vk::RawBufferLoad<T = uint>(uint64_t address [, uint alignment = 4] )' (#4226)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Support shl instruction (#4388)
+
+  [ Adam Yang ]
+  * Added a pass to use GVN to remove redundant branches without doing code motion. (#4383)
+
+  [ Xiang Li ]
+  * Update test for helperlane wave on VS. (#4367)
+
+  [ Chris B ]
+  * Rework name lookup (#4332)
+
+  [ Greg Roth ]
+  * ExecutionTest for Writable MSAA (#4387)
+
+  [ Tex Riddell ]
+  * Fix leak of DxilContainerWriter in DxbcConverter (#4400)
+
+  [ Adam Yang ]
+  * Moved DxilEraseDeadRegions to after DxilRemoveDeadBlocks (#4397)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Add option to rename SPIR-V entry point (#4390)
+
+  [ Adam Yang ]
+  * Removed all instruction made dead by their users being simplified in DxilRemoveDeadBlocks (#4401)
+
+  [ Tex Riddell ]
+  * Handle UDT ptr collisions in FixOverloadNames (#4405)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Translate createHandle and bufferLoad (#4389)
+
+  [ Adam Yang ]
+  * Taught DxilValueCache to handle complex switch statements. (#4403)
+
+  [ Tex Riddell ]
+  * Dedup semantic names in IO signature parts for valver 1.7 (#4406)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Translate extractValue and bufferStore (#4404)
+
+  [ Greg Roth ]
+  * RawGather ExecutionTest (#4399)
+
+  [ Helena Kotas ]
+  * Dxexp: Update highest recognized shader model to 6.8 (#4409)
+  * Fix x86 build break (#4414)
+
+  [ Joshua Batista ]
+  * User/jbatista/drui hlk test02 (#4413)
+
+  [ Jeff Sooknarine ]
+  * Fix Writable MSAA ExecutionTest device checks (#4412)
+
+  [ Justin Holewinski ]
+  * [ATORawGather] Remove unreferenced local variable (#4418)
+  * [SM6.7][WritableMSAA] Front-end and test fixes (#4416)
+
+  [ Tex Riddell ]
+  * Fix TransitionTo for UAVs in various tests (#4420)
+  * Fix interface breaks in IDxcUtils and IDxcLibrary from GetBlobAsWide (#4419)
+
+  [ Justin Holewinski ]
+  * [SM6.7][HelperLane] Test fixes for HelperLaneTestWave (#4417)
+
+  [ Greg Roth ]
+  * Enhance i64 atomics testing for texture types (#4424)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Translate SV_Position to BuiltIn::Position (#4423)
+  * [dxil2spv] Translate DXIL constants to SPIR-V (#4426)
+
+  [ Jaebaek Seo ]
+  * [spirv] Check parent class when setting contains-alias-component of "this" (#4425)
+
+  [ Greg Fischer ]
+  * [SPIR-V] Add support for empty string (#4363)
+
+  [ Joshua Batista ]
+  * enable optimization passes to throw hlsl exceptions (#4427)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Add FileCheck testing (#4431)
+
+  [ Greg Roth ]
+  * Align RawGather Exe Test with dependencies (#4432)
+  * Fix new resource creation in rawgather test (#4441)
+  * Refix new resource creation in rawgather test (#4443)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Add additional error checking (#4440)
+
+  [ Jaebaek Seo ]
+  * [spirv] run interface variable SROA if signature packing is enabled (#4442)
+
+  [ Daniele Vettorel ]
+  * [spirv] Update SPIRV-Tools (#4445)
+
+  [ Joshua Batista ]
+  * add non-uniform dynamic indexing option to dynamic resources uniform indexing test (#4428)
+
+  [ Tex Riddell ]
+  * Fix AV from DxBreak adding branch to null location (unreachable) (#4446)
+  * Fix use constant corruption from ReplaceUsesForLoweredUDT (#4452)
+  * Fix memcpy replacement removing memcpy to output argument (#4456)
+
+  [ Helena Kotas ]
+  * Enable control flow guard (#4457)
+
+  [ JiaoluAMD ]
+  * [spirv] Add FixFuncCallArguments options (#4439)
+
+  [ Helena Kotas ]
+  * Rename master branch to main (#4461)
+
+  [ Greg Roth ]
+  * instcombine pass before jumpthread for lifetimes (#4459)
+  * Disallow illegal Atomic targets + propagate consts (#4453)
+
+  [ Jakub Kuderski ]
+  * [cmake] Allow to set C/C++ linker (#4462)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Command line parsing and output file (#4454)
+
+  [ Adam Yang ]
+  * Disable NRVO for entry functions and patch constant functions (#4466)
+
+  [ microsoft-github-policy-service[bot] ]
+  * Adding Microsoft SECURITY.MD (#4464)
+
+  [ Tex Riddell ]
+  * Fix lifetime marker detection causing other users to be missed (#4468)
+
+  [ Chris B ]
+  * Teach llvm-dis to read DXIL out of DXBC files (#4451)
+
+  [ Xiang Li ]
+  * Fix crash for llvm-dis for windows build. (#4471)
+
+  [ Greg Roth ]
+  * Correct const check for atomic methods (#4472)
+
+  [ Joshua Batista ]
+  * change filter comparison type for samplers, update test name (#4473)
+
+  [ Adam Yang ]
+  * Replaced some code in dxil-cond-mem2reg with a dxilutils helper. Fixed a crash. (#4474)
+
+  [ Greg Roth ]
+  * Correctly copy to resource_desc1 in rawgather test (#4467)
+
+  [ Jeff Sooknarine ]
+  * Fix build break with new CopyDesc0ToDesc1 (#4477)
+
+  [ Tex Riddell ]
+  * Fix leak of FixedSizeMemoryStream object from DxilConv (#4483)
+
+  [ Greg Roth ]
+  * Skip trivially dead GVs during SROA (#4476)
+
+ -- john <john@odin>  Thu, 09 Jun 2022 10:56:27 -0600
+
 directxshadercompiler (1.4.0.2274-1123~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Jaebaek Seo ]
