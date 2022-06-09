@@ -642,6 +642,12 @@ TEST_F(FileTest, FunctionInCTBuffer) {
 
 TEST_F(FileTest, FunctionNoInline) { runFileTest("fn.noinline.hlsl"); }
 TEST_F(FileTest, FunctionExport) { runFileTest("fn.export.hlsl"); }
+
+TEST_F(FileTest, FixFunctionCall) {
+  runFileTest("fn.fixfuncall-compute.hlsl");
+  runFileTest("fn.fixfuncall-linkage.hlsl");
+}
+
 TEST_F(FileTest, FunctionForwardDecl) {
   runFileTest("fn.forward-declaration.hlsl");
 }
@@ -698,6 +704,9 @@ TEST_F(FileTest, InheritanceLayoutEmptyStruct) {
 TEST_F(FileTest, InheritanceCallMethodOfBase) {
   runFileTest("oo.inheritance.call.base.method.hlsl", Expect::Success,
               /* runValidation */ false);
+}
+TEST_F(FileTest, InheritanceBaseWithByteAddressBuffer) {
+  runFileTest("oo.inheritance.base-with-byte-address-buffer.hlsl");
 }
 TEST_F(FileTest, InheritanceCallMethodWithSameBaseMethodName) {
   runFileTest("oo.call.method.with.same.base.method.name.hlsl");
@@ -1544,6 +1553,10 @@ TEST_F(FileTest, WaveOpNoTargetEnvError) {
 
 // SPIR-V specific
 TEST_F(FileTest, SpirvStorageClass) { runFileTest("spirv.storage-class.hlsl"); }
+
+TEST_F(FileTest, SpirvString) {
+  runFileTest("spirv.string.hlsl");
+}
 
 TEST_F(FileTest, SpirvControlFlowMissingReturn) {
   runFileTest("spirv.cf.ret-missing.hlsl");
@@ -3110,5 +3123,7 @@ float4 PSMain(float4 color : COLOR) : SV_TARGET { return color; }
 )";
   runCodeTest(code);
 }
+
+TEST_F(FileTest, RenameEntrypoint) { runFileTest("fspv-entrypoint-name.hlsl"); }
 
 } // namespace

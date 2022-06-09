@@ -32,7 +32,7 @@ SpirvBuilder::SpirvBuilder(ASTContext &ac, SpirvContext &ctx,
       mod(llvm::make_unique<SpirvModule>()), function(nullptr),
       moduleInit(nullptr), moduleInitInsertPoint(nullptr), spirvOptions(opt),
       builtinVars(), debugNone(nullptr), nullDebugExpr(nullptr),
-      stringLiterals() {}
+      stringLiterals(), emptyString(nullptr) {}
 
 SpirvBuilder::SpirvBuilder(SpirvContext &ctx, const SpirvCodeGenOptions &opt,
                            FeatureManager &featureMg)
@@ -40,7 +40,7 @@ SpirvBuilder::SpirvBuilder(SpirvContext &ctx, const SpirvCodeGenOptions &opt,
       mod(llvm::make_unique<SpirvModule>()), function(nullptr),
       moduleInit(nullptr), moduleInitInsertPoint(nullptr), spirvOptions(opt),
       builtinVars(), debugNone(nullptr), nullDebugExpr(nullptr),
-      stringLiterals() {}
+      stringLiterals(), emptyString(nullptr) {}
 
 SpirvFunction *SpirvBuilder::createSpirvFunction(QualType returnType,
                                                  SourceLocation loc,
@@ -142,6 +142,18 @@ SpirvVariable *SpirvBuilder::addFnVar(QualType valueType, SourceLocation loc,
     var = new (context) SpirvVariable(
         valueType, loc, spv::StorageClass::Function, isPrecise, init);
   }
+  var->setDebugName(name);
+  function->addVariable(var);
+  return var;
+}
+
+SpirvVariable *SpirvBuilder::addFnVar(const spirv::SpirvType *valueType,
+                                      SourceLocation loc, llvm::StringRef name,
+                                      bool isPrecise, SpirvInstruction *init) {
+  assert(function && "found detached local variable");
+  // TODO: Handle potential bindless array of an opaque type.
+  SpirvVariable *var = new (context) SpirvVariable(
+      valueType, loc, spv::StorageClass::Function, isPrecise, init);
   var->setDebugName(name);
   function->addVariable(var);
   return var;
@@ -398,6 +410,17 @@ SpirvBinaryOp *SpirvBuilder::createBinaryOp(spv::Op op, QualType resultType,
                                             SpirvInstruction *rhs,
                                             SourceLocation loc,
                                             SourceRange range) {
+  assert(insertPoint && "null insert point");
+  auto *instruction =
+      new (context) SpirvBinaryOp(op, resultType, loc, lhs, rhs, range);
+  insertPoint->addInstruction(instruction);
+  return instruction;
+}
+
+SpirvBinaryOp *
+SpirvBuilder::createBinaryOp(spv::Op op, const SpirvType *resultType,
+                             SpirvInstruction *lhs, SpirvInstruction *rhs,
+                             SourceLocation loc, SourceRange range) {
   assert(insertPoint && "null insert point");
   auto *instruction =
       new (context) SpirvBinaryOp(op, resultType, loc, lhs, rhs, range);
@@ -1650,6 +1673,15 @@ SpirvConstant *SpirvBuilder::getConstantFloat(QualType type,
   return floatConst;
 }
 
+SpirvConstant *SpirvBuilder::getConstantFloat(const SpirvType *type,
+                                              llvm::APFloat value,
+                                              bool specConst) {
+  // We do not reuse existing constant floats. Just create a new one.
+  auto *floatConst = new (context) SpirvConstantFloat(type, value, specConst);
+  mod->addConstant(floatConst);
+  return floatConst;
+}
+
 SpirvConstant *SpirvBuilder::getConstantBool(bool value, bool specConst) {
   // We do not care about making unique constants at this point.
   auto *boolConst =
@@ -1676,18 +1708,29 @@ SpirvConstant *SpirvBuilder::getConstantNull(QualType type) {
   return nullConst;
 }
 
-SpirvString *SpirvBuilder::getString(llvm::StringRef str) {
-  // Reuse an existing instruction if possible.
-  auto iter = stringLiterals.find(str.str());
-  if (iter != stringLiterals.end())
-    return iter->second;
-
+SpirvString *SpirvBuilder::createString(llvm::StringRef str) {
   // Create a SpirvString instruction
   auto *instr = new (context) SpirvString(/* SourceLocation */ {}, str);
   instr->setRValue();
-  stringLiterals[str.str()] = instr;
+  if (str.empty())
+    emptyString = instr;
+  else
+    stringLiterals[str.str()] = instr;
   mod->addString(instr);
   return instr;
+}
+
+SpirvString *SpirvBuilder::getString(llvm::StringRef str) {
+  // Reuse an existing instruction if possible.
+  if (str.empty()) {
+    if (emptyString)
+      return emptyString;
+  } else {
+    auto iter = stringLiterals.find(str.str());
+    if (iter != stringLiterals.end())
+      return iter->second;
+  }
+  return createString(str);
 }
 
 const HybridPointerType *

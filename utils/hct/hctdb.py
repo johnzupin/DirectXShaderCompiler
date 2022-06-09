@@ -2165,6 +2165,7 @@ class db_dxil(object):
         add_pass('hlsl-dxil-precise', 'DxilPrecisePropagatePass', 'DXIL precise attribute propagate', [])
         add_pass('dxil-legalize-sample-offset', 'DxilLegalizeSampleOffsetPass', 'DXIL legalize sample offset', [])
         add_pass('dxil-gvn-hoist', 'DxilSimpleGVNHoist', 'DXIL simple gvn hoist', [])
+        add_pass('dxil-gvn-eliminate-region', 'DxilSimpleGVNEliminateRegion', 'DXIL simple eliminate region', [])
         add_pass('hlsl-hlensure', 'HLEnsureMetadata', 'HLSL High-Level Metadata Ensure', [])
         add_pass('multi-dim-one-dim', 'MultiDimArrayToOneDimArray', 'Flatten multi-dim array into one-dim array', [])
         add_pass('resource-handle', 'ResourceToHandle', 'Lower resource into handle', [])
@@ -2622,6 +2623,9 @@ class db_dxil(object):
         self.add_valrule("Instr.MultipleGetMeshPayload", "GetMeshPayload cannot be called multiple times.")
         self.add_valrule("Instr.NotOnceDispatchMesh", "DispatchMesh must be called exactly once in an Amplification shader.")
         self.add_valrule("Instr.NonDominatingDispatchMesh", "Non-Dominating DispatchMesh call.")
+        self.add_valrule("Instr.AtomicOpNonGroupshared", "Non-groupshared destination to atomic operation.")
+        self.add_valrule("Instr.AtomicIntrinNonUAV", "Non-UAV destination to atomic intrinsic.")
+        self.add_valrule("Instr.AtomicConst", "Constant destination to atomic.")
 
         # Some legacy rules:
         # - space is only supported for shader targets 5.1 and higher
