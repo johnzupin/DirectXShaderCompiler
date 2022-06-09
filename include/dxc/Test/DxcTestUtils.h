@@ -119,12 +119,17 @@ private:
   FileRunCommandResult RunDxc(dxc::DxcDllSupport &DllSupport, const FileRunCommandResult *Prior);
   FileRunCommandResult RunDxv(dxc::DxcDllSupport &DllSupport, const FileRunCommandResult *Prior);
   FileRunCommandResult RunOpt(dxc::DxcDllSupport &DllSupport, const FileRunCommandResult *Prior);
+  FileRunCommandResult RunListParts(dxc::DxcDllSupport &DllSupport, const FileRunCommandResult *Prior);
   FileRunCommandResult RunD3DReflect(dxc::DxcDllSupport &DllSupport, const FileRunCommandResult *Prior);
   FileRunCommandResult RunDxr(dxc::DxcDllSupport &DllSupport, const FileRunCommandResult *Prior);
   FileRunCommandResult RunLink(dxc::DxcDllSupport &DllSupport, const FileRunCommandResult *Prior);
   FileRunCommandResult RunTee(const FileRunCommandResult *Prior);
   FileRunCommandResult RunXFail(const FileRunCommandResult *Prior);
   FileRunCommandResult RunDxilVer(dxc::DxcDllSupport& DllSupport, const FileRunCommandResult* Prior);
+#ifdef ENABLE_DXIL2SPV
+  FileRunCommandResult RunDxil2Spv(dxc::DxcDllSupport &DllSupport,
+                                   const FileRunCommandResult *Prior);
+#endif
   FileRunCommandResult RunDxcHashTest(dxc::DxcDllSupport &DllSupport);
   FileRunCommandResult RunFromPath(const std::string &path, const FileRunCommandResult *Prior);
   FileRunCommandResult RunFileCompareText(const FileRunCommandResult *Prior);

@@ -105,6 +105,9 @@ public:
   SpirvVariable *addFnVar(QualType valueType, SourceLocation,
                           llvm::StringRef name = "", bool isPrecise = false,
                           SpirvInstruction *init = nullptr);
+  SpirvVariable *addFnVar(const spirv::SpirvType *valueType, SourceLocation,
+                          llvm::StringRef name = "", bool isPrecise = false,
+                          SpirvInstruction *init = nullptr);
 
   /// \brief Ends building of the current function. All basic blocks constructed
   /// from the beginning or after ending the previous function will be collected
@@ -233,6 +236,9 @@ public:
   /// \brief Creates a binary operation with the given SPIR-V opcode. Returns
   /// the instruction pointer for the result.
   SpirvBinaryOp *createBinaryOp(spv::Op op, QualType resultType,
+                                SpirvInstruction *lhs, SpirvInstruction *rhs,
+                                SourceLocation loc, SourceRange range = {});
+  SpirvBinaryOp *createBinaryOp(spv::Op op, const SpirvType *resultType,
                                 SpirvInstruction *lhs, SpirvInstruction *rhs,
                                 SourceLocation loc, SourceRange range = {});
 
@@ -739,6 +745,8 @@ public:
                                 bool specConst = false);
   SpirvConstant *getConstantFloat(QualType type, llvm::APFloat value,
                                   bool specConst = false);
+  SpirvConstant *getConstantFloat(const SpirvType *type, llvm::APFloat value,
+                                  bool specConst = false);
   SpirvConstant *getConstantBool(bool value, bool specConst = false);
   SpirvConstant *
   getConstantComposite(QualType compositeType,
@@ -746,6 +754,7 @@ public:
                        bool specConst = false);
   SpirvConstant *getConstantNull(QualType);
 
+  SpirvString *createString(llvm::StringRef str);
   SpirvString *getString(llvm::StringRef str);
 
   const HybridPointerType *getPhysicalStorageBufferType(QualType pointee);
@@ -847,8 +856,12 @@ private:
   SpirvDebugExpression *nullDebugExpr;
 
   // To avoid generating multiple OpStrings for the same string literal
-  // the SpirvBuilder will generate and reuse them.
+  // the SpirvBuilder will generate and reuse them. The empty string is
+  // kept track of separately. This is because the empty string is used
+  // as the EmptyKey and TombstoneKey for the map, prohibiting insertion
+  // of the empty string as a contained value.
   llvm::DenseMap<llvm::StringRef, SpirvString *, StringMapInfo> stringLiterals;
+  SpirvString *emptyString;
 
   /// Mapping of CTBuffers including matrix 1xN with FXC memory layout to their
   /// clone variables. We need it to avoid multiple clone variables for the same

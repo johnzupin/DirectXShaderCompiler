@@ -222,6 +222,8 @@ protected:
   // Forbid creating SpirvInstruction directly
   SpirvInstruction(Kind kind, spv::Op opcode, QualType astResultType,
                    SourceLocation loc, SourceRange range = {});
+  SpirvInstruction(Kind kind, spv::Op opcode, const SpirvType *resultType,
+                   SourceLocation loc, SourceRange range = {});
 
 protected:
   const Kind kind;
@@ -1019,6 +1021,9 @@ public:
   SpirvBinaryOp(spv::Op opcode, QualType resultType, SourceLocation loc,
                 SpirvInstruction *op1, SpirvInstruction *op2,
                 SourceRange range = {});
+  SpirvBinaryOp(spv::Op opcode, const SpirvType *resultType, SourceLocation loc,
+                SpirvInstruction *op1, SpirvInstruction *op2,
+                SourceRange range = {});
 
   DEFINE_RELEASE_MEMORY_FOR_CLASS(SpirvBinaryOp)
 
@@ -1175,6 +1180,8 @@ private:
 class SpirvConstantFloat : public SpirvConstant {
 public:
   SpirvConstantFloat(QualType type, llvm::APFloat value,
+                     bool isSpecConst = false);
+  SpirvConstantFloat(const SpirvType *type, llvm::APFloat value,
                      bool isSpecConst = false);
 
   DEFINE_RELEASE_MEMORY_FOR_CLASS(SpirvConstantFloat)
