@@ -14,17 +14,16 @@
 #include "SpirvEmitter.h"
 
 #include "AlignmentSizeCalculator.h"
-#include "InitListHandler.h"
 #include "RawBufferMethods.h"
-#include "dxc/DXIL/DxilConstants.h"
 #include "dxc/HlslIntrinsicOp.h"
 #include "spirv-tools/optimizer.hpp"
 #include "clang/SPIRV/AstTypeProbe.h"
-#include "clang/SPIRV/SpirvUtils.h"
 #include "clang/SPIRV/String.h"
 #include "clang/Sema/Sema.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/ADT/StringExtras.h"
+#include "InitListHandler.h"
+#include "dxc/DXIL/DxilConstants.h"
 
 #ifdef SUPPORT_QUERY_GIT_COMMIT_INFO
 #include "clang/Basic/Version.h"
@@ -760,7 +759,7 @@ void SpirvEmitter::HandleTranslationUnit(ASTContext &context) {
     const FunctionInfo *entryInfo = workQueue[i];
     assert(entryInfo->isEntryFunction);
     spvBuilder.addEntryPoint(
-        SpirvUtils::getSpirvShaderStage(entryInfo->shaderModelKind),
+        getSpirvShaderStage(entryInfo->shaderModelKind),
         entryInfo->entryFunction, getEntryPointName(entryInfo),
         getInterfacesForEntryPoint(entryInfo->entryFunction));
   }
@@ -2274,7 +2273,10 @@ void SpirvEmitter::doIfStmt(const IfStmt *ifStmt,
 }
 
 void SpirvEmitter::doReturnStmt(const ReturnStmt *stmt) {
-  if (const auto *retVal = stmt->getRetValue()) {
+  const auto *retVal = stmt->getRetValue();
+  bool returnsVoid = curFunction->getReturnType().getTypePtr()->isVoidType();
+  if (!returnsVoid) {
+    assert(retVal);
     // Update counter variable associated with function returns
     tryToAssignCounterVar(curFunction, retVal);
 
@@ -3380,6 +3382,15 @@ SpirvEmitter::doConditionalOperator(const ConditionalOperator *expr) {
                                           falseBranch, loc, range);
     value->setRValue();
     return value;
+  }
+
+  // Usually integer conditional types in HLSL will be wrapped in an
+  // ImplicitCastExpr<IntegralToBoolean> in the Clang AST. However, some
+  // combinations of result types can result in a bare integer (literal or
+  // reference) as a condition, which still needs to be cast to bool.
+  if (cond->getType()->isIntegerType()) {
+    condition =
+        castToBool(condition, cond->getType(), astContext.BoolTy, loc, range);
   }
 
   // If we can't use OpSelect, we need to create if-else control flow.
@@ -8110,7 +8121,7 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
     INTRINSIC_SPIRV_OP_CASE(fmod, FRem, true);
     INTRINSIC_SPIRV_OP_CASE(fwidth, Fwidth, true);
     INTRINSIC_SPIRV_OP_CASE(reversebits, BitReverse, false);
-    INTRINSIC_OP_CASE(round, Round, true);
+    INTRINSIC_OP_CASE(round, RoundEven, true);
     INTRINSIC_OP_CASE(uabs, SAbs, true);
     INTRINSIC_OP_CASE_INT_FLOAT(abs, SAbs, FAbs, true);
     INTRINSIC_OP_CASE(acos, Acos, true);
@@ -8137,9 +8148,9 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
     INTRINSIC_OP_CASE(lerp, FMix, true);
     INTRINSIC_OP_CASE(log, Log, true);
     INTRINSIC_OP_CASE(log2, Log2, true);
-    INTRINSIC_OP_CASE_SINT_UINT_FLOAT(max, SMax, UMax, FMax, true);
+    INTRINSIC_OP_CASE_SINT_UINT_FLOAT(max, SMax, UMax, NMax, true);
     INTRINSIC_OP_CASE(umax, UMax, true);
-    INTRINSIC_OP_CASE_SINT_UINT_FLOAT(min, SMin, UMin, FMin, true);
+    INTRINSIC_OP_CASE_SINT_UINT_FLOAT(min, SMin, UMin, NMin, true);
     INTRINSIC_OP_CASE(umin, UMin, true);
     INTRINSIC_OP_CASE(normalize, Normalize, false);
     INTRINSIC_OP_CASE(pow, Pow, true);
@@ -11327,6 +11338,43 @@ hlsl::ShaderModel::Kind SpirvEmitter::getShaderModelKind(StringRef stageName) {
   return smk;
 }
 
+spv::ExecutionModel
+SpirvEmitter::getSpirvShaderStage(hlsl::ShaderModel::Kind smk) {
+  switch (smk) {
+  case hlsl::ShaderModel::Kind::Vertex:
+    return spv::ExecutionModel::Vertex;
+  case hlsl::ShaderModel::Kind::Hull:
+    return spv::ExecutionModel::TessellationControl;
+  case hlsl::ShaderModel::Kind::Domain:
+    return spv::ExecutionModel::TessellationEvaluation;
+  case hlsl::ShaderModel::Kind::Geometry:
+    return spv::ExecutionModel::Geometry;
+  case hlsl::ShaderModel::Kind::Pixel:
+    return spv::ExecutionModel::Fragment;
+  case hlsl::ShaderModel::Kind::Compute:
+    return spv::ExecutionModel::GLCompute;
+  case hlsl::ShaderModel::Kind::RayGeneration:
+    return spv::ExecutionModel::RayGenerationNV;
+  case hlsl::ShaderModel::Kind::Intersection:
+    return spv::ExecutionModel::IntersectionNV;
+  case hlsl::ShaderModel::Kind::AnyHit:
+    return spv::ExecutionModel::AnyHitNV;
+  case hlsl::ShaderModel::Kind::ClosestHit:
+    return spv::ExecutionModel::ClosestHitNV;
+  case hlsl::ShaderModel::Kind::Miss:
+    return spv::ExecutionModel::MissNV;
+  case hlsl::ShaderModel::Kind::Callable:
+    return spv::ExecutionModel::CallableNV;
+  case hlsl::ShaderModel::Kind::Mesh:
+    return spv::ExecutionModel::MeshNV;
+  case hlsl::ShaderModel::Kind::Amplification:
+    return spv::ExecutionModel::TaskNV;
+  default:
+    llvm_unreachable("invalid shader model kind");
+    break;
+  }
+}
+
 bool SpirvEmitter::processGeometryShaderAttributes(const FunctionDecl *decl,
                                                    uint32_t *arraySize) {
   bool success = true;
@@ -11435,6 +11483,70 @@ void SpirvEmitter::processPixelShaderAttributes(const FunctionDecl *decl) {
     spvBuilder.addExecutionMode(entryFunction,
                                 spv::ExecutionMode::PostDepthCoverage, {},
                                 decl->getLocation());
+  }
+  if (decl->getAttr<VKEarlyAndLateTestsAttr>()) {
+    spvBuilder.addExecutionMode(
+        entryFunction, spv::ExecutionMode::EarlyAndLateFragmentTestsAMD, {},
+        decl->getLocation());
+  }
+  if (decl->getAttr<VKDepthUnchangedAttr>()) {
+    spvBuilder.addExecutionMode(entryFunction,
+                                spv::ExecutionMode::DepthUnchanged, {},
+                                decl->getLocation());
+  }
+
+  // Shaders must not specify more than one of stencil_ref_unchanged_front,
+  // stencil_ref_greater_equal_front, and stencil_ref_less_equal_front.
+  // Shaders must not specify more than one of stencil_ref_unchanged_back,
+  // stencil_ref_greater_equal_back,and stencil_ref_less_equal_back.
+  uint32_t stencilFrontAttrCount = 0, stencilBackAttrCount = 0;
+  if (decl->getAttr<VKStencilRefUnchangedFrontAttr>()) {
+    ++stencilFrontAttrCount;
+    spvBuilder.addExecutionMode(entryFunction,
+                                spv::ExecutionMode::StencilRefUnchangedFrontAMD,
+                                {}, decl->getLocation());
+  }
+  if (decl->getAttr<VKStencilRefGreaterEqualFrontAttr>()) {
+    ++stencilFrontAttrCount;
+    spvBuilder.addExecutionMode(entryFunction,
+                                spv::ExecutionMode::StencilRefGreaterFrontAMD,
+                                {}, decl->getLocation());
+  }
+  if (decl->getAttr<VKStencilRefLessEqualFrontAttr>()) {
+    ++stencilFrontAttrCount;
+    spvBuilder.addExecutionMode(entryFunction,
+                                spv::ExecutionMode::StencilRefLessFrontAMD, {},
+                                decl->getLocation());
+  }
+  if (decl->getAttr<VKStencilRefUnchangedBackAttr>()) {
+    ++stencilBackAttrCount;
+    spvBuilder.addExecutionMode(entryFunction,
+                                spv::ExecutionMode::StencilRefUnchangedBackAMD,
+                                {}, decl->getLocation());
+  }
+  if (decl->getAttr<VKStencilRefGreaterEqualBackAttr>()) {
+    ++stencilBackAttrCount;
+    spvBuilder.addExecutionMode(entryFunction,
+                                spv::ExecutionMode::StencilRefGreaterBackAMD,
+                                {}, decl->getLocation());
+  }
+  if (decl->getAttr<VKStencilRefLessEqualBackAttr>()) {
+    ++stencilBackAttrCount;
+    spvBuilder.addExecutionMode(entryFunction,
+                                spv::ExecutionMode::StencilRefLessBackAMD, {},
+                                decl->getLocation());
+  }
+  if (stencilFrontAttrCount > 1) {
+    emitError("Shaders must not specify more than one of "
+              "stencil_ref_unchanged_front, stencil_ref_greater_equal_front, "
+              "and stencil_ref_less_equal_front.",
+              {});
+  }
+  if (stencilBackAttrCount > 1) {
+    emitError(
+        "Shaders must not specify more than one of stencil_ref_unchanged_back, "
+        "stencil_ref_greater_equal_back, and stencil_ref_less_equal_back.",
+        {});
   }
 }
 
@@ -13032,11 +13144,15 @@ bool SpirvEmitter::spirvToolsValidate(std::vector<uint32_t> *mod,
 bool SpirvEmitter::spirvToolsOptimize(std::vector<uint32_t> *mod,
                                       std::string *messages) {
   spvtools::Optimizer optimizer(featureManager.getTargetEnv());
-
   optimizer.SetMessageConsumer(
       [messages](spv_message_level_t /*level*/, const char * /*source*/,
                  const spv_position_t & /*position*/,
                  const char *message) { *messages += message; });
+
+  string::RawOstreamBuf printAllBuf(llvm::errs());
+  std::ostream printAllOS(&printAllBuf);
+  if (spirvOptions.printAll)
+    optimizer.SetPrintAll(&printAllOS);
 
   spvtools::OptimizerOptions options;
   options.set_run_validator(false);
@@ -13072,6 +13188,11 @@ bool SpirvEmitter::spirvToolsLegalize(std::vector<uint32_t> *mod,
       [messages](spv_message_level_t /*level*/, const char * /*source*/,
                  const spv_position_t & /*position*/,
                  const char *message) { *messages += message; });
+
+  string::RawOstreamBuf printAllBuf(llvm::errs());
+  std::ostream printAllOS(&printAllBuf);
+  if (spirvOptions.printAll)
+    optimizer.SetPrintAll(&printAllOS);
 
   spvtools::OptimizerOptions options;
   options.set_run_validator(false);

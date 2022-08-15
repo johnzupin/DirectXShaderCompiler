@@ -4086,6 +4086,10 @@ TEST_F(ExecutionTest, ATOProgOffset) {
                     ((UINT)sm & 0x0f));
       break;
     }
+    if (sm >= D3D_SHADER_MODEL_6_7 && !DoesDeviceSupportAdvancedTexOps(pDevice)) {
+      LogCommentFmt(L"Device does not support Advanced Texture Ops");
+      break;
+    }
 
     bool bSupportMSASDeriv = DoesDeviceSupportMeshAmpDerivatives(pDevice);
 
@@ -4180,6 +4184,12 @@ TEST_F(ExecutionTest, ATOSampleCmpLevelTest) {
   CComPtr<ID3D12Device> pDevice;
   if (!CreateDevice(&pDevice, D3D_SHADER_MODEL_6_7))
       return;
+
+  if (!DoesDeviceSupportAdvancedTexOps(pDevice)) {
+    WEX::Logging::Log::Comment(L"Device does not support Advanced Texture Operations.");
+    WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped);
+    return;
+  }
 
   std::shared_ptr<st::ShaderOpSet> ShaderOpSet =
     std::make_shared<st::ShaderOpSet>();
@@ -4844,8 +4854,6 @@ TEST_F(ExecutionTest, ATORawGather) {
   RawIntTexture<IntRG<16, 16>, NumThreadsX, NumThreadsY> R16G16_SNORM(true, true, NumThreadsX, DXGI_FORMAT_R16G16_SNORM);
   RawIntTexture<IntRG<16, 16>, NumThreadsX, NumThreadsY> R16G16_SINT(true, false, NumThreadsX, DXGI_FORMAT_R16G16_SINT);
 
-  RawIntTexture<IntRGBA<8, 8, 8, 8>, NumThreadsX, NumThreadsY> R8G8_B8G8_UNORM(false, true, NumThreadsX, DXGI_FORMAT_R8G8_B8G8_UNORM);
-  RawIntTexture<IntRGBA<8, 8, 8, 8>, NumThreadsX, NumThreadsY> G8R8_G8B8_UNORM(false, true, NumThreadsX, DXGI_FORMAT_G8R8_G8B8_UNORM);
   RawIntTexture<IntRGBA<8, 8, 8, 8>, NumThreadsX, NumThreadsY> B8G8R8A8_TYPELESS(false, false, NumThreadsX, DXGI_FORMAT_B8G8R8A8_TYPELESS);
   RawIntTexture<IntRGBA<8, 8, 8, 8>, NumThreadsX, NumThreadsY> B8G8R8A8_UNORM(false, true, NumThreadsX, DXGI_FORMAT_B8G8R8A8_UNORM);
   RawIntTexture<IntRGBA<8, 8, 8, 8>, NumThreadsX, NumThreadsY> B8G8R8A8_UNORM_SRGB(false, true, NumThreadsX, DXGI_FORMAT_B8G8R8A8_UNORM_SRGB);
@@ -4878,8 +4886,6 @@ TEST_F(ExecutionTest, ATORawGather) {
                                 &R16G16_UINT,
                                 &R16G16_SNORM,
                                 &R16G16_SINT,
-                                &R8G8_B8G8_UNORM,
-                                &G8R8_G8B8_UNORM,
                                 &B8G8R8A8_TYPELESS,
                                 &B8G8R8A8_UNORM,
                                 &B8G8R8A8_UNORM_SRGB,

@@ -56,6 +56,7 @@ struct SpirvCodeGenOptions {
   bool noWarnIgnoredFeatures;
   bool useDxLayout;
   bool useGlLayout;
+  bool useLegacyBufferMatrixOrder;
   bool useScalarLayout;
   bool flattenResourceArrays;
   bool reduceLoadSize;
@@ -88,6 +89,8 @@ struct SpirvCodeGenOptions {
   std::string entrypointName;
 
   bool signaturePacking; ///< Whether signature packing is enabled or not
+
+  bool printAll; // Dump SPIR-V module before each pass and after the last one.
 
   // String representation of all command line options.
   std::string clOptions;
