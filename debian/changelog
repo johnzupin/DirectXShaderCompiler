@@ -1,3 +1,122 @@
+directxshadercompiler (1.4.0.2274-1229~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Jakub Kuderski ]
+  * [dxil2spv] Print missing runtime errors (#4481)
+
+  [ Joshua Batista ]
+  * Add numthreads to disassembly output (#4484)
+
+  [ Tex Riddell ]
+  * Add inline GetBlobAsUtf16 methods for back-compat (#4490)
+
+  [ Jakub Kuderski ]
+  * Bump spirv-tools, spirv-headers, effcee, and re2 submodules (#4493)
+
+  [ Joshua Batista ]
+  * dxil disassembly: update check convention, add entry point properties on topology for mesh shaders (#4491)
+
+  [ Helena Kotas ]
+  * Remove dxilconv tests dependency on FXC to enable testing on ARM64 (#4494)
+
+  [ Greg Roth ]
+  * Remove YUV formats from rawgather test (#4479)
+
+  [ Helena Kotas ]
+  * Return error exit code when no tests are run in hcttest.cmd (#4499)
+
+  [ Grace Jennings ]
+  * Validate no gaps in UAV store writemask (#4495)
+
+  [ Jakub Kuderski ]
+  * [spir-v] Add option to print SPIR-V between passes (#4503)
+
+  [ Helena Kotas ]
+  * Add support for separate ARM64 and ARM64EC testing (#4508)
+
+  [ Xiang Li ]
+  * Enable ChangeStdin/outToBinary for llvm-dis on Windows. (#4509)
+
+  [ Helena Kotas ]
+  * Set BUILD_ARCH to x64 by default if none is specified (#4510)
+
+  [ Michael Seydl ]
+  * [spirv] Added handling for multi-dimensional CT buffers (#4507)
+
+  [ Helena Kotas ]
+  * Map Win32 to x86 for TAEF (#4513)
+
+  [ Natalie Chouinard ]
+  * [dxil2spv] Remove dxil2spv prototype (#4512)
+  * [spirv] Translate HLSL round to RoundEven (#4515)
+  * [spirv] Translate HLSL min/max to NMin/NMax (#4517)
+  * [spirv] Fail when unsupported options are used (#4518)
+  * [spirv] Clarify error when Globals binding missing (#4519)
+
+  [ Junda Liu ]
+  * [spirv] Add VK_AMD_shader_early_and_late_fragment_tests support (#4504)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Error when -Gis is used with -spirv (#4529)
+
+  [ Jakub Kuderski ]
+  * Treat matrix load/stores as column major in raw buffers (#4526)
+
+  [ Natalie Chouinard ]
+  * [spirv] Fix crash on some ternary ops (#4534)
+  * [spirv] Fix ByteAddressBufferTemplatedStoreStruct2 test (#4535)
+
+  [ Minmin Gong ]
+  * Pass parameters to CMake in a correct way (#4531)
+
+  [ Helena Kotas ]
+  * Update version to 1.7.2207 (#4543)
+
+  [ Adam Yang ]
+  * Fixed HLMatrixLower not copying over debug location to dbg.delcare (#4544)
+  * Fixed assert in delete dead region with simple loops. (#4547)
+
+  [ Tex Riddell ]
+  * Fix version skip for UAVStoreMaskGap to exclude v1.6 (#4522)
+
+  [ Adam Yang ]
+  * Splitting simple array during mem2reg. (#4539)
+
+  [ Greg Roth ]
+  * Add checks to advanced tex ops exectests (#4551)
+
+  [ Jeff Noyle ]
+  * Weirdness with common subroutines for exported functions in libs (#4555)
+
+  [ Xiang Li ]
+  * Use VertexID to check last lane. (#4556)
+
+  [ Joshua Batista ]
+  * Add semantic clarification to error on missing output semantic (#4562)
+
+  [ Cassandra Beckley ]
+  * [SPIRV] Fix crash when returning void (#4576)
+  * Bump spirv-tools, spirv-headers, effcee, and re2 submodules (#4577)
+
+  [ Chris B ]
+  * NFC. Ensure that the output directory exists (#4571)
+
+  [ Greg Roth ]
+  * Allow unbound, multidimensional resource arrays (#4475)
+
+  [ Jeff Noyle ]
+  * PIX: MeshShaderOutput: Disambiguate meshlets in no-AS case (#4579)
+
+  [ Greg Roth ]
+  * Recognize RaserizerOrderedTexure as resource type (#4581)
+
+  [ Nathan Gauër ]
+  * Bump spirv-tools, spirv-headers, effcee & re2 (#4582)
+
+  [ John Zupin ]
+  * packaging: update/rebase patches
+
+ -- john <john@odin>  Tue, 16 Aug 2022 10:21:54 -0600
+
 directxshadercompiler (1.4.0.2274-1187~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Chris B ]
