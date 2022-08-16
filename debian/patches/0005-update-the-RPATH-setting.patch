@@ -7,10 +7,10 @@ Subject: update the RPATH setting
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index dc438e6..1766798 100644
+index 2258cc3..b54dc0f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -556,7 +556,7 @@ if (APPLE)
+@@ -563,7 +563,7 @@ if (APPLE)
    set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
  else(UNIX)
    if(NOT DEFINED CMAKE_INSTALL_RPATH)
