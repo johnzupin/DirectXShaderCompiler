@@ -1,3 +1,157 @@
+directxshadercompiler (1.4.0.2274-1284~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Greg Roth ]
+  * Add vs2022 support to hctstart (#4585)
+
+  [ Cassandra Beckley ]
+  * Bump SPIRV-Tools to include bugfix for #4444 (#4587)
+
+  [ Nathan V. Morrical ]
+  * [SPIRV] Add support for vk::RawBufferStore (#4573)
+
+  [ Joshua Batista ]
+  * allow array sizes defined by min ops to not be treated as variable length (#4591)
+
+  [ Greg Fischer ]
+  * [SPIRV] Do not create counter for RWStructuredBuffer by default (#4590)
+
+  [ Nathan Gauër ]
+  * bump SPIRV-Tools to fix #4429 (#4598)
+
+  [ Adam Yang ]
+  * Fix unroller crash in library targets (#4604)
+
+  [ Greg Roth ]
+  * Accept all ROV types as resources (#4606)
+
+  [ Greg Fischer ]
+  * [SPIRV] Generate DebugSource for API invocation with in-memory source (#4600)
+
+  [ Grace Jennings ]
+  * Add diagnostic tests (#4599)
+
+  [ Greg Roth ]
+  * Initialize all DxilModule members (#4617)
+
+  [ Helena Kotas ]
+  * Remove clang-format-vs (#4623)
+
+  [ Greg Fischer ]
+  * [SPIR-V] Generate DebugFunctionDefinition in the wrapper function (#4618)
+
+  [ Xiang Li ]
+  * Change /P to match cl.exe /P behavior. (#4624)
+
+  [ Greg Fischer ]
+  * [SPIR-V] Generate DebugEntryPoint for Vulkan DebugInfo (#4630)
+
+  [ Joshua Batista ]
+  * Isnormal hlktest (#4505)
+  * Skip test when using BDA, move check logic up as high as possible (#4639)
+
+  [ Tex Riddell ]
+  * Fix version string in metadata, support optional toolname override (#4641)
+
+  [ Helena Kotas ]
+  * Remove lookup of full paths of D3D12 libraries (#4642)
+
+  [ Chris B ]
+  * Add option to enable LTO/LTCG (#4646)
+
+  [ Helena Kotas ]
+  * Include branch name in build name (#4647)
+
+  [ Nathan Gauër ]
+  * build: fix include in header files. (#4652)
+  * Fix Layer & ViewportIndex ext in 1.2+  (#4597)
+
+  [ Greg Fischer ]
+  * [SPIRV] Do not require extension if included in Vulkan version (#4651)
+  * [SPIRV] Do not include input file in DebugEntryPoint args (#4650)
+
+  [ Joshua Batista ]
+  * move entry point default code (#4653)
+
+  [ Adam Yang ]
+  * Pulled the zlib compression code into a library (#4660)
+
+  [ Daniele Vettorel ]
+  * [SPIR-V] Add short-circuiting logical operators for HLSL 2021 (#4658)
+
+  [ Chris B ]
+  * Add option to force disabling debug info (#4645)
+
+  [ Adam Yang ]
+  * Separated RDAT creation code into its own library (#4662)
+
+  [ Greg Fischer ]
+  * [SPIR-V] Handle debugInfo for composite types across source files (#4654)
+
+  [ Adam Yang ]
+  * Added new DxilPDBInfo definition (#4669)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Fix default arguments for function templates (#4665)
+
+  [ Chris B ]
+  * Add `LLVM_OPTIMZIE_SANITIZED_BUIDS` option (#4667)
+
+  [ Daniele Vettorel ]
+  * [SPIR-V] Add short-circuiting ternary operator for HLSL 2021 (#4672)
+
+  [ Xiang Li ]
+  * Fix issue in HelperLaneTestWave ExecutionTest caused by assume last lane has VertexID 2. (#4670)
+
+  [ Adam Yang ]
+  * Deleted the old miniz library (#4675)
+
+  [ Yuriy O'Donnell ]
+  * Fix error on shutdown when using custom memory allocator (#4656)
+  * Fix ShaderModel::Get() when entry does not exist in hashToIdxMap (#4678)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Add support for logical operator intrinsics (#4674)
+
+  [ Tex Riddell ]
+  * Add RDAT::RecordTraits::MaxRecordSize to default to newest version (#4680)
+
+  [ Helena Kotas ]
+  * dxexp - report advanced texture ops capability (#4677)
+
+  [ Tex Riddell ]
+  * Insert cast when types are identical to HLSL but not to clang (#4631)
+  * RDAT: Revert default to MaxRecordSize for tables (#4682)
+  * Remove arbitrary run line length limit (#4685)
+
+  [ Adam Yang ]
+  * Fixed a crash with cbuffer lowering with new poison value mechanism (#4684)
+
+  [ Joshua Batista ]
+  * Pull ReplaceDisassemblyText out of DXCTestUtils.cpp (#4687)
+
+  [ gmitrano-unity ]
+  * [SPIRV] Support 16-bit Type Cast Intrinsics (#4679)
+
+  [ Tex Riddell ]
+  * Remove ResourceAttribute metadata node from DxilFieldAnnotation (#4671)
+  * Remove unused type annotations (#4689)
+  * Fix failing test and DxilMutateResourceToHandle case hit by updated test (#4694)
+
+  [ Joshua Batista ]
+  * User/jbatista/remove isnormal dependencies02 (#4692)
+
+  [ Chris B ]
+  * Fix broken ternary on matrix return type (#4434) (#4460)
+  * [NFC] Fix asan error in test case (#4668)
+
+  [ Tex Riddell ]
+  * Change some getAsStructureType() uses to getAs<RecordType>() (#4707)
+
+  [ John Zupin ]
+  * packaging: update patches
+
+ -- john <john@odin>  Tue, 18 Oct 2022 13:35:23 -0600
+
 directxshadercompiler (1.4.0.2274-1229~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Jakub Kuderski ]
