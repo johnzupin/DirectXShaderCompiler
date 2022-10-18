@@ -13,6 +13,8 @@
 // We need to keep & fix these warnings to integrate smoothly with HLK
 #pragma warning(error: 4100 4146 4242 4244 4267 4701 4389)
 
+// *** THIS FILE CANNOT TAKE ANY LLVM DEPENDENCIES  *** //
+
 #include <algorithm>
 #include <memory>
 #include <array>
@@ -24,6 +26,7 @@
 #include <iomanip>
 #include "dxc/Test/CompilationResult.h"
 #include "dxc/Test/HLSLTestData.h"
+#include "dxc/DxilContainer/DxilContainer.h"
 #include <Shlwapi.h>
 #include <atlcoll.h>
 #include <locale>
@@ -32,10 +35,10 @@
 
 #undef _read
 #include "WexTestClass.h"
-#include "dxc/Test/HlslTestUtils.h"
 #include "dxc/Test/DxcTestUtils.h"
 #include "dxc/Support/Global.h"
 #include "dxc/Support/WinIncludes.h"
+#include "dxc/Test/HlslTestUtils.h"
 #include "dxc/Support/FileIOHelper.h"
 #include "dxc/Support/Unicode.h"
 
@@ -461,6 +464,7 @@ public:
 
   TEST_METHOD(GraphicsRawBufferLdStI16);
   TEST_METHOD(GraphicsRawBufferLdStHalf);
+  TEST_METHOD(IsNormalTest);
 
   BEGIN_TEST_METHOD(PackUnpackTest)
     TEST_METHOD_PROPERTY(L"DataSource", L"Table:ShaderOpArithTable.xml#PackUnpackOpTable")
@@ -3162,10 +3166,12 @@ struct SPrimitives {
   float f_float2_o;
 };
 
+
 std::shared_ptr<ShaderOpTestResult>
 RunShaderOpTestAfterParse(ID3D12Device *pDevice, dxc::DxcDllSupport &support,
                           LPCSTR pName,
                           st::ShaderOpTest::TInitCallbackFn pInitCallback,
+                          st::ShaderOpTest::TShaderCallbackFn pShaderCallback,
                           std::shared_ptr<st::ShaderOpSet> ShaderOpSet) {
   st::ShaderOp *pShaderOp;
   if (pName == nullptr) {
@@ -3197,6 +3203,7 @@ RunShaderOpTestAfterParse(ID3D12Device *pDevice, dxc::DxcDllSupport &support,
   std::shared_ptr<st::ShaderOpTest> test = std::make_shared<st::ShaderOpTest>();
   test->SetDxcSupport(&support);
   test->SetInitCallback(pInitCallback);
+  test->SetShaderCallback(pShaderCallback);
   test->SetDevice(pDevice);
   test->RunShaderOp(pShaderOp);
 
@@ -3206,6 +3213,14 @@ RunShaderOpTestAfterParse(ID3D12Device *pDevice, dxc::DxcDllSupport &support,
   result->Test = test;
   result->ShaderOp = pShaderOp;
   return result;
+}
+
+std::shared_ptr<ShaderOpTestResult>
+RunShaderOpTestAfterParse(ID3D12Device *pDevice, dxc::DxcDllSupport &support,
+                          LPCSTR pName,
+                          st::ShaderOpTest::TInitCallbackFn pInitCallback,
+                          std::shared_ptr<st::ShaderOpSet> ShaderOpSet) {
+return RunShaderOpTestAfterParse(pDevice, support, pName, pInitCallback, nullptr, ShaderOpSet);
 }
 
 std::shared_ptr<ShaderOpTestResult>
@@ -11334,6 +11349,171 @@ TEST_F(ExecutionTest, QuadAnyAll) {
   }
   if (Skipped)
     WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped);
+}
+
+// Copies input strings to local storage, so it doesn't rely on lifetime of input string pointers.
+st::ShaderOpTest::TShaderCallbackFn MakeShaderReplacementCallback(
+    std::vector<std::wstring> dxcArgs, std::vector<std::string> lookFors,
+    std::vector<std::string> replacements,
+    dxc::DxcDllSupport &dllSupport) {
+  
+  auto ShaderInitFn = 
+      [dxcArgs, lookFors, replacements, &dllSupport]
+      (LPCSTR Name, LPCSTR pText, IDxcBlob **ppShaderBlob, st::ShaderOp *pShaderOp) {
+    
+    UNREFERENCED_PARAMETER(pShaderOp);
+    UNREFERENCED_PARAMETER(Name);
+    // Create pointer vectors from local storage to supply API needs
+    std::vector<LPCWSTR> Args(dxcArgs.size());
+    for (unsigned i = 0; i < dxcArgs.size(); ++i)
+      Args[i] = dxcArgs[i].c_str();    
+
+    CComPtr<IDxcUtils> pUtils;
+    VERIFY_SUCCEEDED(dllSupport.CreateInstance(CLSID_DxcUtils, &pUtils));
+    // Compile original HLSL with op to replace, and disassemble.
+    CComPtr<IDxcBlob> compiledShader;
+    VerifyCompileOK(dllSupport, pText, L"cs_6_0", Args, &compiledShader);
+    std::string disassembly = DisassembleProgram(dllSupport, compiledShader);
+    // Replace op
+    ReplaceDisassemblyTextWithoutRegex(lookFors, replacements,      
+      disassembly
+    );
+
+    // Wrap text in UTF8 blob
+    // No need to copy, disassembly won't be changed again and will live as long as rewrittenDisassembly.
+    // c_str() guarantees null termination; passing size + 1 to include it will create an IDxcBlobUtf8 without copying.
+    CComPtr<IDxcBlobEncoding> rewrittenDisassembly;
+    VERIFY_SUCCEEDED(pUtils->CreateBlobFromPinned(
+      disassembly.c_str(), (UINT32) disassembly.size() + 1, DXC_CP_UTF8, &rewrittenDisassembly));
+    // Assemble to container
+    CComPtr<IDxcBlob> assembledShader;
+    AssembleToContainer(dllSupport, rewrittenDisassembly, &assembledShader);
+
+    // Find root signature part in container
+    hlsl::DxilContainerHeader *pContainerHeader = hlsl::IsDxilContainerLike(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize());
+    VERIFY_SUCCEEDED(hlsl::IsValidDxilContainer(pContainerHeader, compiledShader->GetBufferSize()));
+    hlsl::DxilPartHeader *pPartHeader = hlsl::GetDxilPartByType(
+        pContainerHeader, hlsl::DxilFourCC::DFCC_RootSignature);
+    if (!pPartHeader) {
+      // No root signature to copy, use the assembledShader.
+      *ppShaderBlob = assembledShader.Detach();
+      return;
+    }
+
+    CComPtr<IDxcContainerBuilder> pBuilder;
+    VERIFY_SUCCEEDED(dllSupport.CreateInstance(CLSID_DxcContainerBuilder, &pBuilder));
+    VERIFY_SUCCEEDED(pBuilder->Load(assembledShader));
+
+    // Wrap root signature in blob
+    CComPtr<IDxcBlobEncoding> pRootSignatureBlob;
+    VERIFY_SUCCEEDED(pUtils->CreateBlobFromPinned(
+      hlsl::GetDxilPartData(pPartHeader), pPartHeader->PartSize, 0, &pRootSignatureBlob));
+    // Add root signature to container
+    pBuilder->AddPart(hlsl::DxilFourCC::DFCC_RootSignature, pRootSignatureBlob);
+
+    CComPtr<IDxcOperationResult> pOpResult;
+    VERIFY_SUCCEEDED(pBuilder->SerializeContainer(&pOpResult));
+    HRESULT status;
+    VERIFY_SUCCEEDED(pOpResult->GetStatus(&status));
+    VERIFY_SUCCEEDED(status);
+    VERIFY_SUCCEEDED(pOpResult->GetResult(ppShaderBlob));
+
+  };
+
+  return ShaderInitFn;
+}
+
+struct FloatInputUintOutput
+{
+  float input;
+  unsigned int output;
+};
+
+TEST_F(ExecutionTest, IsNormalTest) {
+  // EnableShaderBasedValidation();
+  // In order, the input is -Zero, Zero, -Denormal, Denormal, -Infinity, Infinity, -NaN, Nan, and then 4 Normal float numbers.
+  // Only the last 4 floats are normal, so we expect the first 8 results to be 0, and the last 4 to be 1, as defined by IsNormal.
+  WEX::TestExecution::SetVerifyOutput verifySettings(
+    WEX::TestExecution::VerifyOutputSettings::LogOnlyFailures);  
+
+  D3D_SHADER_MODEL sm = D3D_SHADER_MODEL_6_0;
+  
+  CComPtr<ID3D12Device> pDevice;
+  VERIFY_IS_TRUE(CreateDevice(&pDevice, sm, false /* skipUnsupported */));
+
+  if (GetTestParamUseWARP(UseWarpByDefault()) || IsDeviceBasicAdapter(pDevice)) {
+      WEX::Logging::Log::Comment(L"WARP has a known issue with IsNormalTest.");
+      WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped);
+      return;
+  }
+
+  std::vector<float> Validation_Input_Vec = {-0.0, 0.0, -(FLT_MIN / 2), FLT_MIN / 2, -(INFINITY), INFINITY, -(NAN), NAN, 530.99f, -530.99f, 122.101f, -.122101f};
+  std::vector<float> *Validation_Input = &Validation_Input_Vec;
+
+  std::vector<unsigned int> Validation_Expected_Vec = {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 1u, 1u, 1u, 1u};
+  std::vector<unsigned int> *Validation_Expected = &Validation_Expected_Vec;
+
+  CComPtr<IStream> pStream;
+  ReadHlslDataIntoNewStream(L"ShaderOpArith.xml", &pStream);
+
+  std::shared_ptr<st::ShaderOpSet> ShaderOpSet =
+      std::make_shared<st::ShaderOpSet>();
+  st::ParseShaderOpSetFromStream(pStream, ShaderOpSet.get());
+  st::ShaderOp *pShaderOp =
+      ShaderOpSet->GetShaderOp("IsNormal");
+  vector<st::ShaderOpRootValue> fallbackRootValues = pShaderOp->RootValues;
+ 
+  size_t count = Validation_Input->size();
+
+  auto ShaderInitFn = MakeShaderReplacementCallback(
+      {},
+      // Replace the above with what's below when IsSpecialFloat supports doubles
+      //{ "@dx.op.isSpecialFloat.f32(i32 8,",  "@dx.op.isSpecialFloat.f64(i32 8," },
+      //{ "@dx.op.isSpecialFloat.f32(i32 11,", "@dx.op.isSpecialFloat.f64(i32 11," },
+      { "@dx.op.isSpecialFloat.f32(i32 8,"},
+      { "@dx.op.isSpecialFloat.f32(i32 11,"}, 
+      m_support
+    );
+
+
+  auto ResourceInitFn = [&](LPCSTR Name, std::vector<BYTE> &Data, st::ShaderOp *pShaderOp) {
+          UNREFERENCED_PARAMETER(pShaderOp);
+          VERIFY_IS_TRUE(0 == _stricmp(Name, "g_TestData"));
+          size_t size = sizeof(FloatInputUintOutput) * count;
+          Data.resize(size);
+          FloatInputUintOutput *pPrimitives = (FloatInputUintOutput *)Data.data();
+          for (size_t i = 0; i < count; ++i) {
+            FloatInputUintOutput *p = &pPrimitives[i];
+            float inputFloat = (*Validation_Input)[i % Validation_Input->size()];
+            p->input = inputFloat;
+          }
+
+        };
+
+  
+  // Test Compute shader
+  {
+    pShaderOp->CS = pShaderOp->GetString("CS60");
+    std::shared_ptr<ShaderOpTestResult> test = RunShaderOpTestAfterParse(
+        pDevice, m_support, "IsNormal", ResourceInitFn, ShaderInitFn,
+        ShaderOpSet);
+
+    MappedData data;
+    test->Test->GetReadBackData("g_TestData", &data);
+
+    FloatInputUintOutput *pPrimitives = (FloatInputUintOutput*)data.data();
+    WEX::TestExecution::DisableVerifyExceptions dve;
+    for (unsigned i = 0; i < count; ++i) {
+        FloatInputUintOutput *p = &pPrimitives[i];
+        unsigned int val = (*Validation_Expected)[i % Validation_Expected->size()];
+        LogCommentFmt(
+            L"element #%u, input = %6.8f, output = %6.8f, expected = %d", i,
+            p->input, p->output, val);
+        VERIFY_ARE_EQUAL(p->output, val);
+        
+    }
+  }
+
 }
 
 #ifndef _HLK_CONF

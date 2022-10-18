@@ -1317,8 +1317,15 @@ bool EmitVisitor::visit(SpirvStore *inst) {
   initInstruction(inst);
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getPointer()));
   curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getObject()));
-  if (inst->hasMemoryAccessSemantics())
-    curInst.push_back(static_cast<uint32_t>(inst->getMemoryAccess()));
+  if (inst->hasMemoryAccessSemantics()) {
+    spv::MemoryAccessMask memoryAccess = inst->getMemoryAccess();
+    curInst.push_back(static_cast<uint32_t>(memoryAccess));
+    if (inst->hasAlignment()) {
+      assert(static_cast<uint32_t>(memoryAccess) &
+             static_cast<uint32_t>(spv::MemoryAccessMask::Aligned));
+      curInst.push_back(inst->getAlignment());
+    }
+  }
   finalizeInstruction(&mainBinary);
   return true;
 }
@@ -1430,10 +1437,11 @@ void EmitVisitor::generateDebugSourceContinued(uint32_t textId,
 void EmitVisitor::generateChoppedSource(uint32_t fileId, SpirvDebugSource *inst) {
   // Chop up the source into multiple segments if it is too long.
   llvm::SmallVector<std::string, 2> choppedSrcCode;
-  std::string text;
   uint32_t textId = 0;
   if (spvOptions.debugInfoSource) {
-    text = ReadSourceCode(inst->getFile());
+    std::string text = inst->getContent();
+    if (text.empty())
+      text = ReadSourceCode(inst->getFile());
     if (!text.empty()) {
       // Maximum characters for DebugSource and DebugSourceContinued
       // OpString literal minus terminating null.
@@ -1612,6 +1620,25 @@ bool EmitVisitor::visit(SpirvDebugFunctionDefinition *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvInstruction>(inst->getDebugFunction()));
   curInst.push_back(getOrAssignResultId<SpirvFunction>(inst->getFunction()));
+  finalizeInstruction(&mainBinary);
+  return true;
+}
+
+bool EmitVisitor::visit(SpirvDebugEntryPoint *inst) {
+  uint32_t sigId = getOrCreateOpStringId(inst->getSignature());
+  uint32_t argId = getOrCreateOpStringId(inst->getArgs());
+  initInstruction(inst);
+  curInst.push_back(inst->getResultTypeId());
+  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst));
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getInstructionSet()));
+  curInst.push_back(inst->getDebugOpcode());
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getEntryPoint()));
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getCompilationUnit()));
+  curInst.push_back(sigId);
+  curInst.push_back(argId);
   finalizeInstruction(&mainBinary);
   return true;
 }

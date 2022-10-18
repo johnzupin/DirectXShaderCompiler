@@ -90,6 +90,7 @@ DEFINE_INVOKE_VISITOR_FOR_CLASS(SpirvDebugCompilationUnit)
 DEFINE_INVOKE_VISITOR_FOR_CLASS(SpirvDebugFunctionDeclaration)
 DEFINE_INVOKE_VISITOR_FOR_CLASS(SpirvDebugFunction)
 DEFINE_INVOKE_VISITOR_FOR_CLASS(SpirvDebugFunctionDefinition)
+DEFINE_INVOKE_VISITOR_FOR_CLASS(SpirvDebugEntryPoint)
 DEFINE_INVOKE_VISITOR_FOR_CLASS(SpirvDebugLocalVariable)
 DEFINE_INVOKE_VISITOR_FOR_CLASS(SpirvDebugGlobalVariable)
 DEFINE_INVOKE_VISITOR_FOR_CLASS(SpirvDebugOperation)
@@ -833,6 +834,18 @@ SpirvStore::SpirvStore(SourceLocation loc, SpirvInstruction *pointerInst,
     : SpirvInstruction(IK_Store, spv::Op::OpStore, QualType(), loc, range),
       pointer(pointerInst), object(objectInst), memoryAccess(mask) {}
 
+void SpirvStore::setAlignment(uint32_t alignment) {
+  assert(alignment != 0);
+  assert(llvm::isPowerOf2_32(alignment));
+  if (!memoryAccess.hasValue()) {
+    memoryAccess = spv::MemoryAccessMask::Aligned;
+  } else {
+    memoryAccess.getValue() =
+        memoryAccess.getValue() | spv::MemoryAccessMask::Aligned;
+  }
+  memoryAlignment = alignment;
+}
+
 SpirvUnaryOp::SpirvUnaryOp(spv::Op opcode, QualType resultType,
                            SourceLocation loc, SpirvInstruction *op,
                            SourceRange range)
@@ -932,6 +945,13 @@ SpirvDebugFunctionDefinition::SpirvDebugFunctionDefinition(
     SpirvDebugFunction *function_, SpirvFunction *fn_)
     : SpirvDebugInstruction(IK_DebugFunctionDef, /*opcode*/ 101u),
       function(function_), fn(fn_) {}
+
+SpirvDebugEntryPoint::SpirvDebugEntryPoint(SpirvDebugFunction *ep_,
+                                           SpirvDebugCompilationUnit *cu_,
+                                           llvm::StringRef signature_,
+                                           llvm::StringRef args_)
+    : SpirvDebugInstruction(IK_DebugEntryPoint, /*opcode*/ 107u), ep(ep_),
+      cu(cu_), signature(signature_), args(args_) {}
 
 SpirvDebugLocalVariable::SpirvDebugLocalVariable(
     QualType debugQualType_, llvm::StringRef varName, SpirvDebugSource *src,

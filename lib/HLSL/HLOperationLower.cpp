@@ -26,6 +26,7 @@
 #include "dxc/HLSL/HLOperations.h"
 #include "dxc/HlslIntrinsicOp.h"
 #include "dxc/DXIL/DxilResourceProperties.h"
+#include "dxc/HLSL/DxilPoisonValues.h"
 
 #include "llvm/IR/GetElementPtrTypeIterator.h"
 #include "llvm/IR/IRBuilder.h"
@@ -135,6 +136,34 @@ public:
     MarkHasCounterOnCreateHandle(counterHandle, resSet);
   }
 
+  DxilResourceBase *FindCBufferResourceFromHandle(Value *handle) {
+    if (CallInst *CI = dyn_cast<CallInst>(handle)) {
+      hlsl::HLOpcodeGroup group =
+          hlsl::GetHLOpcodeGroupByName(CI->getCalledFunction());
+      if (group == HLOpcodeGroup::HLAnnotateHandle) {
+        handle = CI->getArgOperand(HLOperandIndex::kAnnotateHandleHandleOpIdx);
+      }
+    }
+
+    Constant *symbol = nullptr;
+    if (CallInst *CI = dyn_cast<CallInst>(handle)) {
+      hlsl::HLOpcodeGroup group =
+          hlsl::GetHLOpcodeGroupByName(CI->getCalledFunction());
+      if (group == HLOpcodeGroup::HLCreateHandle) {
+        symbol = dyn_cast<Constant>(CI->getArgOperand(HLOperandIndex::kCreateHandleResourceOpIdx));
+      }
+    }
+
+    if (!symbol)
+      return nullptr;
+
+    for (const std::unique_ptr<DxilCBuffer> &res : HLM.GetCBuffers()) {
+      if (res->GetGlobalSymbol() == symbol)
+        return res.get();
+    }
+    return nullptr;
+  }
+
   Value *GetOrCreateResourceForCbPtr(GetElementPtrInst *CbPtr,
                                      GlobalVariable *CbGV,
                                      DxilResourceProperties &RP) {
@@ -209,7 +238,8 @@ private:
         return HandleMetaMap[Handle];
       }
     }
-    Handle->getContext().emitError("cannot map resource to handle");
+    dxilutil::EmitErrorOnContext(Handle->getContext(),
+                                 "cannot map resource to handle.");
 
     return HandleMetaMap[Handle];
   }
@@ -636,7 +666,7 @@ Value *TranslateD3DColorToUByte4(CallInst *CI, IntrinsicOp IOP,
       std::vector<int> mask { 2, 1, 0, 3 };
       val = Builder.CreateShuffleVector(val, val, mask);
     } else {
-      dxilutil::EmitErrorOnInstruction(CI, "Unsupported input type for intrinsic D3DColorToUByte4.");
+      llvm_unreachable("Unsupported input type for intrinsic D3DColorToUByte4.");
       return UndefValue::get(CI->getType());
     }
   }
@@ -2387,7 +2417,7 @@ Value *TranslatePrintf(CallInst *CI, IntrinsicOp IOP, DXIL::OpCode opcode,
                        HLObjectOperationLowerHelper *pObjHelper,
                        bool &Translated) {
   Translated = false;
-  CI->getContext().emitError(CI, "use of undeclared identifier 'printf'");
+  dxilutil::EmitErrorOnInstruction(CI, "use of unsupported identifier 'printf'");
   return nullptr;
 }
 
@@ -5765,6 +5795,7 @@ IntrinsicLower gLowerTable[] = {
     {IntrinsicOp::IOP_unpack_u8u32, TranslateUnpack, DXIL::OpCode::Unpack4x8},
 #ifdef ENABLE_SPIRV_CODEGEN
     { IntrinsicOp::IOP_VkRawBufferLoad, UnsupportedVulkanIntrinsic, DXIL::OpCode::NumOpCodes },
+    { IntrinsicOp::IOP_VkRawBufferStore, UnsupportedVulkanIntrinsic, DXIL::OpCode::NumOpCodes },
     { IntrinsicOp::IOP_VkReadClock, UnsupportedVulkanIntrinsic, DXIL::OpCode::NumOpCodes },
     { IntrinsicOp::IOP_Vkext_execution_mode, UnsupportedVulkanIntrinsic, DXIL::OpCode::NumOpCodes },
     { IntrinsicOp::IOP_Vkext_execution_mode_id, UnsupportedVulkanIntrinsic, DXIL::OpCode::NumOpCodes },
@@ -6814,15 +6845,18 @@ void TranslateCBGepLegacy(GetElementPtrInst *GEP, Value *handle,
       // Array always start from x channel.
       channel = 0;
     } else if (GEPIt->isVectorTy()) {
-      unsigned size = DL.getTypeAllocSize(GEPIt->getVectorElementType());
       // Indexing on vector.
       if (bImmIdx) {
-        unsigned tempOffset = size * immIdx;
-        if (size == 2) { // 16-bit types
-          unsigned channelInc = tempOffset >> 1;
-          DXASSERT((channel + channelInc) <= 8, "vector should not cross cb register (8x16bit)");
+        if (immIdx < GEPIt->getVectorNumElements()) {
+          const unsigned vectorElmSize     = DL.getTypeAllocSize(GEPIt->getVectorElementType());
+          const bool     bIs16bitType      = vectorElmSize == 2;
+          const unsigned tempOffset        = vectorElmSize * immIdx;
+          const unsigned numChannelsPerRow = bIs16bitType ? 8 : 4;
+          const unsigned channelInc        = bIs16bitType ? tempOffset >> 1 : tempOffset >> 2;
+
+          DXASSERT((channel + channelInc) < numChannelsPerRow, "vector should not cross cb register");
           channel += channelInc;
-          if (channel == 8) {
+          if (channel == numChannelsPerRow) {
             // Get to another row.
             // Update index and channel.
             channel = 0;
@@ -6830,15 +6864,14 @@ void TranslateCBGepLegacy(GetElementPtrInst *GEP, Value *handle,
           }
         }
         else {
-          unsigned channelInc = tempOffset >> 2;
-          DXASSERT((channel + channelInc) <= 4, "vector should not cross cb register (8x32bit)");
-          channel += channelInc;
-          if (channel == 4) {
-            // Get to another row.
-            // Update index and channel.
-            channel = 0;
-            legacyIndex = Builder.CreateAdd(legacyIndex, Builder.getInt32(1));
+          StringRef resName = "(unknown)";
+          if (DxilResourceBase *Res = pObjHelper->FindCBufferResourceFromHandle(handle)) {
+            resName = Res->GetGlobalName();
           }
+          legacyIndex = hlsl::CreatePoisonValue(legacyIndex->getType(),
+            Twine("Out of bounds index (") + Twine(immIdx) + Twine(") in CBuffer '") + Twine(resName) + ("'"),
+            GEP->getDebugLoc(), GEP);
+          channel = 0;
         }
       } else {
         Type *EltTy = GEPIt->getVectorElementType();
