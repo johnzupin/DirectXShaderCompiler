@@ -257,12 +257,13 @@ SpirvLoad *SpirvBuilder::createLoad(const SpirvType *resultType,
   return instruction;
 }
 
-void SpirvBuilder::createStore(SpirvInstruction *address,
+SpirvStore *SpirvBuilder::createStore(SpirvInstruction *address,
                                SpirvInstruction *value, SourceLocation loc,
                                SourceRange range) {
   assert(insertPoint && "null insert point");
   auto *instruction = new (context) SpirvStore(loc, address, value, llvm::None, range);
   insertPoint->addInstruction(instruction);
+  return instruction;
 }
 
 SpirvFunctionCall *
@@ -900,6 +901,14 @@ SpirvBuilder::createDebugCompilationUnit(SpirvDebugSource *source) {
       /*version*/ 1, /*DWARF version*/ 4, source);
   mod->addDebugInfo(inst);
   return inst;
+}
+
+void SpirvBuilder::createDebugEntryPoint(SpirvDebugFunction *ep,
+                                         SpirvDebugCompilationUnit *cu,
+                                         llvm::StringRef signature,
+                                         llvm::StringRef args) {
+  auto *inst = new (context) SpirvDebugEntryPoint(ep, cu, signature, args);
+  mod->addDebugInfo(inst);
 }
 
 SpirvDebugLexicalBlock *

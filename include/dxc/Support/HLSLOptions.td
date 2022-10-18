@@ -168,6 +168,10 @@ def opt_enable : Separate<["-", "/"], "opt-enable">, Group<hlsloptz_Group>, Flag
 def opt_select : MultiArg<["-", "/"], "opt-select", 2>, MetaVarName<"<opt> <variant>">, Group<hlsloptz_Group>, Flags<[CoreOption, DriverOption, HelpHidden]>,
   HelpText<"Select this optimization variant.">;
 
+def fdisable_loc_tracking : Flag<["-"], "fdisable-loc-tracking">,
+  Group<hlslcomp_Group>, Flags<[CoreOption]>,
+  HelpText<"Disable source location tracking in IR. This will break diagnostic generation for late validation. (Ignored if /Zi is passed)">;
+
 /*
 def fno_caret_diagnostics : Flag<["-"], "fno-caret-diagnostics">, Group<hlslcomp_Group>,
  Flags<[CoreOption]>;
@@ -431,6 +435,9 @@ def Fd : JoinedOrSeparate<["-", "/"], "Fd">, MetaVarName<"<file>">,
 def Fre : Separate<["-", "/"], "Fre">, MetaVarName<"<file>">, HelpText<"Output reflection to the given file">, Flags<[CoreOption, DriverOption]>, Group<hlslcomp_Group>;
 def Frs : Separate<["-", "/"], "Frs">, MetaVarName<"<file>">, HelpText<"Output root signature to the given file">, Flags<[CoreOption, DriverOption]>, Group<hlslcomp_Group>;
 def Fsh : Separate<["-", "/"], "Fsh">, MetaVarName<"<file>">, HelpText<"Output shader hash to the given file">, Flags<[CoreOption, DriverOption]>, Group<hlslcomp_Group>;
+def Fi : JoinedOrSeparate<["-", "/"], "Fi">, MetaVarName<"<file>">,
+  HelpText<"Set preprocess output file name (with /P)">,
+  Flags<[CoreOption, DriverOption]>, Group<hlslcomp_Group>;
 
 def Vn : JoinedOrSeparate<["-", "/"], "Vn">, MetaVarName<"<name>">, HelpText<"Use <name> as variable name in header file">, Flags<[DriverOption]>, Group<hlslcomp_Group>;
 def Cc : Flag<["-", "/"], "Cc">, HelpText<"Output color coded assembly listings">, Group<hlslcomp_Group>, Flags<[DriverOption]>;
@@ -439,8 +446,8 @@ def No : Flag<["-", "/"], "No">, HelpText<"Output instruction byte offsets in as
 def Lx : Flag<["-", "/"], "Lx">, HelpText<"Output hexadecimal literals">, Group<hlslcomp_Group>, Flags<[DriverOption]>;
 
 // In place of 'E' for clang; fxc uses 'E' for entry point.
-def P : Separate<["-", "/"], "P">, Flags<[CoreOption, DriverOption]>, Group<hlslutil_Group>,
-  HelpText<"Preprocess to file (must be used alone)">;
+def P : Flag<["-", "/"], "P">, Flags<[CoreOption, DriverOption]>, Group<hlslutil_Group>,
+  HelpText<"Preprocess to file">;
 
 // @<file> - options response file
 

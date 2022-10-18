@@ -603,7 +603,7 @@ SpirvEmitter::SpirvEmitter(CompilerInstance &ci)
 
   // Set shader module version, source file name, and source file content (if
   // needed).
-  llvm::StringRef source;
+  llvm::StringRef source = "";
   std::vector<llvm::StringRef> fileNames;
   const auto &inputFiles = ci.getFrontendOpts().Inputs;
   // File name
@@ -625,7 +625,7 @@ SpirvEmitter::SpirvEmitter(CompilerInstance &ci)
 
   // Rich DebugInfo DebugSource
   if (spirvOptions.debugInfoRich) {
-    auto *dbgSrc = spvBuilder.createDebugSource(mainSourceFile->getString());
+    auto *dbgSrc = spvBuilder.createDebugSource(mainSourceFile->getString(), source);
     // spvContext.getDebugInfo().insert() inserts {string key, RichDebugInfo}
     // pair and returns {{string key, RichDebugInfo}, true /*Success*/}.
     // spvContext.getDebugInfo().insert().first->second is a RichDebugInfo.
@@ -649,9 +649,10 @@ SpirvEmitter::SpirvEmitter(CompilerInstance &ci)
 
     // Emit OpModuleProcessed to indicate the command line options that were
     // used to generate this module.
-    if (!spirvOptions.clOptions.empty()) {
+    if (!spirvOptions.inputFile.empty() || !spirvOptions.clOptions.empty()) {
       // Using this format: "dxc-cl-option: XXXXXX"
-      std::string clOptionStr = "dxc-cl-option:" + spirvOptions.clOptions;
+      std::string clOptionStr =
+          "dxc-cl-option: " + spirvOptions.inputFile + spirvOptions.clOptions;
       spvBuilder.addModuleProcessed(clOptionStr);
     }
   }
@@ -1053,9 +1054,23 @@ SpirvInstruction *SpirvEmitter::doExpr(const Expr *expr,
   } else if (const auto *subscriptExpr = dyn_cast<ArraySubscriptExpr>(expr)) {
     result = doArraySubscriptExpr(subscriptExpr, range);
   } else if (const auto *condExpr = dyn_cast<ConditionalOperator>(expr)) {
-    result = doConditionalOperator(condExpr);
+    // Beginning with HLSL 2021, the ternary operator is short-circuited.
+    if (getCompilerInstance().getLangOpts().EnableShortCircuit) {
+      result = doShortCircuitedConditionalOperator(condExpr);
+    } else {
+      const Expr *cond = condExpr->getCond();
+      const Expr *falseExpr = condExpr->getFalseExpr();
+      const Expr *trueExpr = condExpr->getTrueExpr();
+      result = doConditional(condExpr, cond, falseExpr, trueExpr);
+    }
   } else if (const auto *defaultArgExpr = dyn_cast<CXXDefaultArgExpr>(expr)) {
-    result = doExpr(defaultArgExpr->getParam()->getDefaultArg());
+    if (defaultArgExpr->getParam()->hasUninstantiatedDefaultArg()) {
+      auto defaultArg = defaultArgExpr->getParam()->getUninstantiatedDefaultArg();
+      result = castToType(doExpr(defaultArg), defaultArg->getType(), defaultArgExpr->getType(), defaultArg->getLocStart(), defaultArg->getSourceRange());
+      result->setRValue();
+    } else {
+      result = doExpr(defaultArgExpr->getParam()->getDefaultArg());
+    }
   } else if (isa<CXXThisExpr>(expr)) {
     assert(curThis);
     result = curThis;
@@ -1266,28 +1281,11 @@ void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
 
   SpirvFunction *func = declIdMapper.getOrRegisterFn(decl);
 
-  const auto iter = functionInfoMap.find(decl);
-  if (iter != functionInfoMap.end()) {
-    const auto &entryInfo = iter->second;
-    if (entryInfo->isEntryFunction) {
-      funcName = "src." + funcName;
-      // Create wrapper for the entry function
-      if (!emitEntryFunctionWrapper(decl, func))
-        return;
-    }
-  }
-
-  const QualType retType =
-      declIdMapper.getTypeAndCreateCounterForPotentialAliasVar(decl);
-
-  spvBuilder.beginFunction(retType, decl->getLocStart(), funcName,
-                           decl->hasAttr<HLSLPreciseAttr>(),
-                           decl->hasAttr<NoInlineAttr>(), func);
-
   auto loc = decl->getLocStart();
   auto range = decl->getSourceRange();
   RichDebugInfo *info = nullptr;
   SpirvDebugFunction *debugFunction = nullptr;
+  SpirvDebugInstruction *outer_scope = spvContext.getCurrentLexicalScope();
   const auto &sm = astContext.getSourceManager();
   if (spirvOptions.debugInfoRich && decl->hasBody()) {
     const uint32_t line = sm.getPresumedLineNumber(loc);
@@ -1310,6 +1308,34 @@ void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
 
     spvContext.pushDebugLexicalScope(info, debugFunction);
   }
+
+  bool isEntry = false;
+  const auto iter = functionInfoMap.find(decl);
+  if (iter != functionInfoMap.end()) {
+    const auto &entryInfo = iter->second;
+    if (entryInfo->isEntryFunction) {
+      isEntry = true;
+      funcName = "src." + funcName;
+      // Create wrapper for the entry function
+      if (!emitEntryFunctionWrapper(decl, func, debugFunction))
+        return;
+      // Generate DebugEntryPoint if function definition
+      if (spirvOptions.debugInfoVulkan && debugFunction) {
+        auto *cu = dyn_cast<SpirvDebugCompilationUnit>(outer_scope);
+        assert(cu && "expected DebugCompilationUnit");
+        spvBuilder.createDebugEntryPoint(debugFunction, cu,
+                                         clang::getGitCommitHash(),
+                                         spirvOptions.clOptions);
+      }
+    }
+  }
+
+  const QualType retType =
+      declIdMapper.getTypeAndCreateCounterForPotentialAliasVar(decl);
+
+  spvBuilder.beginFunction(retType, decl->getLocStart(), funcName,
+                           decl->hasAttr<HLSLPreciseAttr>(),
+                           decl->hasAttr<NoInlineAttr>(), func);
 
   bool isNonStaticMemberFn = false;
   if (const auto *memberFn = dyn_cast<CXXMethodDecl>(decl)) {
@@ -1359,7 +1385,8 @@ void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
 
     // Add DebugFunctionDefinition if we are emitting
     // NonSemantic.Shader.DebugInfo.100 debug info
-    if (spirvOptions.debugInfoVulkan && debugFunction)
+    // and we haven't already added it to the wrapper.
+    if (!isEntry && spirvOptions.debugInfoVulkan && debugFunction)
       spvBuilder.createDebugFunctionDef(debugFunction, func);
 
     // Process all statments in the body.
@@ -3304,8 +3331,8 @@ SpirvEmitter::doCompoundAssignOperator(const CompoundAssignOperator *expr) {
   return processAssignment(lhs, result, true, lhsPtr, expr->getSourceRange());
 }
 
-SpirvInstruction *
-SpirvEmitter::doConditionalOperator(const ConditionalOperator *expr) {
+SpirvInstruction *SpirvEmitter::doShortCircuitedConditionalOperator(
+    const ConditionalOperator *expr) {
   const auto type = expr->getType();
   const SourceLocation loc = expr->getExprLoc();
   const SourceRange range = expr->getSourceRange();
@@ -3313,7 +3340,57 @@ SpirvEmitter::doConditionalOperator(const ConditionalOperator *expr) {
   const Expr *falseExpr = expr->getFalseExpr();
   const Expr *trueExpr = expr->getTrueExpr();
 
-  // According to HLSL doc, all sides of the ?: expression are always evaluated.
+  // Short-circuited operators can only be used with scalar conditions. This
+  // is checked earlier.
+  assert(cond->getType()->isScalarType());
+
+  auto *tempVar = spvBuilder.addFnVar(type, loc, "temp.var.ternary");
+  auto *thenBB = spvBuilder.createBasicBlock("ternary.lhs");
+  auto *elseBB = spvBuilder.createBasicBlock("ternary.rhs");
+  auto *mergeBB = spvBuilder.createBasicBlock("ternary.merge");
+
+  // Create the branch instruction. This will end the current basic block.
+  SpirvInstruction *condition = loadIfGLValue(cond);
+  condition = castToBool(condition, cond->getType(), astContext.BoolTy,
+                         cond->getLocEnd());
+  spvBuilder.createConditionalBranch(condition, thenBB, elseBB, loc, mergeBB);
+  spvBuilder.addSuccessor(thenBB);
+  spvBuilder.addSuccessor(elseBB);
+  spvBuilder.setMergeTarget(mergeBB);
+
+  // Handle the true case.
+  spvBuilder.setInsertPoint(thenBB);
+  SpirvInstruction *trueVal = loadIfGLValue(trueExpr);
+  trueVal = castToType(trueVal, trueExpr->getType(), type,
+                       trueExpr->getExprLoc(), range);
+  spvBuilder.createStore(tempVar, trueVal, trueExpr->getLocStart(), range);
+  spvBuilder.createBranch(mergeBB, trueExpr->getLocEnd());
+  spvBuilder.addSuccessor(mergeBB);
+
+  // Handle the false case.
+  spvBuilder.setInsertPoint(elseBB);
+  SpirvInstruction *falseVal = loadIfGLValue(falseExpr);
+  falseVal = castToType(falseVal, falseExpr->getType(), type,
+                        falseExpr->getExprLoc(), range);
+  spvBuilder.createStore(tempVar, falseVal, falseExpr->getLocStart(), range);
+  spvBuilder.createBranch(mergeBB, falseExpr->getLocEnd());
+  spvBuilder.addSuccessor(mergeBB);
+
+  // From now on, emit instructions into the merge block.
+  spvBuilder.setInsertPoint(mergeBB);
+  SpirvInstruction *result = spvBuilder.createLoad(type, tempVar, loc, range);
+  result->setRValue();
+  return result;
+}
+
+SpirvInstruction
+*SpirvEmitter::doConditional(const Expr *expr,
+                             const Expr *cond,
+                             const Expr *falseExpr,
+                             const Expr *trueExpr) {
+  const auto type = expr->getType();
+  const SourceLocation loc = expr->getExprLoc();
+  const SourceRange range = expr->getSourceRange();
 
   // Corner-case: In HLSL, the condition of the ternary operator can be a
   // matrix of booleans which results in selecting between components of two
@@ -3370,12 +3447,12 @@ SpirvEmitter::doConditionalOperator(const ConditionalOperator *expr) {
     // selection must be a vector of booleans (one per output component).
     uint32_t count = 0;
     if (isVectorType(expr->getType(), nullptr, &count) &&
-        !isVectorType(expr->getCond()->getType())) {
+        !isVectorType(cond->getType())) {
       const llvm::SmallVector<SpirvInstruction *, 4> components(size_t(count),
                                                                 condition);
       condition = spvBuilder.createCompositeConstruct(
           astContext.getExtVectorType(astContext.BoolTy, count), components,
-          expr->getCond()->getLocEnd());
+          cond->getLocEnd());
     }
 
     auto *value = spvBuilder.createSelect(type, condition, trueBranch,
@@ -3401,21 +3478,21 @@ SpirvEmitter::doConditionalOperator(const ConditionalOperator *expr) {
 
   // Create the branch instruction. This will end the current basic block.
   spvBuilder.createConditionalBranch(condition, thenBB, elseBB,
-                                     expr->getCond()->getLocEnd(), mergeBB);
+                                     cond->getLocEnd(), mergeBB);
   spvBuilder.addSuccessor(thenBB);
   spvBuilder.addSuccessor(elseBB);
   spvBuilder.setMergeTarget(mergeBB);
   // Handle the then branch
   spvBuilder.setInsertPoint(thenBB);
   spvBuilder.createStore(tempVar, trueBranch,
-                         expr->getTrueExpr()->getLocStart(), range);
-  spvBuilder.createBranch(mergeBB, expr->getTrueExpr()->getLocEnd());
+                         trueExpr->getLocStart(), range);
+  spvBuilder.createBranch(mergeBB, trueExpr->getLocEnd());
   spvBuilder.addSuccessor(mergeBB);
   // Handle the else branch
   spvBuilder.setInsertPoint(elseBB);
   spvBuilder.createStore(tempVar, falseBranch,
-                         expr->getFalseExpr()->getLocStart(), range);
-  spvBuilder.createBranch(mergeBB, expr->getFalseExpr()->getLocEnd());
+                         falseExpr->getLocStart(), range);
+  spvBuilder.createBranch(mergeBB, falseExpr->getLocEnd());
   spvBuilder.addSuccessor(mergeBB);
   // From now on, emit instructions into the merge block.
   spvBuilder.setInsertPoint(mergeBB);
@@ -4197,7 +4274,8 @@ bool SpirvEmitter::tryToAssignCounterVar(const DeclaratorDecl *dstDecl,
     declIdMapper.createFnParamCounterVar(thisObject);
 
   // Handle AssocCounter#1 (see CounterVarFields comment)
-  if (const auto *dstPair = declIdMapper.getCounterIdAliasPair(dstDecl)) {
+  if (const auto *dstPair =
+          declIdMapper.createOrGetCounterIdAliasPair(dstDecl)) {
     const auto *srcPair = getFinalACSBufferCounter(srcExpr);
     if (!srcPair) {
       emitFatalError("cannot find the associated counter variable",
@@ -4268,7 +4346,7 @@ const CounterIdAliasPair *
 SpirvEmitter::getFinalACSBufferCounter(const Expr *expr) {
   // AssocCounter#1: referencing some stand-alone variable
   if (const auto *decl = getReferencedDef(expr))
-    return declIdMapper.getCounterIdAliasPair(decl);
+    return declIdMapper.createOrGetCounterIdAliasPair(decl);
 
   // AssocCounter#2: referencing some non-struct field
   llvm::SmallVector<uint32_t, 4> rawIndices;
@@ -5758,7 +5836,7 @@ spv::Op SpirvEmitter::translateOp(BinaryOperator::Opcode op, QualType type) {
     if (isFloatType)
       return spv::Op::OpFOrdNotEqual;
   } break;
-  // According to HLSL doc, all sides of the && and || expression are always
+  // Up until HLSL 2021, all sides of the && and || expression are always
   // evaluated.
   case BO_LAnd:
     return spv::Op::OpLogicalAnd;
@@ -6128,6 +6206,69 @@ SpirvInstruction *SpirvEmitter::processBinaryOp(
   if (opcode == BO_Comma) {
     (void)doExpr(lhs);
     return doExpr(rhs);
+  }
+
+  // Beginning with HLSL 2021, logical operators are short-circuited,
+  // and can only be used with scalar types.
+  if ((opcode == BO_LAnd || opcode == BO_LOr) &&
+      getCompilerInstance().getLangOpts().EnableShortCircuit) {
+
+    // We translate short-circuited operators as follows:
+    // A && B =>
+    //   result = false;
+    //   if (A)
+    //     result = B;
+    //
+    // A || B =>
+    //   result = true;
+    //   if (!A)
+    //     result = B;
+    SpirvInstruction *lhsVal = loadIfGLValue(lhs);
+    if (lhsVal == nullptr) {
+      return nullptr;
+    }
+    SpirvInstruction *cond = castToBool(lhsVal, lhs->getType(),
+                                        astContext.BoolTy, lhs->getExprLoc());
+
+    auto *tempVar =
+        spvBuilder.addFnVar(astContext.BoolTy, loc, "temp.var.logical");
+    auto *thenBB = spvBuilder.createBasicBlock("logical.lhs.cond");
+    auto *mergeBB = spvBuilder.createBasicBlock("logical.merge");
+
+    if (opcode == BO_LAnd) {
+      spvBuilder.createStore(tempVar, spvBuilder.getConstantBool(false), loc,
+                             sourceRange);
+    } else {
+      spvBuilder.createStore(tempVar, spvBuilder.getConstantBool(true), loc,
+                             sourceRange);
+      cond = spvBuilder.createUnaryOp(spv::Op::OpLogicalNot, astContext.BoolTy,
+                                      cond, lhs->getExprLoc());
+    }
+
+    // Create the branch instruction. This will end the current basic block.
+    spvBuilder.createConditionalBranch(cond, thenBB, mergeBB, lhs->getExprLoc(),
+                                       mergeBB);
+    spvBuilder.addSuccessor(thenBB);
+    spvBuilder.setMergeTarget(mergeBB);
+    // Handle the then branch.
+    spvBuilder.setInsertPoint(thenBB);
+    SpirvInstruction *rhsVal = loadIfGLValue(rhs);
+    if (rhsVal == nullptr) {
+      return nullptr;
+    }
+    SpirvInstruction *rhsBool = castToBool(
+        rhsVal, rhs->getType(), astContext.BoolTy, rhs->getExprLoc());
+    spvBuilder.createStore(tempVar, rhsBool, rhs->getExprLoc());
+    spvBuilder.createBranch(mergeBB, rhs->getExprLoc());
+    spvBuilder.addSuccessor(mergeBB);
+    // From now on, emit instructions into the merge block.
+    spvBuilder.setInsertPoint(mergeBB);
+
+    SpirvInstruction *result =
+        castToType(tempVar, astContext.BoolTy, resultType, loc, sourceRange);
+    result = spvBuilder.createLoad(resultType, tempVar, loc, sourceRange);
+    result->setRValue();
+    return result;
   }
 
   SpirvInstruction *rhsVal = nullptr, *lhsPtr = nullptr, *lhsVal = nullptr;
@@ -7828,8 +7969,11 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
     break;
   case hlsl::IntrinsicOp::IOP_asdouble:
   case hlsl::IntrinsicOp::IOP_asfloat:
+  case hlsl::IntrinsicOp::IOP_asfloat16:
   case hlsl::IntrinsicOp::IOP_asint:
+  case hlsl::IntrinsicOp::IOP_asint16:
   case hlsl::IntrinsicOp::IOP_asuint:
+  case hlsl::IntrinsicOp::IOP_asuint16:
     retVal = processIntrinsicAsType(callExpr);
     break;
   case hlsl::IntrinsicOp::IOP_clip:
@@ -7889,6 +8033,9 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
     break;
   case hlsl::IntrinsicOp::IOP_VkRawBufferLoad:
     retVal = processRawBufferLoad(callExpr);
+    break;
+  case hlsl::IntrinsicOp::IOP_VkRawBufferStore:
+    retVal = processRawBufferStore(callExpr);
     break;
   case hlsl::IntrinsicOp::IOP_Vkext_execution_mode:
     retVal = processIntrinsicExecutionMode(callExpr, false);
@@ -8109,6 +8256,13 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
     processMeshOutputCounts(callExpr);
     break;
   }
+  case hlsl::IntrinsicOp::IOP_select: {
+    const Expr *cond = callExpr->getArg(0);
+    const Expr *trueExpr = callExpr->getArg(1);
+    const Expr *falseExpr = callExpr->getArg(2);
+    retVal = doConditional(callExpr, cond, falseExpr, trueExpr);
+    break;
+  }
     INTRINSIC_SPIRV_OP_CASE(ddx, DPdx, true);
     INTRINSIC_SPIRV_OP_CASE(ddx_coarse, DPdxCoarse, false);
     INTRINSIC_SPIRV_OP_CASE(ddx_fine, DPdxFine, false);
@@ -8121,6 +8275,8 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
     INTRINSIC_SPIRV_OP_CASE(fmod, FRem, true);
     INTRINSIC_SPIRV_OP_CASE(fwidth, Fwidth, true);
     INTRINSIC_SPIRV_OP_CASE(reversebits, BitReverse, false);
+    INTRINSIC_SPIRV_OP_CASE(and, LogicalAnd, false);
+    INTRINSIC_SPIRV_OP_CASE(or, LogicalOr, false);
     INTRINSIC_OP_CASE(round, RoundEven, true);
     INTRINSIC_OP_CASE(uabs, SAbs, true);
     INTRINSIC_OP_CASE_INT_FLOAT(abs, SAbs, FAbs, true);
@@ -9953,7 +10109,18 @@ SpirvEmitter::processIntrinsicAllOrAny(const CallExpr *callExpr,
 
 SpirvInstruction *
 SpirvEmitter::processIntrinsicAsType(const CallExpr *callExpr) {
-  // This function handles 'asint', 'asuint', 'asfloat', and 'asdouble'.
+  // This function handles the following intrinsics:
+  //    'asint'
+  //    'asint16'
+  //    'asuint'
+  //    'asuint16'
+  //    'asfloat'
+  //    'asfloat16'
+  //    'asdouble'
+
+  // Note: The logic for the 32-bit and 16-bit variants of these functions is
+  //       identical so we don't bother distinguishing between related types
+  //       like float and float16 in the comments.
 
   // Method 1: ret asint(arg)
   //    arg component type = {float, uint}
@@ -11658,10 +11825,18 @@ bool SpirvEmitter::processTessellationShaderAttributes(
 }
 
 bool SpirvEmitter::emitEntryFunctionWrapperForRayTracing(
-    const FunctionDecl *decl, SpirvFunction *entryFuncInstr) {
+    const FunctionDecl *decl, SpirvFunction *entryFuncInstr,
+    SpirvDebugFunction *debugFunction) {
   // The entry basic block.
   auto *entryLabel = spvBuilder.createBasicBlock();
   spvBuilder.setInsertPoint(entryLabel);
+
+  // Add DebugFunctionDefinition if we are emitting
+  // NonSemantic.Shader.DebugInfo.100 debug info.
+  // We will emit it in the wrapper rather than the
+  // user function.
+  if (spirvOptions.debugInfoVulkan && debugFunction)
+    spvBuilder.createDebugFunctionDef(debugFunction, entryFunction);
 
   // Initialize all global variables at the beginning of the wrapper
   for (const VarDecl *varDecl : toInitGloalVars) {
@@ -11925,7 +12100,8 @@ bool SpirvEmitter::processMeshOrAmplificationShaderAttributes(
 }
 
 bool SpirvEmitter::emitEntryFunctionWrapper(const FunctionDecl *decl,
-                                            SpirvFunction *entryFuncInstr) {
+                                            SpirvFunction *entryFuncInstr,
+                                            SpirvDebugFunction *debugFunction) {
   // HS specific attributes
   uint32_t numOutputControlPoints = 0;
   SpirvInstruction *outputControlPointIdVal =
@@ -11960,7 +12136,8 @@ bool SpirvEmitter::emitEntryFunctionWrapper(const FunctionDecl *decl,
   entryInfo->entryFunction = entryFunction;
 
   if (spvContext.isRay()) {
-    return emitEntryFunctionWrapperForRayTracing(decl, entryFuncInstr);
+    return emitEntryFunctionWrapperForRayTracing(decl, entryFuncInstr,
+                                                 debugFunction);
   }
   // Handle attributes specific to each shader stage
   if (spvContext.isPS()) {
@@ -12034,6 +12211,13 @@ bool SpirvEmitter::emitEntryFunctionWrapper(const FunctionDecl *decl,
   // The entry basic block.
   auto *entryLabel = spvBuilder.createBasicBlock();
   spvBuilder.setInsertPoint(entryLabel);
+
+  // Add DebugFunctionDefinition if we are emitting
+  // NonSemantic.Shader.DebugInfo.100 debug info.
+  // We will emit it in the wrapper rather than the
+  // user function.
+  if (spirvOptions.debugInfoVulkan && debugFunction)
+    spvBuilder.createDebugFunctionDef(debugFunction, entryFunction);
 
   // Initialize all global variables at the beginning of the wrapper
   for (const VarDecl *varDecl : toInitGloalVars) {
@@ -12996,6 +13180,32 @@ uint32_t SpirvEmitter::getAlignmentForRawBufferLoad(const CallExpr *callExpr) {
   return static_cast<uint32_t>(intLiteral->getValue().getZExtValue());
 }
 
+uint32_t SpirvEmitter::getAlignmentForRawBufferStore(const CallExpr *callExpr) {
+  if (callExpr->getNumArgs() == 2)
+    return 4;
+
+  if (callExpr->getNumArgs() != 2 && callExpr->getNumArgs() != 3) {
+    emitError("number of arguments for vk::RawBufferStore() must be 2 or 3",
+              callExpr->getExprLoc());
+    return 0;
+  }
+
+  const Expr *alignmentArgExpr = callExpr->getArg(2);
+  if (const auto *templateParmExpr =
+          dyn_cast<SubstNonTypeTemplateParmExpr>(alignmentArgExpr)) {
+    alignmentArgExpr = templateParmExpr->getReplacement();
+  }
+  const auto *intLiteral =
+      dyn_cast<IntegerLiteral>(alignmentArgExpr->IgnoreImplicit());
+  if (intLiteral == nullptr) {
+    emitError("alignment argument of vk::RawBufferStore() must be a constant "
+              "integer",
+              callExpr->getArg(2)->getExprLoc());
+    return 0;
+  }
+  return static_cast<uint32_t>(intLiteral->getValue().getZExtValue());
+}
+
 SpirvInstruction *SpirvEmitter::processRawBufferLoad(const CallExpr *callExpr) {
   uint32_t alignment = getAlignmentForRawBufferLoad(callExpr);
   if (alignment == 0)
@@ -13033,7 +13243,7 @@ SpirvEmitter::loadDataFromRawAddress(SpirvInstruction *addressInUInt64,
                                      SourceLocation loc) {
   // Summary:
   //   %address = OpBitcast %ptrTobufferType %addressInUInt64
-  //   %loadInst = OpLoad %bufferType %address
+  //   %loadInst = OpLoad %bufferType %address alignment %alignment
 
   const HybridPointerType *bufferPtrType =
       spvBuilder.getPhysicalStorageBufferType(bufferType);
@@ -13046,6 +13256,57 @@ SpirvEmitter::loadDataFromRawAddress(SpirvInstruction *addressInUInt64,
   loadInst->setAlignment(alignment);
   loadInst->setRValue();
   return loadInst;
+}
+
+SpirvInstruction *
+SpirvEmitter::storeDataToRawAddress(SpirvInstruction *addressInUInt64,
+                      SpirvInstruction *value,
+                      QualType bufferType, uint32_t alignment,
+                      SourceLocation loc) {
+
+// Summary:
+  //   %address = OpBitcast %ptrTobufferType %addressInUInt64
+  //   %storeInst = OpStore %address %value alignment %alignment
+
+  const HybridPointerType *bufferPtrType =
+      spvBuilder.getPhysicalStorageBufferType(bufferType);
+
+  SpirvUnaryOp *address = spvBuilder.createUnaryOp(
+      spv::Op::OpBitcast, bufferPtrType, addressInUInt64, loc);
+  address->setStorageClass(spv::StorageClass::PhysicalStorageBuffer);
+
+  SpirvStore *storeInst = spvBuilder.createStore(address, value, loc);
+  storeInst->setAlignment(alignment);
+  return nullptr;
+}
+
+SpirvInstruction *SpirvEmitter::processRawBufferStore(const CallExpr *callExpr) {
+  uint32_t alignment = getAlignmentForRawBufferStore(callExpr);
+  if (alignment == 0)
+    return nullptr;
+
+  SpirvInstruction *address = doExpr(callExpr->getArg(0));
+  SpirvInstruction *value = doExpr(callExpr->getArg(1));
+  QualType bufferType = value->getAstResultType();
+  clang::SourceLocation loc = callExpr->getExprLoc();
+  if (!isBoolOrVecMatOfBoolType(bufferType)) {
+    return storeDataToRawAddress(address, value, bufferType, alignment, loc);
+  }
+
+  // If callExpr is `vk::RawBufferLoad<bool>(..)`, we have to load 'uint' and
+  // convert it to boolean data, because a physical pointer cannot have boolean
+  // type in Vulkan.
+  if (alignment % 4 != 0) {
+    emitWarning("Since boolean is a logical type, we use a unsigned integer "
+                "type to read/write boolean from a buffer. Therefore "
+                "alignment for the data with a boolean type must be aligned "
+                "with 4 bytes",
+                loc);
+  }
+  QualType boolType = bufferType;
+  bufferType = getUintTypeForBool(astContext, theCompilerInstance, boolType);
+  auto *storeAsInt = castToInt(value, boolType, bufferType, loc);
+  return storeDataToRawAddress(address, storeAsInt, bufferType, alignment,loc);
 }
 
 SpirvInstruction *

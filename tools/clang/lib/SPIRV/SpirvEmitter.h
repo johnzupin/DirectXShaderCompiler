@@ -122,6 +122,12 @@ private:
                                SourceRange rangeOverride = {});
   SpirvInstruction *doCompoundAssignOperator(const CompoundAssignOperator *);
   SpirvInstruction *doConditionalOperator(const ConditionalOperator *expr);
+  SpirvInstruction *doConditional(const Expr *expr,
+                                  const Expr *cond,
+                                  const Expr *falseExpr,
+                                  const Expr *trueExpr);
+  SpirvInstruction *
+  doShortCircuitedConditionalOperator(const ConditionalOperator *expr);
   SpirvInstruction *doCXXMemberCallExpr(const CXXMemberCallExpr *expr);
   SpirvInstruction *doCXXOperatorCallExpr(const CXXOperatorCallExpr *expr,
                                           SourceRange rangeOverride = {});
@@ -622,7 +628,7 @@ private:
       SourceLocation loc);
   /// Process spirv intrinsic instruction
   SpirvInstruction *processSpvIntrinsicCallExpr(const CallExpr *expr);
-  
+
   /// Process spirv intrinsic type definition
   SpirvInstruction *processSpvIntrinsicTypeDef(const CallExpr *expr);
 
@@ -634,8 +640,20 @@ private:
                                            uint32_t alignment,
                                            SourceLocation loc);
 
+  /// Process `void vk::RawBufferStore<T>(in uint64_t address, in T value
+  /// [, in uint alignment])` that stores data to a given device address.
+  SpirvInstruction *processRawBufferStore(const CallExpr *callExpr);
+  SpirvInstruction *storeDataToRawAddress(SpirvInstruction *addressInUInt64,
+                                          SpirvInstruction *value,
+                                           QualType bufferType,
+                                           uint32_t alignment,
+                                           SourceLocation loc);
+
   /// Returns the alignment of `vk::RawBufferLoad()`.
   uint32_t getAlignmentForRawBufferLoad(const CallExpr *callExpr);
+
+  /// Returns the alignment of `vk::RawBufferStore()`.
+  uint32_t getAlignmentForRawBufferStore(const CallExpr *callExpr);
 
   /// Process vk::ext_execution_mode intrinsic
   SpirvInstruction *processIntrinsicExecutionMode(const CallExpr *expr,
@@ -768,7 +786,8 @@ private:
   /// The wrapper function is also responsible for initializing global static
   /// variables for some cases.
   bool emitEntryFunctionWrapper(const FunctionDecl *entryFunction,
-                                SpirvFunction *entryFuncId);
+                                SpirvFunction *entryFuncId,
+                                SpirvDebugFunction *debugFunction);
 
   /// \brief Emits a wrapper function for the entry functions for raytracing
   /// stages and returns true on success.
@@ -778,7 +797,8 @@ private:
   /// The wrapper function is also responsible for initializing global static
   /// variables for some cases.
   bool emitEntryFunctionWrapperForRayTracing(const FunctionDecl *entryFunction,
-                                             SpirvFunction *entryFuncId);
+                                             SpirvFunction *entryFuncId,
+                                             SpirvDebugFunction *debugFunction);
 
   /// \brief Performs the following operations for the Hull shader:
   /// * Creates an output variable which is an Array containing results for all
