@@ -1,3 +1,25 @@
+directxshadercompiler (1.4.0.2274-1292~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Helena Kotas ]
+  * DXC Release build pipeline - add Linux config, improve display strings (#4719)
+
+  [ Chris B ]
+  * [HLSL2021] Disallow bitfields and annotations (#4711)
+  * Enable template dependent globallycoherent types (#4718)
+
+  [ Marijn Suijten ]
+  * [Linux] WinAdapter: Remove virtual dtors from IUnknown to fix vtable ABI (#3793)
+
+  [ Helena Kotas ]
+  * Update build to Visual Studio 2022 (new default); remove VS 2017 support (#4726)
+  * IsNormalTest: Use IDxcContainerReflection interface instead of helper functions from DxilContainer.cpp (#4730)
+  * Fix build warning (#4739)
+
+  [ Diego Novillo ]
+  * Update submodule hashes for SPIRV-Tools, SPIRV-Headers and re2. (#4743)
+
+ -- john <john@odin>  Tue, 25 Oct 2022 15:48:35 -0600
+
 directxshadercompiler (1.4.0.2274-1284~rc1-1lunarg22.04-1) jammy; urgency=medium
 
   [ Greg Roth ]
