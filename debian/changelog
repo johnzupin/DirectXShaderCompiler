@@ -1,3 +1,148 @@
+directxshadercompiler (1.4.0.2274-1349~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Paul Dodzweit ]
+  * Allow host to be passed to CMake for cross compile (#3914)
+
+  [ Jeff Noyle ]
+  * PIX: Access tracking for libs, switch to raw IO (#4734)
+
+  [ Helena Kotas ]
+  * Reduce IsNormalTest dependencies and revert Hlsl/DxcTestUtils refactoring (#4744)
+
+  [ Adam Yang ]
+  * Made shader reflection return thread group size for AS and MS (#4745)
+
+  [ Jeff Noyle ]
+  * PIX: Fix shader-access-tracking pass' reportage of dynamic indexing (#4748)
+
+  [ Cassandra Beckley ]
+  * Update Windows build link (#4753)
+
+  [ Helena Kotas ]
+  * IsNormalTest - correct Disassemble arguments (#4754)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Run clang-format (#4756)
+
+  [ Xiang Li ]
+  * Remove > %s  in FileCheck tests (#4765)
+
+  [ Jeff Noyle ]
+  * PIX: Switch back to non-raw buffer stores (#4764)
+
+  [ Xiang Li ]
+  * Avoid > in FileCheck run line. (#4768)
+
+  [ Cassandra Beckley ]
+  * Update submodules (#4770)
+
+  [ Xiang Li ]
+  * Add check-prefixes support for FileCheck. (#4769)
+
+  [ Nathan Gauër ]
+  * doc: fix code display on Github (#4775)
+  * maintenance: update submodules (#4782)
+  * bitfields: refactorize struct offset computation (#4781)
+
+  [ Daniele Vettorel ]
+  * Handle structured conditions in for and while loops (#4783)
+
+  [ Adam Yang ]
+  * MergeGepUse improvements (#4784)
+  * Fixed bug where MergeGepUse doesn't return true (#4785)
+
+  [ Xiang Li ]
+  * Support taef run in lit. (#4762)
+
+  [ Chris B ]
+  * Bring in code coverage tooling (#4759)
+
+  [ Xiang Li ]
+  * On Windows, use CreateFileW to delete files in sys::fs::remove. (#4791)
+
+  [ Nathan Gauër ]
+  * misc: fix clang warnings: deprecated,bitwise-logic (#4776)
+
+  [ Chris B ]
+  * [CMake] Simplify code coverage CMake configuration (#4793)
+
+  [ TY-AMD ]
+  * [SPIR-V] Add support for the extension VK_EXT_mesh_shader (#4725)
+
+  [ Chris B ]
+  * TAEF Tests only work on Windows (#4799)
+  * Fix failing LLVM ArrayRef unit test (#4800)
+  * Enable SPIR-V tests to run without arguments (#4802)
+
+  [ Nathan Gauër ]
+  * spirv: get field index from SPIR-V type, not AST (#4806)
+
+  [ Chris ]
+  * Create action to generate code coverage (#4796)
+
+  [ Chris B ]
+  * Enable running unit tests without extra arguments (#4798)
+  * Add option for building with clang-cl and ninja (#4807)
+  * Workarounds for arm64ec build (#4808)
+  * Remove DXC_BUILD_ARCH variable (#4156)
+  * Cleanup Windows code to conform to stricter C++ 17 compiler (#4804)
+  * Make clang taef lit config conform to conventions (#4809)
+
+  [ Greg Fischer ]
+  * [SPIR-V] Add -fspv-debug=vulkan-with-source to usage and README (#4811)
+
+  [ Ben Clayton ]
+  * [DxbcConverter] Fix corruption of ICB integer values (#4790)
+
+  [ Greg Roth ]
+  * [linux] Enable Reflection on *nix platforms (#4810)
+
+  [ Chris B ]
+  * Update GitHub workflow to (hopefully) work (#4812)
+
+  [ Jeff Noyle ]
+  * PIX: Fix instrumentation of libraries; instruction numbering reports (#4817)
+
+  [ Greg Roth ]
+  * Update macos/linux builds to *-latest (#4815)
+
+  [ Laura Hermanns ]
+  * Don't emit built-in 'vk' namespace in DeclPrinter (#4803)
+
+  [ Chris B ]
+  * Don't cancel in-progress coverage builds (#4821)
+  * Disable lit shtest suites (#4822)
+
+  [ Helena Kotas ]
+  * Fix ARM build break (#4823)
+
+  [ Chris B ]
+  * Disable LLVM LIT suites and tests (#4827)
+  * Enable running tests under LIT (#4813)
+
+  [ Adam Yang ]
+  * Fixed lifetime marker causing unroll to fail (#4830)
+
+  [ Chris B ]
+  * Tweaks and fixes to clang build and test configs (#4832)
+  * Update Linux build and test workflows to use lit (#4836)
+  * Fix last LLVM tests on Windows (#4829)
+
+  [ Tex Riddell ]
+  * Fix ternary operator for enum result type (#4838)
+  * Restore impl of DerivedRecordSize in RDAT (#4842)
+
+  [ Cassandra Beckley ]
+  * Update submodules (#4847)
+
+  [ harshpg ]
+  * Replacing fileIO exceptions with error codes (#4841)
+
+  [ Cassandra Beckley ]
+  * Temporarily revert for release (#4848)
+
+ -- john <john@odin>  Thu, 08 Dec 2022 13:38:20 -0700
+
 directxshadercompiler (1.4.0.2274-1292~rc1-1lunarg22.04-1) jammy; urgency=medium
 
   [ Helena Kotas ]
