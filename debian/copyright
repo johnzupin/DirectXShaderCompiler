@@ -1,11 +1,111 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: DirectXShaderCompiler
+Source: https://github.com/microsoft/DirectXShaderCompiler
 
 Files: *
-Copyright:
+Copyright: /* IsPostRA= */false
+           /*IsPostRA=*/true
+           // @142
+           // Ensure 255 is not returned as -1
+           // expected-error {{parameter type 'C' is an abstract class
+           // expected-error {{reinterpret_cast from scalar 'unsigned char' to vector '__v2si' (vector of 2 'int' values) of different size
+           // expected-error {{virtual base
+           // expected-error{{incomplete class type
+           // expected-note {{used here
+           1953, // expected-warning {{no case matching constant switch condition
+           << 2
+           << R.getName() << "Attr(A->getLocation(), C
+           << R.getName() << "Attr(getLocation(), C
+           2012, = STR(COPYRIGHT); // no-warning
+           ? -1 :
+           2001, Alexander Peslyak and it is hereby released to the
+           2009, Apple, Inc
+           BinaryOperator(const_cast<Expr*>(LHS)
+           BinaryOperator(const_cast<Expr*>(LHS), const_cast<Expr*>(RHS)
+           BlockCommand<"copyright">
+           CXXBaseSpecifier[VBases.size()
+           CXXBindTemporaryExpr(Temp, SubExpr)
+           CXXConstCastExpr(EmptyShell())
+           CXXConstCastExpr(T, VK, Op, WrittenTy, L, RParenLoc, AngleBrackets)
+           CXXConstructExpr(C, CXXConstructExprClass, T, Loc, D
+           CXXCtorInitializer*[NumIvarInitializers
+           CXXDefaultArgExpr(CXXDefaultArgExprClass, Loc, Param)
+           CXXDefaultInitExpr(C, Loc, Field, Field->getType())
+           CXXDependentScopeMemberExpr(C, Base, BaseType
+           CXXDependentScopeMemberExpr(C, nullptr, QualType()
+           CXXRecordDecl::LambdaDefinitionData(D, nullptr, false, false
+           CXXTemporary(Destructor)
+           CallExpr(C, ICE, None, C.VoidTy, VK_RValue
+           ClassTemplateSpecializationDecl::
+           ClassTemplateSpecializationDecl::ExplicitSpecializationInfo
+           Common
+           CompoundLiteralExpr(SourceLocation(), unionTInfo, UnionType
+           CompoundStmt(C, Stmts, SourceLocation(), SourceLocation())
+           DeclStmt(DeclGroupRef(V), VarRange.getBegin()
+           DependentDiagnostic(PDiag, DiagStorage)
+           Designator[NumDesignators
+           Designator[NumDesignators - 1 + NumNewDesignators
+           Designator[NumDesigs
+           FloatingLiteral(C, Empty)
+           FloatingLiteral(C, V, isexact, Type, L)
+           2000, Free Software Foundation, Inc
+           FunctionTemplateSpecializationInfo(FD, Template, TSK
+           HLSLBufferDecl(
+           IdentifierInfo*[NumExprs
+           IfStmt(C, SourceLocation(), nullptr, Comparison, Body
+           InitListExpr(C, SourceLocation()
+           InitListExpr(C, lBraceLoc, None, rBraceLoc)
+           IntegerLiteral(C, V, type, l)
+           IntegerLiteral(Empty)
+           MemberSpecializationInfo(ED, TSK)
+           MemberSpecializationInfo(FD, TSK)
+           MemberSpecializationInfo(RD, TSK)
+           Microsoft
+           2015, Microsoft Corporation
+           2010-2011, NVIDIA CORPORATION
+           Nvidia Corporation
+           ObjCBoolLiteralExpr(Val, Ty, SourceLocation())
+           ObjCIvarRefExpr(const_cast<ObjCIvarDecl*>(IVar)
+           ParmVarDecl*[NewParamInfo.size()
+           PartialDiagnostic::Storage
+           Putting 'node' onto freeNodes
+           ReturnStmt(SourceLocation(), const_cast<Expr*>(RetVal)
+           Stmt*[NumArgs+PREARGS_START+NumPreArgs
+           Stmt*[NumExprs
+           Stmt*[NumStmts
+           Stmt*[PREARGS_START+NumPreArgs
+           Stmt*[Stmts.size()
+           Stmt*[TotalSize
+           Stmt*[args.size()
+           Stmt*[args.size()+PREARGS_START+NumPreArgs
+           Stmt*[exprs.size()
+           StringLiteral*[NumClobbers
+           StringLiteral*[NumExprs
+           StringRef[NumClobbers
+           StringRef[NumExprs
+           TemplateArgumentLoc(DefArg))
+           Token[NumAsmToks
+           Try to factorize common
+           UnaryOperator(LValToRval, UO_LNot, C.IntTy
+           UnaryOperator(const_cast<Expr*>(Arg), UO_Deref, Ty
+           VarTemplateSpecializationDecl::ExplicitSpecializationInfo
+           2012, XSTR(X) #X
+           are iboutlets
+           available for inlining. When we process
+           case 1: case 257: ; // expected-warning {{overflow
+           char[Length
+           char[size
+           for each child c of 'node
+           in turn calls Traverse(c), completing the
+           int; // expected-error {{no matching function
+           only
+           opy Results\r
+           struct CXXRecordDecl::DefinitionData(D)
+           struct LambdaDefinitionData(R, Info, Dependent, IsGeneric
+           uint16_t[Length
+           uint32_t[Length
+           uint64_t[NumWords
 License: llvm-release-license
-
-Files: test/YAMLParser/*
-License: Expat
 
 Files: tools/clang/docs/Block-ABI-Apple.rst
        tools/clang/lib/Headers/Intrin.h
@@ -82,10 +182,6 @@ Copyright: 2008-2010, Apple, Inc
            2009, Howard Hinnant
 License: Expat
 
-Files: debian/*
-Copyright: 2022, LunarG, Inc <johnz@lunarg.com>
-License: UnknownCopyrighted
-
 Files: lib/Support/COPYRIGHT.regex
        lib/Support/regcclass.h
        lib/Support/regcname.h
@@ -97,22 +193,10 @@ Files: lib/Support/COPYRIGHT.regex
        lib/Support/regexec.c
        lib/Support/regfree.c
        lib/Support/regutils.h
-Copyright: 1992-1994, Henry Spencer
+Copyright: 1994-2016, 8.1 (Berkeley) 3
+           1992-1994, Henry Spencer
+           1992-1994, The Regents of the University of California
 License: BSD-3-clause
-
-Files: lib/Miniz/*
-Copyright: 2016, Martin Raiber
-           2013-2014, RAD Game Tools and Valve Software
-           2010-2014, Rich Geldreich and Tenacious Software LLC
-           laws, the author or authors
-License: Expat
-
-Files: lib/Miniz/CMakeLists.txt
-       lib/Miniz/LLVMBuild.txt
-Copyright: Microsoft Corporation
-License: Expat
-Comment: No explicit license found, using license(s) from:
- lib/Miniz/LICENSE.TXT
 
 Files: include/llvm/Support/ConvertUTF.h
        lib/Support/ConvertUTF.c
@@ -120,8 +204,10 @@ Copyright: 2001-2004, Unicode, Inc
 License: Unicode
 
 Files: ThirdPartyNotices.txt
-Copyright: 1992-1994, Henry Spencer
+Copyright: 1994-2016, 8.1 (Berkeley) 3
+           1992-1994, Henry Spencer
            2006, Kirill Simonov
+           1994, The Regents of the University of California
            2003-2015, University of <Illinois@Urbana-Champaign>
            2004, eXtensible Systems, Inc
 License: BSD-3-clause or Expat
@@ -130,12 +216,549 @@ Files: lib/Support/regstrlcpy.c
 Copyright: 1998, Todd C. Miller <Todd.Miller@courtesan.com>
 License: ISC
 
-Files: test/YAMLParser/LICENSE.txt
+Files: test/YAMLParser/*
 Copyright: 2006, Kirill Simonov
 License: Expat
 
+Files: external/SPIRV-Tools/*
+Copyright: 2020-2022, Advanced Micro Devices, Inc
+           2021, Alastair F. Donaldson
+           2020, André Perez Maselco
+           2021, Arm Ltd
+           For conditional branches, |visit_fn| may decide which edge to take out
+           2015-2021, Google Inc
+           2017-2022, Google LLC
+           2016-2022, LunarG Inc
+           2021, Mostafa Ashraf
+           2019, NVIDIA Corporation
+           2017-2018, Pierre Moreau
+           2019, Samsung Inc
+           2021, Shiyu Liu
+           2020, Stefano Milizia
+           2015-2022, The Khronos Group Inc
+           2017-2022, Valve Corporation
+           2020, Vasyl Teliman
+           2021, ZHOU He
+           declaration
+           definitions of output ids are
+           or Apache 2 license
+License: Apache-2
+
+Files: external/SPIRV-Tools/.clang-format
+       external/SPIRV-Tools/.github/*
+       external/SPIRV-Tools/Android.mk
+       external/SPIRV-Tools/BUILD.bazel
+       external/SPIRV-Tools/CHANGES
+       external/SPIRV-Tools/CODE_OF_CONDUCT.md
+       external/SPIRV-Tools/CONTRIBUTING.md
+       external/SPIRV-Tools/DEPS
+       external/SPIRV-Tools/WORKSPACE
+       external/SPIRV-Tools/android_test/Android.mk
+       external/SPIRV-Tools/android_test/jni/*
+       external/SPIRV-Tools/build_defs.bzl
+       external/SPIRV-Tools/cmake/SPIRV-Tools-shared.pc.in
+       external/SPIRV-Tools/cmake/SPIRV-Tools.pc.in
+       external/SPIRV-Tools/codereview.settings
+       external/SPIRV-Tools/docker-compose.yml
+       external/SPIRV-Tools/docs/*
+       external/SPIRV-Tools/kokoro/img/*
+       external/SPIRV-Tools/source/wasm/README.md
+       external/SPIRV-Tools/source/wasm/package.json
+       external/SPIRV-Tools/test/diff/diff_files/OpExtInst_in_dst_only_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpExtInst_in_dst_only_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpExtInst_in_src_only_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpExtInst_in_src_only_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_basic_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_basic_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_intertwined_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_intertwined_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_mismatching_class_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_mismatching_class_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_mismatching_type_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_mismatching_type_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_nested_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_nested_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_onesided_debug_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_onesided_debug_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/README.md
+       external/SPIRV-Tools/test/diff/diff_files/basic_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/basic_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/constant_array_size_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/constant_array_size_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/different_decorations_fragment_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/different_decorations_fragment_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/different_decorations_vertex_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/different_decorations_vertex_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/different_function_parameter_count_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/different_function_parameter_count_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/extra_if_block_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/extra_if_block_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/index_signedness_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/index_signedness_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/int_vs_uint_constants_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/int_vs_uint_constants_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/large_functions_large_diffs_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/large_functions_large_diffs_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/large_functions_small_diffs_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/large_functions_small_diffs_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/multiple_different_entry_points_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/multiple_different_entry_points_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/multiple_same_entry_points_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/multiple_same_entry_points_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/reordered_if_blocks_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/reordered_if_blocks_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/reordered_switch_blocks_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/reordered_switch_blocks_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/small_functions_small_diffs_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/small_functions_small_diffs_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/spec_constant_array_size_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/spec_constant_array_size_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/spec_constant_composite_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/spec_constant_composite_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/spec_constant_op_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/spec_constant_op_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/spec_constant_specid_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/spec_constant_specid_src.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/unrelated_shaders_dst.spvasm
+       external/SPIRV-Tools/test/diff/diff_files/unrelated_shaders_src.spvasm
+       external/SPIRV-Tools/test/fuzzers/corpora/*
+       external/SPIRV-Tools/test/operand-class-test-coverage.csv
+       external/SPIRV-Tools/tools/sva/.eslintrc.json
+       external/SPIRV-Tools/tools/sva/README.md
+       external/SPIRV-Tools/tools/sva/mocha.opts
+       external/SPIRV-Tools/tools/sva/package.json
+       external/SPIRV-Tools/tools/sva/rollup.config.js
+       external/SPIRV-Tools/tools/sva/tests/*
+       external/SPIRV-Tools/tools/sva/yarn.lock
+       external/SPIRV-Tools/utils/vscode/README.md
+       external/SPIRV-Tools/utils/vscode/go.mod
+       external/SPIRV-Tools/utils/vscode/go.sum
+       external/SPIRV-Tools/utils/vscode/package.json
+       external/SPIRV-Tools/utils/vscode/spirv.json
+       external/SPIRV-Tools/utils/vscode/spirv.json.tmpl
+Copyright: 1999, Adobe Systems Incorporated
+           to your changes, even after your contribution becomes part of our
+License: Apache-2
+Comment: No explicit license found, using license(s) from:
+ external/SPIRV-Tools/LICENSE
+
+Files: external/re2/*
+Copyright: 2010, ABCD", "abcd
+           2003-2010, Google Inc
+           2012, The Go Authors
+           1999-2022, The RE2 Authors
+           2010, abcd", "abcd
+           f\\2o\\1o", true
+           f\\oo\\1", false
+           foo\\
+           2012, true
+License: BSD
+
+Files: external/SPIRV-Headers/*
+Copyright: 2017-2020, Google LLC
+           2014-2020, The Khronos Group Inc
+License: MIT/X11
+
+Files: external/DirectX-Headers/*
+Copyright: Microsoft Corporation
+License: Expat
+Comment: No explicit license found, using license(s) from:
+ external/DirectX-Headers/LICENSE
+
+Files: external/SPIRV-Headers/.gitattributes
+       external/SPIRV-Headers/.github/*
+       external/SPIRV-Headers/BUILD.bazel
+       external/SPIRV-Headers/CODE_OF_CONDUCT.md
+       external/SPIRV-Headers/SPIRV-Headers.pc.in
+       external/SPIRV-Headers/WORKSPACE
+       external/SPIRV-Headers/cmake/*
+       external/SPIRV-Headers/example/CMakeLists.txt
+       external/SPIRV-Headers/include/spirv/1.0/extinst.glsl.std.450.grammar.json
+       external/SPIRV-Headers/include/spirv/1.0/extinst.opencl.std.100.grammar.json
+       external/SPIRV-Headers/include/spirv/1.0/spirv.core.grammar.json
+       external/SPIRV-Headers/include/spirv/1.0/spirv.json
+       external/SPIRV-Headers/include/spirv/1.1/extinst.glsl.std.450.grammar.json
+       external/SPIRV-Headers/include/spirv/1.1/extinst.opencl.std.100.grammar.json
+       external/SPIRV-Headers/include/spirv/1.1/spirv.core.grammar.json
+       external/SPIRV-Headers/include/spirv/1.1/spirv.json
+       external/SPIRV-Headers/include/spirv/1.2/extinst.glsl.std.450.grammar.json
+       external/SPIRV-Headers/include/spirv/1.2/extinst.opencl.std.100.grammar.json
+       external/SPIRV-Headers/include/spirv/1.2/spirv.core.grammar.json
+       external/SPIRV-Headers/include/spirv/1.2/spirv.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.glsl.std.450.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.clspvreflection.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.debugprintf.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.shader.debuginfo.100.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.opencl.std.100.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-gcn-shader.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-ballot.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-trinary-minmax.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json
+       external/SPIRV-Headers/include/spirv/unified1/spirv.json
+       external/SPIRV-Headers/tools/buildHeaders/CMakeLists.txt
+       external/SPIRV-Headers/tools/buildHeaders/bin/makeExtinstHeaders.py
+       external/SPIRV-Headers/tools/buildHeaders/bin/makeHeaders
+Copyright: 2014-2020, The Khronos Group Inc
+License: MIT/X11
+Comment: No explicit license found, using license(s) from:
+ external/SPIRV-Headers/LICENSE
+
+Files: utils/unittest/googletest/*
+Copyright: 2003-2015, Google Inc
+License: BSD-3-clause
+
+Files: external/re2/.github/*
+       external/re2/AUTHORS
+       external/re2/CONTRIBUTING.md
+       external/re2/CONTRIBUTORS
+       external/re2/README
+       external/re2/SECURITY.md
+       external/re2/benchlog/*
+       external/re2/doc/mksyntaxhtml
+       external/re2/doc/mksyntaxwiki
+       external/re2/doc/syntax.html
+       external/re2/doc/syntax.txt
+       external/re2/libre2.symbols
+       external/re2/libre2.symbols.darwin
+       external/re2/re2.pc.in
+       external/re2/re2/perl_groups.cc
+       external/re2/re2/unicode_casefold.cc
+       external/re2/re2/unicode_groups.cc
+       external/re2/runtests
+       external/re2/ucs2.diff
+Copyright: 2005-2009, Free Software Foundation, Inc
+           purposes
+License: BSD-3-clause
+Comment: No explicit license found, using license(s) from:
+ external/re2/LICENSE
+
+Files: utils/unittest/googlemock/*
+Copyright: 2007-2015, Google Inc
+License: BSD-3-clause
+
+Files: external/SPIRV-Tools/utils/vscode/src/lsp/*
+Copyright: 2018-2019, The Go Authors
+License: Apache-2
+
+Files: external/effcee/*
+Copyright: 2017-2019, The Effcee Authors
+License: Apache-2
+
+Files: external/effcee/.appveyor.yml
+       external/effcee/.clang-format
+       external/effcee/AUTHORS
+       external/effcee/BUILD.bazel
+       external/effcee/CHANGES
+       external/effcee/CMakeLists.txt
+       external/effcee/CONTRIBUTING.md
+       external/effcee/CONTRIBUTORS
+       external/effcee/DEVELOPMENT.howto.md
+       external/effcee/README.md
+       external/effcee/WORKSPACE
+       external/effcee/effcee/CMakeLists.txt
+       external/effcee/examples/CMakeLists.txt
+       external/effcee/examples/example_data.txt
+       external/effcee/fuzzer/CMakeLists.txt
+       external/effcee/third_party/*
+Copyright: purposes
+           to your changes, even after your contribution becomes part of our
+License: Apache-2
+Comment: No explicit license found, using license(s) from:
+ external/effcee/LICENSE
+
+Files: lib/DxilCompression/*
+Copyright: Microsoft Corporation
+License: Expat
+Comment: No explicit license found, using license(s) from:
+ lib/DxilCompression/LICENSE.TXT
+
+Files: external/SPIRV-Headers/tools/buildHeaders/jsoncpp/*
+Copyright: 2007-2011, Baptiste Lepilleur
+           2007-2010, Baptiste Lepilleur, and is
+License: Expat or public-domain
+
+Files: external/re2/util/rune.cc
+       external/re2/util/utf.h
+Copyright: 2002, Lucent Technologies
+License: ISC-like-dmgfp
+
+Files: external/re2/re2/fuzzing/compiler-rt/*
+License: Apache-2
+
+Files: utils/unittest/googlemock/README.LLVM
+       utils/unittest/googlemock/include/gmock/internal/custom/gmock-generated-actions.h
+License: BSD-3-clause
+Comment: No explicit license found, using license(s) from:
+ utils/unittest/googlemock/LICENSE.txt
+
+Files: utils/unittest/googletest/Makefile
+       utils/unittest/googletest/README.LLVM
+License: BSD-3-clause
+Comment: No explicit license found, using license(s) from:
+ utils/unittest/googletest/LICENSE.TXT
+
+Files: lib/DxilCompression/miniz.c
+Copyright: 2016, Martin Raiber
+           2013-2014, RAD Game Tools and Valve Software
+           2010-2014, Rich Geldreich and Tenacious Software LLC
+           laws, the author or authors
+License: Expat or Unlicense
+
+Files: lib/DxilCompression/LICENSE.TXT
+Copyright: 2013-2014, RAD Game Tools and Valve Software
+           2010-2014, Rich Geldreich and Tenacious Software LLC
+License: Expat
+
 Files: autoconf/*
+Copyright: 1992-2011, Free
+           1992-2011, Free Software Foundation, Inc
 License: GPL-2+ with AutoConf exception
+
+Files: external/re2/lib/*
+Copyright: 2009, The Android Open Source Project
+License: Apache-2
+
+Files: external/SPIRV-Tools/utils/git-sync-deps
+Copyright: 2014, Google Inc
+License: BSD-3-clause
+
+Files: external/re2/LICENSE
+Copyright: 2009, The RE2 Authors
+License: BSD-3-clause
+
+Files: external/DirectX-Headers/LICENSE
+Copyright: Microsoft Corporation
+License: Expat
+
+Files: external/SPIRV-Headers/include/spirv/spir-v.xml
+Copyright: 2015, The Khronos Group Inc
+License: Expat
+
+Files: external/SPIRV-Tools/tools/sva/src/spirv.data.js
+Copyright: 2014-2016, The Khronos Group Inc
+License: MIT/X11
+
+Files: LICENSE.TXT
+Copyright: 2003-2015, University of <Illinois@Urbana-Champaign>
+License: NCSA
+
+Files: external/SPIRV-Tools/utils/vscode/src/lsp/README.md
+License: Apache-2
+Comment: No explicit license found, using license(s) from:
+ external/SPIRV-Tools/utils/vscode/src/lsp/LICENSE
+
+Files: debian/*
+Copyright: 2023, LunarG, Inc <johnz@lunarg.com>
+License: UnknownCopyrighted
+
+License: Apache-2
+ Apache License
+ Version 2.0, January 2004
+ http://www.apache.org/licenses/
+ .
+ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+ .
+ 1. Definitions.
+ .
+ "License" shall mean the terms and conditions for use, reproduction,
+ and distribution as defined by Sections 1 through 9 of this document.
+ .
+ "Licensor" shall mean the copyright owner or entity authorized by
+ the copyright owner that is granting the License.
+ .
+ "Legal Entity" shall mean the union of the acting entity and all
+ other entities that control, are controlled by, or are under common
+ control with that entity. For the purposes of this definition,
+ "control" means (i) the power, direct or indirect, to cause the
+ direction or management of such entity, whether by contract or
+ otherwise, or (ii) ownership of fifty percent (50%) or more of the
+ outstanding shares, or (iii) beneficial ownership of such entity.
+ .
+ "You" (or "Your") shall mean an individual or Legal Entity
+ exercising permissions granted by this License.
+ .
+ "Source" form shall mean the preferred form for making modifications,
+ including but not limited to software source code, documentation
+ source, and configuration files.
+ .
+ "Object" form shall mean any form resulting from mechanical
+ transformation or translation of a Source form, including but
+ not limited to compiled object code, generated documentation,
+ and conversions to other media types.
+ .
+ "Work" shall mean the work of authorship, whether in Source or
+ Object form, made available under the License, as indicated by a
+ copyright notice that is included in or attached to the work
+ (an example is provided in the Appendix below).
+ .
+ "Derivative Works" shall mean any work, whether in Source or Object
+ form, that is based on (or derived from) the Work and for which the
+ editorial revisions, annotations, elaborations, or other modifications
+ represent, as a whole, an original work of authorship. For the purposes
+ of this License, Derivative Works shall not include works that remain
+ separable from, or merely link (or bind by name) to the interfaces of,
+ the Work and Derivative Works thereof.
+ .
+ "Contribution" shall mean any work of authorship, including
+ the original version of the Work and any modifications or additions
+ to that Work or Derivative Works thereof, that is intentionally
+ submitted to Licensor for inclusion in the Work by the copyright owner
+ or by an individual or Legal Entity authorized to submit on behalf of
+ the copyright owner. For the purposes of this definition, "submitted"
+ means any form of electronic, verbal, or written communication sent
+ to the Licensor or its representatives, including but not limited to
+ communication on electronic mailing lists, source code control systems,
+ and issue tracking systems that are managed by, or on behalf of, the
+ Licensor for the purpose of discussing and improving the Work, but
+ excluding communication that is conspicuously marked or otherwise
+ designated in writing by the copyright owner as "Not a Contribution."
+ .
+ "Contributor" shall mean Licensor and any individual or Legal Entity
+ on behalf of whom a Contribution has been received by Licensor and
+ subsequently incorporated within the Work.
+ .
+ 2. Grant of Copyright License. Subject to the terms and conditions of
+ this License, each Contributor hereby grants to You a perpetual,
+ worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+ copyright license to reproduce, prepare Derivative Works of,
+ publicly display, publicly perform, sublicense, and distribute the
+ Work and such Derivative Works in Source or Object form.
+ .
+ 3. Grant of Patent License. Subject to the terms and conditions of
+ this License, each Contributor hereby grants to You a perpetual,
+ worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+ (except as stated in this section) patent license to make, have made,
+ use, offer to sell, sell, import, and otherwise transfer the Work,
+ where such license applies only to those patent claims licensable
+ by such Contributor that are necessarily infringed by their
+ Contribution(s) alone or by combination of their Contribution(s)
+ with the Work to which such Contribution(s) was submitted. If You
+ institute patent litigation against any entity (including a
+ cross-claim or counterclaim in a lawsuit) alleging that the Work
+ or a Contribution incorporated within the Work constitutes direct
+ or contributory patent infringement, then any patent licenses
+ granted to You under this License for that Work shall terminate
+ as of the date such litigation is filed.
+ .
+ 4. Redistribution. You may reproduce and distribute copies of the
+ Work or Derivative Works thereof in any medium, with or without
+ modifications, and in Source or Object form, provided that You
+ meet the following conditions:
+ .
+ (a) You must give any other recipients of the Work or
+ Derivative Works a copy of this License; and
+ .
+ (b) You must cause any modified files to carry prominent notices
+ stating that You changed the files; and
+ .
+ (c) You must retain, in the Source form of any Derivative Works
+ that You distribute, all copyright, patent, trademark, and
+ attribution notices from the Source form of the Work,
+ excluding those notices that do not pertain to any part of
+ the Derivative Works; and
+ .
+ (d) If the Work includes a "NOTICE" text file as part of its
+ distribution, then any Derivative Works that You distribute must
+ include a readable copy of the attribution notices contained
+ within such NOTICE file, excluding those notices that do not
+ pertain to any part of the Derivative Works, in at least one
+ of the following places: within a NOTICE text file distributed
+ as part of the Derivative Works; within the Source form or
+ documentation, if provided along with the Derivative Works; or,
+ within a display generated by the Derivative Works, if and
+ wherever such third-party notices normally appear. The contents
+ of the NOTICE file are for informational purposes only and
+ do not modify the License. You may add Your own attribution
+ notices within Derivative Works that You distribute, alongside
+ or as an addendum to the NOTICE text from the Work, provided
+ that such additional attribution notices cannot be construed
+ as modifying the License.
+ .
+ You may add Your own copyright statement to Your modifications and
+ may provide additional or different license terms and conditions
+ for use, reproduction, or distribution of Your modifications, or
+ for any such Derivative Works as a whole, provided Your use,
+ reproduction, and distribution of the Work otherwise complies with
+ the conditions stated in this License.
+ .
+ 5. Submission of Contributions. Unless You explicitly state otherwise,
+ any Contribution intentionally submitted for inclusion in the Work
+ by You to the Licensor shall be under the terms and conditions of
+ this License, without any additional terms or conditions.
+ Notwithstanding the above, nothing herein shall supersede or modify
+ the terms of any separate license agreement you may have executed
+ with Licensor regarding such Contributions.
+ .
+ 6. Trademarks. This License does not grant permission to use the trade
+ names, trademarks, service marks, or product names of the Licensor,
+ except as required for reasonable and customary use in describing the
+ origin of the Work and reproducing the content of the NOTICE file.
+ .
+ 7. Disclaimer of Warranty. Unless required by applicable law or
+ agreed to in writing, Licensor provides the Work (and each
+ Contributor provides its Contributions) on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ implied, including, without limitation, any warranties or conditions
+ of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+ PARTICULAR PURPOSE. You are solely responsible for determining the
+ appropriateness of using or redistributing the Work and assume any
+ risks associated with Your exercise of permissions under this License.
+ .
+ 8. Limitation of Liability. In no event and under no legal theory,
+ whether in tort (including negligence), contract, or otherwise,
+ unless required by applicable law (such as deliberate and grossly
+ negligent acts) or agreed to in writing, shall any Contributor be
+ liable to You for damages, including any direct, indirect, special,
+ incidental, or consequential damages of any character arising as a
+ result of this License or out of the use or inability to use the
+ Work (including but not limited to damages for loss of goodwill,
+ work stoppage, computer failure or malfunction, or any and all
+ other commercial damages or losses), even if such Contributor
+ has been advised of the possibility of such damages.
+ .
+ 9. Accepting Warranty or Additional Liability. While redistributing
+ the Work or Derivative Works thereof, You may choose to offer,
+ and charge a fee for, acceptance of support, warranty, indemnity,
+ or other liability obligations and/or rights consistent with this
+ License. However, in accepting such obligations, You may act only
+ on Your own behalf and on Your sole responsibility, not on behalf
+ of any other Contributor, and only if You agree to indemnify,
+ defend, and hold each Contributor harmless for any liability
+ incurred by, or claims asserted against, such Contributor by reason
+ of your accepting any such warranty or additional liability.
+ .
+ END OF TERMS AND CONDITIONS
+ .
+ APPENDIX: How to apply the Apache License to your work.
+ .
+ To apply the Apache License to your work, attach the following
+ boilerplate notice, with the fields enclosed by brackets "[]"
+ replaced with your own identifying information. (Don't include
+ the brackets!)  The text should be enclosed in the appropriate
+ comment syntax for the file format. We also recommend that a
+ file or class name and description of purpose be included on the
+ same "printed page" as the copyright notice for easier
+ identification within third-party archives.
+ .
+ Copyright [yyyy] [name of copyright owner]
+ .
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+ http://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+License: BSD
+Comment: Add the corresponding license text here
 
 License: BSD-3-clause
  Copyright <YEAR> <COPYRIGHT HOLDER>
@@ -172,6 +795,40 @@ License: ISC
  Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
  .
  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+License: ISC-like-dmgfp
+Comment: Add the corresponding license text here
+
+License: MIT/X11
+ Copyright (c) <year> <copyright holders>
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+
+License: NCSA
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal with the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ .
+ Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimers.
+ Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimers in the documentation and/or other materials provided with the distribution.
+ Neither the names of <Name of Development Group, Name of Institution>, nor the names of its contributors may be used to endorse or promote products derived from this Software without specific prior written permission.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 
 License: Unicode
  NOTICE TO USER: Carefully read the following legal agreement.
@@ -215,3 +872,22 @@ License: Unicode
  shall not be used in advertising or otherwise to promote the sale,
  use or other dealings in these Data Files or Software without prior
  written authorization of the copyright holder.
+
+License: UnknownCopyrighted
+Comment: Add the corresponding license text here
+
+License: Unlicense
+Comment: Add the corresponding license text here
+
+License: llvm-release-license
+ http://llvm.org
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal with the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ .
+ Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimers.
+ Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimers in the documentation and/or other materials provided with the distribution.
+ Neither the names of the LLVM Team, University of Illinois at Urbana-Champaign, nor the names of its contributors may be used to endorse or promote products derived from this Software without specific prior written permission.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+License: public-domain
+Comment: Add the corresponding license text here
