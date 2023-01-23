@@ -2578,7 +2578,7 @@ bool DeclResultIdMapper::createStageVars(
             break;
           }
         }
-        // fall through
+        LLVM_FALLTHROUGH;
       default:
         emitError("invalid usage of semantic '%0' in shader profile %1", loc)
             << semanticToUse->str
@@ -3399,6 +3399,7 @@ SpirvVariable *DeclResultIdMapper::getBuiltinVar(spv::BuiltIn builtIn,
   case spv::BuiltIn::SubgroupSize:
   case spv::BuiltIn::SubgroupLocalInvocationId:
     needsLegalization = true;
+    LLVM_FALLTHROUGH;
   case spv::BuiltIn::HitTNV:
   case spv::BuiltIn::RayTmaxNV:
   case spv::BuiltIn::RayTminNV:
@@ -4292,8 +4293,9 @@ void DeclResultIdMapper::storeOutStageVarsToStorage(
     }
     auto *ptrToOutputStageVar = spvBuilder.createAccessChain(
         outputControlPointType, found->second, {ctrlPointID}, /*loc=*/{});
-    auto *load = spvBuilder.createLoad(outputControlPointType,
-                                       ptrToOutputStageVar, /*loc=*/{});
+    auto *load =
+        spvBuilder.createLoad(outputControlPointType, ptrToOutputStageVar,
+                              /*loc=*/{});
     spvBuilder.createStore(ptr, load, /*loc=*/{});
     return;
   }

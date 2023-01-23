@@ -432,6 +432,22 @@ bool CapabilityVisitor::visit(SpirvImageSparseTexelsResident *instr) {
   return true;
 }
 
+namespace {
+bool isImageOpOnUnknownFormat(const SpirvImageOp *instruction) {
+  if (!instruction->getImage() || !instruction->getImage()->getResultType()) {
+    return false;
+  }
+
+  const ImageType *imageType =
+      dyn_cast<ImageType>(instruction->getImage()->getResultType());
+  if (!imageType || imageType->getImageFormat() != spv::ImageFormat::Unknown) {
+    return false;
+  }
+
+  return imageType->getImageFormat() == spv::ImageFormat::Unknown;
+}
+} // namespace
+
 bool CapabilityVisitor::visit(SpirvImageOp *instr) {
   addCapabilityForType(instr->getResultType(), instr->getSourceLocation(),
                        instr->getStorageClass());
@@ -441,6 +457,12 @@ bool CapabilityVisitor::visit(SpirvImageOp *instr) {
     addCapability(spv::Capability::MinLod);
   if (instr->isSparse())
     addCapability(spv::Capability::SparseResidency);
+
+  if (isImageOpOnUnknownFormat(instr)) {
+    addCapability(instr->isImageWrite()
+                      ? spv::Capability::StorageImageWriteWithoutFormat
+                      : spv::Capability::StorageImageReadWithoutFormat);
+  }
 
   return true;
 }
@@ -559,6 +581,7 @@ bool CapabilityVisitor::visitInstruction(SpirvInstruction *instr) {
       addCapability(spv::Capability::RayTracingKHR);
       addExtension(Extension::KHR_ray_tracing, "SPV_KHR_ray_tracing", {});
     }
+    break;
   }
 
   case spv::Op::OpSetMeshOutputsEXT:
@@ -725,6 +748,7 @@ bool CapabilityVisitor::visit(SpirvExtInst *instr) {
     case GLSLstd450::GLSLstd450InterpolateAtOffset:
       addExtension(Extension::AMD_gpu_shader_half_float, "16-bit float",
                    instr->getSourceLocation());
+      break;
     default:
       break;
     }
