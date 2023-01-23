@@ -1,3 +1,159 @@
+directxshadercompiler (1.4.0.2274-1406~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Helena Kotas ]
+  * Fix dxcisense.h includes (#4852)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] HLSL2021: initial bitfield implementation (#4831)
+
+  [ Chris B ]
+  * Remove HLSL 2021 per-feature flags (#4716)
+  * [HLSL2021] UDT template parms follow C++ rules (#4844)
+  * LLVM_REQUIRES_* variables shound't be set (#4850)
+
+  [ Tex Riddell ]
+  * Fill in RequiredFeatureFlags in library function reflection (#4774)
+
+  [ Chris B ]
+  * Remove assumption that templates are never UDTs (#4752)
+
+  [ Greg Roth ]
+  * Fallthrough (#4843)
+
+  [ Tex Riddell ]
+  * Fix enum scope used inside template function. (#4859)
+
+  [ Helena Kotas ]
+  * Update version to 1.7.2212 (#4861)
+
+  [ Tex Riddell ]
+  * Remove template/ByteAddressBufferLoad test dependency on high-level opcode (#4864)
+
+  [ Chris B ]
+  * Enable -ftime-report flag (#4736)
+  * [NFC] Address some low hanging fruit UBSan failures (#4833)
+  * Move HLSL shift behavior to frontend (#4643)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Fix invalid HLSL in test (#4870)
+
+  [ Chris B ]
+  * Unbuffer raw_string_stream (#4872)
+
+  [ Jeff Noyle ]
+  * Fix hitgroup metadata argument order
+
+  [ Tex Riddell ]
+  * dxcopt: Support full container and restore extra data to module (#4845)
+
+  [ Chris B ]
+  * Add -enable-lit option to hcttest (#4869)
+
+  [ Nathan Gauër ]
+  * Fixing a [[nodiscard]] error in DXC (#4860)
+
+  [ Chris B ]
+  * Backport -ftime-trace from upstream llvm & clang (#4873)
+  * Update all the HLSL tests that rely on HLSL 2018 (#4878)
+
+  [ Tex Riddell ]
+  * hcttestcmds: Fix error handling and support skip cleanup on failure (#4879)
+  * ConvertFloat32ToFloat16: Use DirectXMath conversion functions (#4855)
+
+  [ Helena Kotas ]
+  * Include TestConfig.h only if DEFAULT_TEST_DIR is not defined (#4884)
+
+  [ Chris B ]
+  * Enable 2021 operator intrinsics in older modes (#4882)
+
+  [ Joshua Batista ]
+  * add barycentrics ordering check onto existing barycentrics test (#4635)
+
+  [ Jeff Noyle ]
+  * PIX: Modify root sigs in place (plus fix root sig memory leak) (#4876)
+
+  [ Helena Kotas ]
+  * Do not include TestConfig.h for all HLK build (#4887)
+
+  [ Joshua Batista ]
+  * add test to handle preprocessing an already preprocessed file. (#4898)
+
+  [ Helena Kotas ]
+  * Refactor ExecutionTests into a separate dll (#4905)
+
+  [ FantasqueX ]
+  * Add RISC-V 64 bit (#4894)
+
+  [ Nathan Gauër ]
+  * build: disable LLVM_ENABLE_TERMINFO by default. (#4908)
+
+  [ Chris B ]
+  * Fix copy-in/copy-out parameter passing (#4900)
+  * [Docs] Add new docs on unified build workflow (#4890)
+  * Clean up and rework DXIL library depencencies (#4877)
+
+  [ Noah Cabral ]
+  * Fix typo in README.md (#4912)
+
+  [ Chris B ]
+  * Enable building with ninja through Visual Studio (#4889)
+
+  [ Laura Hermanns ]
+  * [SPIR-V] Fix dangling pointer to previous field in 'LowerTypeVisitor::populateLayoutInformation()' (#4913)
+
+  [ Nathan Gauër ]
+  * misc: update submodules (#4909)
+
+  [ Chris B ]
+  * Fix argument translation for C++ member operators (#4916)
+
+  [ Xiang Li ]
+  * Enable build for dxa/dxl/dxopt/dxr/dxv on linux (#4895)
+
+  [ Jeff Noyle ]
+  * PIX: Account for alignment when computing member offset (#4903)
+  * PIX: Remove per-instruction disassembly in annotation pass output
+  * PIX: Fix overactive assert in value-to-declare pass
+
+  [ Tex Riddell ]
+  * Fix assert when bool field in nested struct during init list casting (#4926)
+
+  [ Adam Yang ]
+  * Turn off structurize-returns when cleanup blocks are present. (#4927)
+
+  [ Nathan Gauër ]
+  * git: change submodule tracking from master to main. (#4934)
+
+  [ Jeff Noyle ]
+  * PIX: dxcpdbutils: Don't set default entry name in lib case (#4929)
+
+  [ Helena Kotas ]
+  * Add HlslDataDir parameter to execution tests (#4928)
+
+  [ Nathan Gauër ]
+  * spirv: keep image format to unknown if it is. (#4868)
+
+  [ Jeff Noyle ]
+  * PIX: Educate type system about samplers and resources, base classes (#4937)
+
+  [ Nathan Gauër ]
+  * Import "Make headers self-contained." commit. (#4940)
+
+  [ Diego Novillo ]
+  * Update submodule hash for SPIRV-Tools. (#4947)
+
+  [ John Zupin ]
+  * packaging: debian: update copyright
+
+  [ Diego Novillo ]
+  * Update submodule hash for SPIRV-Tool to reflect changes to v2023.1 release (#4950)
+  * Update SPIRV-Tools submodule hash for v2023.1 release. (#4953)
+
+  [ Jeff Noyle ]
+  * PIX: Symbol manager: don't allow static members to contribute to member offsets (#4952)
+
+ -- john <john@odin>  Mon, 23 Jan 2023 13:45:53 -0700
+
 directxshadercompiler (1.4.0.2274-1349~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Paul Dodzweit ]
