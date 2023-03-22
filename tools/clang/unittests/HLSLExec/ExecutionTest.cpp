@@ -281,10 +281,8 @@ struct TableParameter;
 
 class ExecutionTest {
 public:
-  // By default, ignore these tests, which require a recent build to run properly.
   BEGIN_TEST_CLASS(ExecutionTest)
     TEST_CLASS_PROPERTY(L"Parallel", L"true")
-    TEST_CLASS_PROPERTY(L"Ignore", L"true")
     TEST_METHOD_PROPERTY(L"Priority", L"0")
   END_TEST_CLASS()
   TEST_CLASS_SETUP(ExecutionTestClassSetup)
@@ -11586,7 +11584,6 @@ TEST_F(ExecutionTest, IsNormalTest) {
   std::shared_ptr<st::ShaderOpSet> ShaderOpSet = std::make_shared<st::ShaderOpSet>();
   st::ParseShaderOpSetFromStream(pStream, ShaderOpSet.get());
   st::ShaderOp *pShaderOp = ShaderOpSet->GetShaderOp("IsNormal");
-  vector<st::ShaderOpRootValue> fallbackRootValues = pShaderOp->RootValues;
 
   D3D_SHADER_MODEL sm = D3D_SHADER_MODEL_6_0;
   LogCommentFmt(L"\r\nVerifying isNormal in shader "

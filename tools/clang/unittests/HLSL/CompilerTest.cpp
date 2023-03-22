@@ -150,6 +150,7 @@ public:
   TEST_METHOD(CompileThenSetRootSignatureThenValidate)
   TEST_METHOD(CompileSetPrivateThenWithStripPrivate)
   TEST_METHOD(CompileWithMultiplePrivateOptionsThenFail)
+  TEST_METHOD(TestPdbUtilsWithEmptyDefine)
 
   void CompileThenTestReflectionThreadSize(const char *source, const WCHAR *target, UINT expectedX, UINT expectedY, UINT expectedZ);
 
@@ -179,6 +180,7 @@ public:
   TEST_METHOD(CompileWhenIncludeEmptyThenOK)
 
   TEST_METHOD(CompileWhenODumpThenPassConfig)
+  TEST_METHOD(CompileWhenODumpThenCheckNoSink)
   TEST_METHOD(CompileWhenODumpThenOptimizerMatch)
   TEST_METHOD(CompileWhenVdThenProducesDxilContainer)
 
@@ -2009,6 +2011,26 @@ TEST_F(CompilerTest, CompileThenTestPdbUtilsEmptyEntry) {
   VERIFY_ARE_EQUAL(pEntryName, L"main");
 }
 
+TEST_F(CompilerTest, TestPdbUtilsWithEmptyDefine) {
+#include "TestHeaders/TestDxilWithEmptyDefine.h"
+  CComPtr<IDxcUtils> pUtils;
+  VERIFY_SUCCEEDED(m_dllSupport.CreateInstance(CLSID_DxcUtils, &pUtils));
+
+  CComPtr<IDxcBlobEncoding> pBlob;
+  VERIFY_SUCCEEDED(pUtils->CreateBlobFromPinned(g_TestDxilWithEmptyDefine, sizeof(g_TestDxilWithEmptyDefine), CP_ACP, &pBlob));
+
+  CComPtr<IDxcPdbUtils> pPdbUtils;
+  VERIFY_SUCCEEDED(m_dllSupport.CreateInstance(CLSID_DxcPdbUtils, &pPdbUtils));
+  VERIFY_SUCCEEDED(pPdbUtils->Load(pBlob));
+
+  UINT32 uCount = 0;
+  VERIFY_SUCCEEDED(pPdbUtils->GetDefineCount(&uCount));
+  for (UINT i = 0; i < uCount; i++) {
+    CComBSTR pDefine;
+    VERIFY_SUCCEEDED(pPdbUtils->GetDefine(i, &pDefine));
+  }
+}
+
 #endif //  _WIN32 - No PDBUtil support
 
 void CompilerTest::TestResourceBindingImpl(
@@ -2941,6 +2963,40 @@ TEST_F(CompilerTest, CompileWhenIncludeEmptyThenOK) {
 }
 
 static const char EmptyCompute[] = "[numthreads(8,8,1)] void main() { }";
+
+TEST_F(CompilerTest, CompileWhenODumpThenCheckNoSink) {
+  struct Check {
+    std::vector<const WCHAR *> Args;
+    std::vector<const WCHAR *> Passes;
+  };
+
+  Check Checks[] = {
+    { {L"-Odump"},                      {L"-instcombine,NoSink=0",L"-dxil-loop-deletion,NoSink=0"} },
+    { {L"-Odump",L"-opt-disable sink"}, {L"-instcombine,NoSink=1",L"-dxil-loop-deletion,NoSink=1"} },
+  };
+
+  for (Check &C : Checks) {
+
+    CComPtr<IDxcCompiler> pCompiler;
+    CComPtr<IDxcOperationResult> pResult;
+    CComPtr<IDxcBlobEncoding> pSource;
+
+    VERIFY_SUCCEEDED(CreateCompiler(&pCompiler));
+    CreateBlobFromText(EmptyCompute, &pSource);
+
+    VERIFY_SUCCEEDED(pCompiler->Compile(pSource, L"source.hlsl", L"main",
+      L"cs_6_0", C.Args.data(), C.Args.size(), nullptr, 0, nullptr, &pResult));
+
+    VerifyOperationSucceeded(pResult);
+    CComPtr<IDxcBlob> pResultBlob;
+    VERIFY_SUCCEEDED(pResult->GetResult(&pResultBlob));
+    wstring passes = BlobToWide(pResultBlob);
+
+    for (const WCHAR *pPattern : C.Passes) {
+      VERIFY_ARE_NOT_EQUAL(wstring::npos, passes.find(pPattern));
+    }
+  }
+}
 
 TEST_F(CompilerTest, CompileWhenODumpThenPassConfig) {
   CComPtr<IDxcCompiler> pCompiler;
