@@ -54,13 +54,16 @@ public:
   TEST_METHOD(RunIncompleteType)
   TEST_METHOD(RunIndexingOperator)
   TEST_METHOD(RunIntrinsicExamples)
+  TEST_METHOD(RunInvalidDeclTemplateArg)
   TEST_METHOD(RunMatrixAssignments)
   TEST_METHOD(RunMatrixSyntax)
   TEST_METHOD(RunMatrixSyntaxExactPrecision)
   TEST_METHOD(RunMintypesPromotionWarnings)
   TEST_METHOD(RunMoreOperators)
   TEST_METHOD(RunObjectOperators)
+  TEST_METHOD(RunOutParamDiags)
   TEST_METHOD(RunPackReg)
+  TEST_METHOD(RunPragmaRegion)
   TEST_METHOD(RunRayTracings)
   TEST_METHOD(RunScalarAssignments)
   TEST_METHOD(RunScalarAssignmentsExactPrecision)
@@ -254,6 +257,10 @@ TEST_F(VerifierTest, RunIntrinsicExamples) {
   CheckVerifiesHLSL(L"intrinsic-examples.hlsl");
 }
 
+TEST_F(VerifierTest, RunInvalidDeclTemplateArg) {
+  CheckVerifiesHLSL(L"invalid-decl-template-arg.hlsl");
+}
+
 TEST_F(VerifierTest, RunMatrixAssignments) {
   CheckVerifiesHLSL(L"matrix-assignments.hlsl");
 }
@@ -278,8 +285,16 @@ TEST_F(VerifierTest, RunObjectOperators) {
   CheckVerifiesHLSL(L"object-operators.hlsl");
 }
 
+TEST_F(VerifierTest, RunOutParamDiags) {
+  CheckVerifiesHLSL(L"out-param-diagnostics.hlsl");
+}
+
 TEST_F(VerifierTest, RunPackReg) {
   CheckVerifiesHLSL(L"packreg.hlsl");
+}
+
+TEST_F(VerifierTest, RunPragmaRegion) {
+  CheckVerifiesHLSL(L"pragma-region.hlsl");
 }
 
 TEST_F(VerifierTest, RunRayTracings) {
