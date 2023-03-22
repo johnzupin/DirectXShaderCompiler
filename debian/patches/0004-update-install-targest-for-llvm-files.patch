@@ -7,10 +7,10 @@ Subject: update install targest for llvm files
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/cmake/modules/AddLLVM.cmake b/cmake/modules/AddLLVM.cmake
-index a6dc746..639cddc 100644
+index d600ec7..2578bb0 100644
 --- a/cmake/modules/AddLLVM.cmake
 +++ b/cmake/modules/AddLLVM.cmake
-@@ -543,7 +543,7 @@ macro(add_llvm_library name)
+@@ -553,7 +553,7 @@ macro(add_llvm_library name)
  
        install(TARGETS ${name}
              EXPORT LLVMExports
@@ -19,7 +19,7 @@ index a6dc746..639cddc 100644
              COMPONENT ${name})
  
        if (NOT CMAKE_CONFIGURATION_TYPES)
-@@ -573,12 +573,12 @@ macro(add_llvm_loadable_module name)
+@@ -583,12 +583,12 @@ macro(add_llvm_loadable_module name)
            # DLL platform
            set(dlldir "bin")
          else()
