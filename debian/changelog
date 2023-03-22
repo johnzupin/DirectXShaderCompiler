@@ -1,3 +1,184 @@
+directxshadercompiler (1.4.0.2274-1471~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Greg Roth ]
+  * Explicitly use n* version of vsnprintf (#4957)
+
+  [ Xiang Li ]
+  * Change hctcmdtests into lit test. (#4921)
+  * Fix issue sys::findProgramByName cannot find exe on path (#4960)
+
+  [ Cassandra Beckley ]
+  * Update submodules (#4959)
+
+  [ Daniele Vettorel ]
+  * Disable code coverage action on forks (#4948)
+
+  [ Xiang Li ]
+  * Fix warning caused by redefine NOMINMAX. (#4962)
+
+  [ Helena Kotas ]
+  * Remove Ignore property from execution tests (#4963)
+
+  [ David Peixotto ]
+  * [bug] Fix memory leak in dxil validator (#4966)
+
+  [ Adam Yang ]
+  * Added a workaround for PDBs with empty defines. (#4945)
+
+  [ Chris B ]
+  * Add a github action to verify PR descriptions (#4971)
+
+  [ Xiang Li ]
+  * Add lit test for execution test. (#4964)
+
+  [ Jeff Noyle ]
+  * Pix: Debug instrumentation: Create values per-function (#4976)
+
+  [ Tex Riddell ]
+  * Fix hcttest file-check mode with /runIgnoredTests (#4980)
+
+  [ Xiang Li ]
+  * Fix lit test fails (#4973)
+
+  [ Chris B ]
+  * Update Azure pipelines to report results (#4994)
+
+  [ Xiang Li ]
+  * Support this cast to base class. (#4989)
+
+  [ Tex Riddell ]
+  * Remove paths to dxil.dll during testing to test the intended validator (#4995)
+
+  [ Xiang Li ]
+  * Enable lit by default on pipeline (#4993)
+
+  [ Chris B ]
+  * Delete Visual Studio user files (#4999)
+
+  [ Xiang Li ]
+  * Fix assert when a function been called more than once by entry. (#4992)
+  * Fix lower type crash on vector array parameter. (#4982)
+
+  [ Steven Perron ]
+  * Fix two issues found in our internal build (#5002)
+
+  [ Greg Roth ]
+  * Silence cmake endif mismatch warning (#5005)
+
+  [ Chris B ]
+  * Add experimental -fnew-inlining-behavior (#4972)
+
+  [ Nathan Gauër ]
+  * hlsl, spirv: allow use of ffinit-math-only (#4955)
+
+  [ Xiang Li ]
+  * Fix instruction order issue in scalarizer (#5001)
+
+  [ Chris B ]
+  * [NFC] Delete dead code (#5000)
+
+  [ Greg Roth ]
+  * Simplify header/link dependencies for unittests (#5009)
+  * Correct WinAdapter path assumptions in public headers (#5003)
+  * Allow libdxcompiler.so and dxc to find libdxil.so (#5004)
+
+  [ Xiang Li ]
+  * Remove dx.temp metadata. (#5011)
+
+  [ Chris B ]
+  * Support dumping implicit top-level decls (#5007)
+  * Remove SO version from unix binaries (#5010)
+
+  [ Xiang Li ]
+  * Fix hcttest fail caused by cannot find clang. (#5012)
+
+  [ Nathan Gauër ]
+  * spir-v: fix missing typecast on HLSL21 ternary (#4935)
+
+  [ Chris B ]
+  * Don't add template record decl to declcontext (#5016)
+  * Introduce HLSLCXXOverload attribute (#5018)
+
+  [ Greg Roth ]
+  * Revert "Simplify header/link dependencies for unittests (#5009)" (#5026)
+
+  [ Laura Hermanns ]
+  * [SPIR-V] Forward replacement expression for SubstNonTypeTemplateParmExpr. (#5020)
+
+  [ Chris B ]
+  * Fix AppVeyor Linux tests failing loading dxil.so (#5024)
+
+  [ Jeff Noyle ]
+  * PIX:Descend Type Hierarchy for Alloca'd structs (#5028)
+
+  [ Joshua Batista ]
+  * remove uninitialized assign (#5033)
+
+  [ Chris B ]
+  * [NFC] Remove custom StringCchCopyEx (#5037)
+  * Add `-verify` flag to DXC (#5032)
+
+  [ Jeff Noyle ]
+  * PIX: DxcPixDxilInstructionOffsets should operate on libs (#5046)
+
+  [ Helena Kotas ]
+  * Fix opt.exe external lib loading (#5049)
+
+  [ Jeff Noyle ]
+  * PIX: Preserve shader-access-tracking flag for descriptor-heap-indexed resources (#5053)
+
+  [ Chris B ]
+  * Break test dependencies on mangling (Part 1) (#5054)
+
+  [ Xiang Li ]
+  * [NFC] Fix typo in FileCheck line. (#5061)
+
+  [ Helena Kotas ]
+  * Generate SharedLibAffix.h into the include directory (#5058)
+
+  [ Greg Roth ]
+  * Move WinAdapter into interface directory (#5066)
+
+  [ Adam Yang ]
+  * Added -opt-disable sink to disable instruction sinking in instcombine (#5050)
+
+  [ Chris B ]
+  * [NFC] Delete some dead/unreachable code in CGCall (#5069)
+
+  [ Helena Kotas ]
+  * Remove DXC.Release pipeline (#5073)
+
+  [ Chris B ]
+  * Add diagnostics for uninitialized `out` parameters (#5047)
+  * Add #pragma region support (#5074)
+  * Only track scalar `out` params (#5078)
+  * Don't try to validate invalid decls (#5086)
+
+  [ Helena Kotas ]
+  * Change SharedLibAffix.h include path to eliminate the need to change build setting (#5085)
+
+  [ Chris B ]
+  * No special case for unannotated params (#5094)
+
+  [ Xiang Li ]
+  * Switch HLSL matrix major attribute to TypeAttr (#5087)
+
+  [ Tex Riddell ]
+  * Add script to compile to intermediate IR for easier pass test authoring (#5101)
+  * Add script to compile to intermediate IR for easier pass test authoring (#5101)
+
+  [ Xiang Li ]
+  * Move HLSLDefaultRowMajor to LangOptions. (#5098)
+
+  [ Nathan Gauër ]
+  * update SPIRV-Tools version to v2023.2.rc1 (#5097)
+
+  [ John Zupin ]
+  * packaging: debian: udpate patches
+  * packaging: debian: update location of WinAdapter.h
+
+ -- john <john@odin>  Wed, 22 Mar 2023 12:33:51 -0600
+
 directxshadercompiler (1.4.0.2274-1406~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Helena Kotas ]
