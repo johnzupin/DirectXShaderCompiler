@@ -1,3 +1,101 @@
+directxshadercompiler (1.4.0.2274-1507~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Adam Yang ]
+  * Fixed a crash due to an incorrect call to dropAllReferences (#5102)
+
+  [ Nathan Gauër ]
+  * build: add exception header (#5112)
+
+  [ Tex Riddell ]
+  * Fix ScoreCast for class types, fix more struct assumptions in SemaHLSL (#5110)
+
+  [ Xiang Li ]
+  * [template] Support empty template arg list on TypeAliasTemplateDecl. (#5114)
+
+  [ Laura Hermanns ]
+  * [SPIR-V] Fix composites with empty struct fields. (#5017)
+
+  [ Nathan Gauër ]
+  * spirv: fix crash when no initializer can be made (#5127)
+
+  [ Sebastian Neubauer ]
+  * Replace deprecated std::iterator inheritance (#5111)
+
+  [ Chris B ]
+  * Extend add_lit_testsuites to cover more cases (#4801)
+
+  [ Joshua Batista ]
+  * Fill in MDVals with push_back for maintainability. (#5126)
+
+  [ Nathan Gauër ]
+  * spirv: fix GL semantic in inherited classes (#5144)
+
+  [ Chris B ]
+  * Move some of the raytracing diags to Sema (#5131)
+
+  [ Xiang Li ]
+  * Allow find te.exe with %TAEF_PATH% directly. (#5150)
+
+  [ Chris B ]
+  * [NFC] Update tests that depend on 2018 behavior (#5157)
+  * Setup `install-distribution` target for DXC (#5154)
+  * [NFC] Delete duplicated tests (#5155)
+
+  [ Tex Riddell ]
+  * Support dependent template args in HLSL Object templates (#5140)
+
+  [ Nathan Gauër ]
+  * ci: add GCP pipeline files to replace AppVeyor (#5152)
+
+  [ Xiang Li ]
+  * Fix build error for deprecated function in UCRT. (#5162)
+  * [enable lit] Keep same name for ClangHLSLTests when enable lit (#5167)
+  * [enable-lit] use !TEST_CLANG! to get updated result (#5170)
+
+  [ Chris B ]
+  * [NFC] Enable -Werror for C sources too (#5021)
+
+  [ Jesse Natalie ]
+  * Require break-critical-edges to run before reg2mem_hlsl (#5180)
+
+  [ Xiang Li ]
+  * Fix reflection on bitfield. (#5142)
+  * [NFC] remove useless comment in test. (#5188)
+  * Set AddrSpaceCast as unreachable for DXILCounters (#5185)
+
+  [ Steven Perron ]
+  * Set the layout rule in processTemplatedLoadFromBuffer (#5192)
+
+  [ Xiang Li ]
+  * Fix loss of buffer type info with libraries and linker (#5197)
+  * [enable-lit] Allow file-check when enable-lit (#5201)
+
+  [ Jeff Noyle ]
+  * PIX: Don't run PIX prep passes during variable evaluation (PIX already did that) (#5208)
+
+  [ Brian Favela ]
+  * [GlobalOpt] Sort members of llvm.used deterministically (#5209)
+
+  [ Damyan Pepper ]
+  * Update inline API reference docs for dxcapi.h (#5160)
+
+  [ Tex Riddell ]
+  * PSV0: Fix GS multi stream out ViewID dependency serialization (#5204)
+
+  [ Chris B ]
+  * Enable generating per-directory lit test targets (#5215)
+
+  [ Brian Favela ]
+  * Adding test as a copy into currently supported testsuite (for PR #5209) (#5216)
+
+  [ Xiang Li ]
+  * [opt] initialize HLSL passes with SetupRegistryPassForHLSL (#5217)
+
+  [ Nathan Gauër ]
+  * Update SPIRV-Tools to version v2023.3.rc1 (#5219)
+
+ -- john <john@odin>  Tue, 23 May 2023 15:25:37 -0600
+
 directxshadercompiler (1.4.0.2274-1471~rc1-1lunarg22.04-1) jammy; urgency=medium
 
   [ Greg Roth ]
