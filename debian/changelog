@@ -1,3 +1,299 @@
+directxshadercompiler (1.4.0.2274-1615~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Jeff Noyle ]
+  * PIX: Synthesize dbg.value for global-backed arrays embedded in non-const global statics (#5223)
+
+  [ Marcin Zając ]
+  * Compilation warning fixes (#5179)
+
+  [ Tex Riddell ]
+  * Limit multi-stream GS tests to dxilver 1.7 due to fix in PSV0 (#5226)
+  * Fix unused local dwOffsetInBytes in DxilDiaSymbolManager.cpp (#5156)
+
+  [ Xiang Li ]
+  * Support case when memcpy src/dst are only use/def of the src/dst. (#5200)
+
+  [ Panagiotis Christopoulos Charitos ]
+  * Correct the validation of vk::image_format. Fixes #5189 (#5190)
+
+  [ Chris B ]
+  * Enhance `globallycoherent` mismatch diagnostics (#5121)
+
+  [ Xiang Li ]
+  * [lit] Use ls -l instead of file -E (#5235)
+
+  [ Chris B ]
+  * Allow function template default parameters in HLSL (#5234)
+
+  [ Xiang Li ]
+  * [dxa] Add option to dump reflection (#5232)
+
+  [ Adam Yang ]
+  * Fixed entry point omitted from the PDB when it's the same as input filename (#5236)
+
+  [ Jeff Noyle ]
+  * PIX Shader debugger: Fixes for structs that contain resources or member functions (#5237)
+
+  [ Xiang Li ]
+  * [lit] Port Support %if ... %else syntax for RUN lines from upstream (#5227)
+
+  [ Diego Novillo ]
+  * Update SPIRV-Tools submodule. (#5245)
+  * Add new script to update external dependencies for the SPIRV backend. (#5246)
+
+  [ Brian Favela ]
+  * Remove unused and failing script (#5220)
+
+  [ Chris B ]
+  * Allow `ref` parameters for intrinsics (#5166)
+
+  [ Rajiv Gupta ]
+  * [SPIR-V] Add fspv-preserve-bindings option to preserve decoration bin… (#5211)
+
+  [ Chow ]
+  * [SPIR-V] add support for extension KHR_fragment_shading_barycentric (SV_Barycentrics) (#4638)
+
+  [ Xiang Li ]
+  * [lit] Move ls *.pdb to unique directory. (#5254)
+
+  [ Steven Perron ]
+  * Remove unneeded assert (#5256)
+  * Move the check for Subpass into to uses  (#5252)
+
+  [ Joshua Batista ]
+  * Remove some warnings from GCC when building DXC (#5262)
+
+  [ Xiang Li ]
+  * [BitField] Fix crash on enum bit field. (#5260)
+  * [dndxc] Add option when dump ast. (#5266)
+  * Enable lit by default. (#5133)
+  * [lit] Remove temp directory for strip_dbg test. (#5264)
+
+  [ Adam Yang ]
+  * Added "partial-lifetime-markers" to only generate lifetime.start (#5267)
+
+  [ Chris B ]
+  * [NFC] Remove unstable opcodes from filecheck matches (#5274)
+
+  [ Tex Riddell ]
+  * Fix variable definition checks in hcttest.cmd (#5277)
+
+  [ Helena Kotas ]
+  * Revert "[DxbcConverter] Fix corruption of ICB integer values (#4790)" (#5253) (#5279)
+
+  [ Panagiotis Christopoulos Charitos ]
+  * [SPIR-V] Fix an issue where OpConstantComposite is being used with spec constants (#5263)
+
+  [ Rajiv Gupta ]
+  * [Spirv] Fix for validation error VUID-StandaloneSpirv-Flat-04744 (#5276)
+
+  [ Steven Perron ]
+  * Fix special case with vector swizzle (#5281)
+
+  [ Chris B ]
+  * [NFC] Fix typos in code comments. (#5286)
+
+  [ David Peixotto ]
+  * [flag] Update the lifetime markers flag to correctly handle multiple instances (#5283)
+
+  [ Diego Novillo ]
+  * Prevent update_spirv_deps.sh from updating re2 and effcee. (#5250)
+
+  [ Xiang Li ]
+  * [Metadata] Limit bitfield annotation to validator version >= 1.7 (#5282)
+
+  [ Marijn Suijten ]
+  * Avoid concurrency hazard in signal handler registration (#5272)
+
+  [ Antonio Maiorano ]
+  * Fix clang build depending on delayed template parsing (#5288)
+  * Add missing CMake variable  for configure_file (#5287)
+  * Add missing headers for clang with libc++ builds (#5285)
+  * Fix build when compiling against libc++ (#5284)
+
+  [ Austin Kinross ]
+  * [PIX] Add pass to log DXR 1.0 shader invocation info into a UAV (#5301)
+
+  [ Steven Perron ]
+  * Handle size 1 vectors in getTypeWithCustomBitwidth (#5305)
+  * Add cast after RWByteAddressBuffer atomic compare exchange (#5295)
+
+  [ Xiang Li ]
+  * [NFC] [lit] [SPIRV] change header ext from hlsl to hlsli (#5304)
+
+  [ Jeff Noyle ]
+  * WinPIX: Shader debug should use UAV 0 always (#5315)
+  * WinPIX: File-check test for new DXR invocations log pass (#5322)
+  * PIX: don't report modification from DXRInvocationsLog pass for non-DXR-hit libs (#5323)
+
+  [ Steven Perron ]
+  * Propagate bitwidth for BitCast in LiteralTypeVisitor (#5324)
+
+  [ Adam Yang ]
+  * Made linker preserve nops for Od. (#5317)
+
+  [ Brian Favela ]
+  * [NFC] Cherry-picking some changes to prepare for ReverseIterator support (#5329)
+
+  [ Xiang Li ]
+  * [lit] Pass the USERPROFILE variable through on Windows (#5331)
+
+  [ Jaebaek Seo ]
+  * [spirv] emit valid stride for array of empty struct (#3885)
+
+  [ Chris B ]
+  * [NFC] Fix RUN line in SPIR-V test (#5344)
+
+  [ Xiang Li ]
+  * Make HLSLOptions getter methods const (#5333)
+
+  [ Brian Favela ]
+  * [NFC] More cherry picks in preparation of ReverseIterator changes (#5340)
+
+  [ Chris B ]
+  * Introduce issue templates (#4984)
+
+  [ Xiang Li ]
+  * [lit] Add git usr bin to path automatically. (#5355)
+
+  [ Steven Perron ]
+  * Process enums in class (#5330)
+  * Propagate literal types through loads. (#5339)
+
+  [ Brian Favela ]
+  * Add link-time detection of LLVM_ABI_BREAKING_CHECKS mismatch (#5380)
+
+  [ David Peixotto ]
+  * Add -lit-xml-output-path option to hctbuild.cmd (#5381)
+
+  [ Xiang Li ]
+  * [lit] allow find git usr bin in path directly. (#5385)
+
+  [ Brian Favela ]
+  * Few more cherry-picks to prep for reverse iterator changes (#5386)
+
+  [ Nathan Gauër ]
+  * Revert "[SPIR-V] add support for extension KHR_fragment_shading_barycentric (SV_Barycentrics)" (#5384)
+
+  [ Chris B ]
+  * Update build artifact permissions (#5387)
+
+  [ Nathan Gauër ]
+  * Fix SPIRV struct reconstruction with bitfields (#5390)
+  * [SPIRV] Emit Offset decoration for PhysicalStorage structs (#5392)
+
+  [ Steven Perron ]
+  * Make assert consistent with the code (#5382)
+
+  [ Joshua Batista ]
+  * Error on diff blob versions part 1 (#5378)
+
+  [ Kirill Kozlov ]
+  * [SPIRV] Add option to preserve interface variables (#5400)
+
+  [ Brian Favela ]
+  * More cherry picks for testing changes (iterator related) (#5403)
+
+  [ Steven Perron ]
+  * Allow arrays of RW, consume, and append structured buffers. (#5405)
+
+  [ Tex Riddell ]
+  * Fix test break on non-spirv build (#5422)
+
+  [ Nathan Gauër ]
+  * SPIRV: don't generate invalid debug instructions (#5397)
+
+  [ Steven Perron ]
+  * Update spirv-headers and spirv-tools (#5419)
+
+  [ Antonio Maiorano ]
+  * Add macro to disable usage of allocator overrides (#5296)
+
+  [ Brian Favela ]
+  * Add zip range adapter and other utility functions (#5425)
+
+  [ Antonio Maiorano ]
+  * Remove 'using namespace std' to fix __noop ambiguity with latest libc++ (#5406)
+
+  [ Xiang Li ]
+  * [Build] cleanup build dependency (#5432)
+
+  [ Adam Yang ]
+  * Fixed a crash when linker erases functions that still have users. (#5437)
+
+  [ Steven Perron ]
+  * Expand WaveActiveAllEqual with vector and matrix arguments. (#5428)
+
+  [ Diego Novillo ]
+  * Update SPIRV-Tools and SPIRV-Headers to current release candidate versions (#5439)
+
+  [ Xiang Li ]
+  * [lit] allow hcttest file-check to run on lit. (#5393)
+
+  [ Joshua Batista ]
+  * Error out if two blobs compiled with different compiler versions are linked. (#5361)
+
+  [ Steven Perron ]
+  * Generate counter for arrays of RW, consume, and append structured buffers. (#5415)
+
+  [ Xiang Li ]
+  * [lit] fall back to taef for taef only test options (#5404)
+
+  [ Chris B ]
+  * Instantiate argument default parameters (#5443)
+
+  [ Diego Novillo ]
+  * Update submodule hashes for SPIRV-Tools and SPIRV-Headers. (#5450)
+
+  [ Ben Clayton ]
+  * Fixes to build with C++20 (#5332)
+
+  [ Chris B ]
+  * Fix TAEF lookup for nuget and SDK paths (#5452)
+  * Update required CMake version to 3.17.2 (#5418)
+
+  [ Steven Perron ]
+  * Handle passing an element of a RWStructureBuffer array to a function (#5447)
+
+  [ Xiang Li ]
+  * [lit] use lit.py directly to allow send parameter to lit from hcttest (#5438)
+  * [lit] Make lit the only test runner (#5402)
+
+  [ Helena Kotas ]
+  * Add TransformUtils dependency to DxilContainer for Linux builds (#5468)
+
+  [ Xiang Li ]
+  * [lit] [SPIRV} Copy legal-examples to lit (#5320)
+
+  [ Chris B ]
+  * Make HLSL 2021 the default language mode (#5466)
+
+  [ Helena Kotas ]
+  * Allow new/delete operators to be called before DllMain (#5454)
+
+  [ Steven Perron ]
+  * Enable the vk::counter_binding attribute for arrays (#5456)
+
+  [ Xiang Li ]
+  * [lit] Only enable spirv lit test when spirv build is enabled. (#5471)
+
+  [ Helena Kotas ]
+  * Update version to 1.7.2308 (#5470)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Handle non-global ConstantBuffer (#5446)
+
+  [ Ellie Hermaszewska ]
+  * Fix mutex use after free in llvm_shutdown (#5463)
+
+  [ Xiang Li ]
+  * [C++17] Merge upsteam change for Don't use std::iterator in PATH.h (#5483)
+
+  [ Nathan Gauër ]
+  * prepare LunarG SDK v2023.4.rc2 release (#5511)
+
+ -- john <john@odin>  Wed, 16 Aug 2023 10:14:53 -0600
+
 directxshadercompiler (1.4.0.2274-1507~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Adam Yang ]
