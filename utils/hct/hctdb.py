@@ -2142,6 +2142,8 @@ class db_dxil(object):
         add_pass('hlsl-dxil-PIX-add-tid-to-as-payload', 'DxilPIXAddTidToAmplificationShaderPayload', 'HLSL DXIL Add flat thread id to payload from AS to MS', [
             {'n':'dispatchArgY','t':'int','c':1},
             {'n':'dispatchArgZ','t':'int','c':1}])
+        add_pass('hlsl-dxil-pix-dxr-invocations-log', 'DxilPIXDXRInvocationsLog', 'HLSL DXIL Logs all non-RayGen DXR 1.0 invocations into a UAV', [
+            {'n':'maxNumEntriesInLog','t':'int','c':1}])
 
         category_lib="dxil_gen"
 
@@ -2198,6 +2200,7 @@ class db_dxil(object):
         add_pass('dxil-elim-vector', 'DxilEliminateVector', 'Dxil Eliminate Vectors', [])
         add_pass('dxil-rewrite-output-arg-debug-info', 'DxilRewriteOutputArgDebugInfo', 'Dxil Rewrite Output Arg Debug Info', [])
         add_pass('dxil-finalize-preserves', 'DxilFinalizePreserves', 'Dxil Finalize Preserves', [])
+        add_pass('dxil-reinsert-nops', 'DxilReinsertNops', 'Dxil Reinsert Nops', [])
         add_pass('dxil-insert-preserves', 'DxilInsertPreserves', 'Dxil Insert Noops', [
                 {'n':'AllowPreserves', 't':'bool', 'c':1},
             ])
@@ -2953,6 +2956,7 @@ class db_hlsl(object):
         self.param_qual = {
             "in": "AR_QUAL_IN",
             "inout": "AR_QUAL_IN | AR_QUAL_OUT",
+            "ref" : "AR_QUAL_REF",
             "out": "AR_QUAL_OUT",
             "col_major": "AR_QUAL_COLMAJOR",
             "row_major": "AR_QUAL_ROWMAJOR"}
