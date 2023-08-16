@@ -119,32 +119,6 @@ const Expr *isStructuredBufferLoad(const Expr *expr, const Expr **index) {
   return nullptr;
 }
 
-/// Returns true if the given VarDecl will be translated into a SPIR-V variable
-/// not in the Private or Function storage class.
-inline bool isExternalVar(const VarDecl *var) {
-  // Class static variables should be put in the Private storage class.
-  // groupshared variables are allowed to be declared as "static". But we still
-  // need to put them in the Workgroup storage class. That is, when seeing
-  // "static groupshared", ignore "static".
-  return var->hasExternalFormalLinkage()
-             ? !var->isStaticDataMember()
-             : (var->getAttr<HLSLGroupSharedAttr>() != nullptr);
-}
-
-/// Returns the referenced variable's DeclContext if the given expr is
-/// a DeclRefExpr referencing a ConstantBuffer/TextureBuffer. Otherwise,
-/// returns nullptr.
-const DeclContext *isConstantTextureBufferDeclRef(const Expr *expr) {
-  if (const auto *declRefExpr = dyn_cast<DeclRefExpr>(expr->IgnoreParenCasts()))
-    if (const auto *varDecl = dyn_cast<VarDecl>(declRefExpr->getFoundDecl()))
-      if (isConstantTextureBuffer(varDecl->getType()))
-        return hlsl::GetHLSLResourceResultType(varDecl->getType())
-            ->getAs<RecordType>()
-            ->getDecl();
-
-  return nullptr;
-}
-
 /// Returns true if
 /// * the given expr is an DeclRefExpr referencing a kind of structured or byte
 ///   buffer and it is non-alias one, or
@@ -159,7 +133,7 @@ bool isReferencingNonAliasStructuredOrByteBuffer(const Expr *expr) {
   if (const auto *declRefExpr = dyn_cast<DeclRefExpr>(expr)) {
     if (const auto *varDecl = dyn_cast<VarDecl>(declRefExpr->getFoundDecl()))
       if (isAKindOfStructuredOrByteBuffer(varDecl->getType()))
-        return isExternalVar(varDecl);
+        return SpirvEmitter::isExternalVar(varDecl);
   } else if (const auto *callExpr = dyn_cast<CallExpr>(expr)) {
     if (isAKindOfStructuredOrByteBuffer(callExpr->getType()))
       return true;
@@ -335,6 +309,10 @@ const DeclaratorDecl *getReferencedDef(const Expr *expr) {
     return nullptr;
 
   expr = expr->IgnoreParenCasts();
+  while(const auto *arraySubscriptExpr = dyn_cast<ArraySubscriptExpr>(expr)) {
+    expr = arraySubscriptExpr->getBase();
+    expr = expr->IgnoreParenCasts();
+  }
 
   if (const auto *declRefExpr = dyn_cast<DeclRefExpr>(expr)) {
     return dyn_cast_or_null<DeclaratorDecl>(declRefExpr->getDecl());
@@ -584,6 +562,54 @@ const StructType *lowerStructType(const SpirvCodeGenOptions &spirvOptions,
   return output;
 }
 
+// Calls `operation` on for each field in the base and derives class defined by
+// `recordType`. The `operation` will receive the AST type linked to the field,
+// the SPIRV type linked to the field, and the index of the field in the final
+// SPIR-V representation. This index of the field can vary from the AST
+// field-index because bitfields are merged into a single field in the SPIR-V
+// representation.
+//
+// If the operation returns false, we stop processing fields.
+void forEachSpirvField(
+    const RecordType *recordType, const StructType *spirvType,
+    std::function<bool(size_t spirvFieldIndex, const QualType &fieldType,
+                       const StructType::FieldInfo &field)>
+        operation) {
+  const auto *cxxDecl = recordType->getAsCXXRecordDecl();
+  const auto *recordDecl = recordType->getDecl();
+
+  // Iterate through the base class (one field per base class).
+  // Bases cannot be melded into 1 field like bitfields, simple iteration.
+  uint32_t lastConvertedIndex = 0;
+  size_t astFieldIndex = 0;
+  for (const auto &base : cxxDecl->bases()) {
+    const auto &type = base.getType();
+    const auto &spirvField = spirvType->getFields()[astFieldIndex];
+    if (!operation(spirvField.fieldIndex, type, spirvField)) {
+      return;
+    }
+    lastConvertedIndex = spirvField.fieldIndex;
+    ++astFieldIndex;
+  }
+
+  // Iterate through the derived class fields. Field could be merged.
+  for (const auto *field : recordDecl->fields()) {
+    const auto &spirvField = spirvType->getFields()[astFieldIndex];
+    const uint32_t currentFieldIndex = spirvField.fieldIndex;
+    if (astFieldIndex > 0 && currentFieldIndex == lastConvertedIndex) {
+      ++astFieldIndex;
+      continue;
+    }
+
+    const auto &type = field->getType();
+    if (!operation(currentFieldIndex, type, spirvField)) {
+      return;
+    }
+    lastConvertedIndex = currentFieldIndex;
+    ++astFieldIndex;
+  }
+}
+
 } // namespace
 
 SpirvEmitter::SpirvEmitter(CompilerInstance &ci)
@@ -744,6 +770,12 @@ void SpirvEmitter::HandleTranslationUnit(ASTContext &context) {
   // Stop translating if there are errors in previous compilation stages.
   if (context.getDiagnostics().hasErrorOccurred())
     return;
+
+  if (spirvOptions.debugInfoRich) {
+    emitWarning("Member functions will not be linked to their class in the debug information. "
+                "See https://github.com/KhronosGroup/SPIRV-Registry/issues/203",
+                {});
+  }
 
   TranslationUnitDecl *tu = context.getTranslationUnitDecl();
   uint32_t numEntryPoints = 0;
@@ -930,8 +962,7 @@ void SpirvEmitter::doDecl(const Decl *decl) {
   } else if (const auto *classTemplateDecl =
                  dyn_cast<ClassTemplateDecl>(decl)) {
     doClassTemplateDecl(classTemplateDecl);
-  } else if (const auto *functionTemplateDecl =
-                 dyn_cast<FunctionTemplateDecl>(decl)) {
+  } else if (isa<FunctionTemplateDecl>(decl)) {
     // nothing to do.
   } else {
     emitError("decl type %0 unimplemented", decl->getLocation())
@@ -1188,17 +1219,8 @@ SpirvInstruction *SpirvEmitter::loadIfGLValue(const Expr *expr,
   }
 
   SpirvInstruction *loadedInstr = nullptr;
-  // TODO: Ouch. Very hacky. We need special path to get the value type if
-  // we are loading a whole ConstantBuffer/TextureBuffer since the normal
-  // type translation path won't work.
-  if (const auto *declContext = isConstantTextureBufferDeclRef(expr)) {
-    loadedInstr = spvBuilder.createLoad(
-        declIdMapper.getCTBufferPushConstantType(declContext), info,
-        expr->getExprLoc());
-  } else {
-    loadedInstr = spvBuilder.createLoad(exprType, info, expr->getExprLoc(),
-                                        expr->getSourceRange());
-  }
+  loadedInstr = spvBuilder.createLoad(exprType, info, expr->getExprLoc(),
+                                      expr->getSourceRange());
   assert(loadedInstr);
 
   // Special-case: According to the SPIR-V Spec: There is no physical size or
@@ -1480,12 +1502,6 @@ bool SpirvEmitter::validateVKAttributes(const NamedDecl *decl) {
   }
 
   if (decl->getAttr<VKInputAttachmentIndexAttr>()) {
-    if (!spvContext.isPS()) {
-      emitError("SubpassInput(MS) only allowed in pixel shader",
-                decl->getLocation());
-      success = false;
-    }
-
     if (!decl->isExternallyVisible()) {
       emitError("SubpassInput(MS) must be externally visible",
                 decl->getLocation());
@@ -1656,10 +1672,14 @@ void SpirvEmitter::doRecordDecl(const RecordDecl *recordDecl) {
   // Each static member has a corresponding VarDecl inside the
   // RecordDecl. For those defined in the translation unit,
   // their VarDecls do not have initializer.
-  for (auto *subDecl : recordDecl->decls())
-    if (auto *varDecl = dyn_cast<VarDecl>(subDecl))
+  for (auto *subDecl : recordDecl->decls()) {
+    if (auto *varDecl = dyn_cast<VarDecl>(subDecl)) {
       if (varDecl->isStaticDataMember() && varDecl->hasInit())
         doVarDecl(varDecl);
+    } else if (auto *enumDecl = dyn_cast<EnumDecl>(subDecl)) {
+      doEnumDecl(enumDecl);
+    }
+  }
 }
 
 void SpirvEmitter::doEnumDecl(const EnumDecl *decl) {
@@ -1700,7 +1720,8 @@ void SpirvEmitter::doVarDecl(const VarDecl *decl) {
 
   // Reject arrays of RW/append/consume structured buffers. They have assoicated
   // counters, which are quite nasty to handle.
-  if (decl->getType()->isArrayType()) {
+  if (!spirvOptions.allowRWStructuredBufferArrays &&
+      decl->getType()->isArrayType()) {
     auto type = decl->getType();
     do {
       type = type->getAsArrayTypeUnsafe()->getElementType();
@@ -1749,10 +1770,12 @@ void SpirvEmitter::doVarDecl(const VarDecl *decl) {
     return;
   }
 
-  if (isConstantTextureBuffer(decl->getType())) {
-    // This is a VarDecl of ConstantBuffer/TextureBuffer type.
-    (void)declIdMapper.createCTBuffer(decl);
-    return;
+  if (decl->getAttr<VKInputAttachmentIndexAttr>()) {
+    if (!spvContext.isPS()) {
+      // SubpassInput(MS) variables are only allowed in pixel shaders. In this
+      // case, we avoid create the declaration because it should not be used.
+      return;
+    }
   }
 
   SpirvVariable *var = nullptr;
@@ -3014,6 +3037,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
 
     auto *value = castToInt(loadIfGLValue(subExpr), subExprType, toType,
                             subExpr->getLocStart(), range);
+    if (!value)
+      return nullptr;
+
     value->setRValue();
     return value;
   }
@@ -3030,6 +3056,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
 
     auto *value = castToFloat(loadIfGLValue(subExpr), subExprType, toType,
                               subExpr->getLocStart(), range);
+    if (!value)
+      return nullptr;
+
     value->setRValue();
     return value;
   }
@@ -3045,6 +3074,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
 
     auto *value = castToBool(loadIfGLValue(subExpr), subExprType, toType,
                              subExpr->getLocStart(), range);
+    if (!value)
+      return nullptr;
+
     value->setRValue();
     return value;
   }
@@ -3069,6 +3101,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
       value = spvBuilder.createCompositeConstruct(toVecType, elements,
                                                   expr->getExprLoc(), range);
     }
+
+    if (!value)
+      return nullptr;
 
     value->setRValue();
     return value;
@@ -3100,6 +3135,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
                                                    expr->getLocStart(), range);
     auto *mat = spvBuilder.createCompositeConstruct(toType, {subVec1, subVec2},
                                                     expr->getLocStart(), range);
+    if (!mat)
+      return nullptr;
+
     mat->setRValue();
     return mat;
   }
@@ -3123,6 +3161,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
       llvm::SmallVector<SpirvConstant *, 4> vectors(
           size_t(rowCount), cast<SpirvConstant>(vecSplat));
       auto *value = spvBuilder.getConstantComposite(toType, vectors);
+      if (!value)
+        return nullptr;
+
       value->setRValue();
       return value;
     } else {
@@ -3130,6 +3171,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
                                                        vecSplat);
       auto *value = spvBuilder.createCompositeConstruct(
           toType, vectors, expr->getLocEnd(), range);
+      if (!value)
+        return nullptr;
+
       value->setRValue();
       return value;
     }
@@ -3149,6 +3193,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
       if (isVectorType(srcType, nullptr, &srcVecSize) && isScalarType(toType)) {
         auto *val = spvBuilder.createCompositeExtract(
             toType, src, {0}, expr->getLocStart(), range);
+        if (!val)
+          return nullptr;
+
         val->setRValue();
         return val;
       }
@@ -3159,6 +3206,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
           indexes.push_back(i);
         auto *val = spvBuilder.createVectorShuffle(toType, src, src, indexes,
                                                    expr->getLocStart(), range);
+        if (!val)
+          return nullptr;
+
         val->setRValue();
         return val;
       }
@@ -3198,6 +3248,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
       val = spvBuilder.createCompositeConstruct(toType, extractedVecs,
                                                 expr->getExprLoc(), range);
     }
+    if (!val)
+      return nullptr;
+
     val->setRValue();
     return val;
   }
@@ -3233,6 +3286,9 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
         spvBuilder.createCompositeExtract(vec2Type, mat, {1}, srcLoc, range);
     auto *vec = spvBuilder.createVectorShuffle(toType, row0, row1, {0, 1, 2, 3},
                                                srcLoc, range);
+    if (!vec)
+      return nullptr;
+
     vec->setRValue();
     return vec;
   }
@@ -3349,41 +3405,12 @@ SpirvInstruction *SpirvEmitter::doCastExpr(const CastExpr *expr,
   }
 }
 
-void SpirvEmitter::updateInstructionType(SpirvInstruction *initInstr,
-                                         QualType type) {
-  if (initInstr == nullptr || type == initInstr->getAstResultType())
-    return;
-  initInstr->setAstResultType(type);
-  if (auto *load = dyn_cast<SpirvLoad>(initInstr)) {
-    updateInstructionType(load->getPointer(), type);
-  }
-}
-
 SpirvInstruction *SpirvEmitter::processFlatConversion(
     const QualType type, const QualType initType, SpirvInstruction *initInstr,
     SourceLocation srcLoc, SourceRange range) {
   if (isConstantTextureBuffer(initType)) {
-    // When we access to a bindless array of ConstantBuffer<T> or
-    // TextureBuffer<T>, the AST result type of ArraySubscriptExpr will be
-    // ConstantBuffer<T> while the result type of FlatConversion must be T.
-    // We have to update the result of ArraySubscriptExpr to match the type:
-    // `-VarDecl 'const T' cinit
-    //   `-ImplicitCastExpr 'T' <FlatConversion>
-    //     `-ImplicitCastExpr 'ConstantBuffer<T>':'ConstantBuffer<T>'
-    //                        <LValueToRValue>
-    //       `-ArraySubscriptExpr 'ConstantBuffer<T>':'ConstantBuffer<T>' lvalue
-    if (initInstr != nullptr && initInstr->getAstResultType() != QualType() &&
-        type != initInstr->getAstResultType()) {
-      updateInstructionType(initInstr, type);
-      needsLegalization = true;
-    }
-    // Otherwise, when translating ConstantBuffer<T> or TextureBuffer<T> types,
-    // we consider the underlying type (T), and therefore we should bypass the
-    // FlatConversion node when accessing these types:
-    // `-MemberExpr
-    //   `-ImplicitCastExpr 'const T' lvalue <FlatConversion>
-    //     `-ArraySubscriptExpr 'ConstantBuffer<T>':'ConstantBuffer<T>' lvalue
-    return initInstr;
+    return reconstructValue(initInstr, type, SpirvLayoutRule::Void, srcLoc,
+                            range);
   }
 
   // Try to translate the canonical type first
@@ -3578,6 +3605,8 @@ SpirvInstruction *SpirvEmitter::doShortCircuitedConditionalOperator(
   // From now on, emit instructions into the merge block.
   spvBuilder.setInsertPoint(mergeBB);
   SpirvInstruction *result = spvBuilder.createLoad(type, tempVar, loc, range);
+  if (!result)
+    return nullptr;
   result->setRValue();
   return result;
 }
@@ -3631,6 +3660,9 @@ SpirvInstruction *SpirvEmitter::doConditional(const Expr *expr,
       }
       auto *result =
           spvBuilder.createCompositeConstruct(type, rows, loc, range);
+      if (!result)
+        return nullptr;
+
       result->setRValue();
       return result;
     }
@@ -3655,6 +3687,9 @@ SpirvInstruction *SpirvEmitter::doConditional(const Expr *expr,
 
     auto *value = spvBuilder.createSelect(type, condition, trueBranch,
                                           falseBranch, loc, range);
+    if (!value)
+      return nullptr;
+
     value->setRValue();
     return value;
   }
@@ -3693,6 +3728,9 @@ SpirvInstruction *SpirvEmitter::doConditional(const Expr *expr,
   // From now on, emit instructions into the merge block.
   spvBuilder.setInsertPoint(mergeBB);
   auto *result = spvBuilder.createLoad(type, tempVar, expr->getLocEnd(), range);
+  if (!result)
+    return nullptr;
+
   result->setRValue();
   return result;
 }
@@ -3775,14 +3813,20 @@ SpirvInstruction *SpirvEmitter::processRWByteAddressBufferAtomicMethods(
 
   if (isCompareExchange || isCompareStore) {
     auto *comparator = doExpr(expr->getArg(1));
-    auto *originalVal = spvBuilder.createAtomicCompareExchange(
+    SpirvInstruction *originalVal = spvBuilder.createAtomicCompareExchange(
         astContext.UnsignedIntTy, ptr, spv::Scope::Device,
         spv::MemorySemanticsMask::MaskNone, spv::MemorySemanticsMask::MaskNone,
         doExpr(expr->getArg(2)), comparator, expr->getCallee()->getExprLoc(),
         range);
-    if (isCompareExchange)
+    if (isCompareExchange) {
+      auto *resultAddress = expr->getArg(3);
+      QualType resultType = resultAddress->getType();
+      if (resultType != astContext.UnsignedIntTy)
+        originalVal = castToInt(originalVal, astContext.UnsignedIntTy,
+                                resultType, expr->getArg(3)->getLocStart());
       spvBuilder.createStore(doExpr(expr->getArg(3)), originalVal,
                              expr->getArg(3)->getLocStart(), range);
+    }
   } else {
     auto *value = doExpr(expr->getArg(1));
     SpirvInstruction *originalVal = spvBuilder.createAtomicOp(
@@ -3820,6 +3864,11 @@ SpirvEmitter::processGetSamplePosition(const CXXMemberCallExpr *expr) {
 
 SpirvInstruction *
 SpirvEmitter::processSubpassLoad(const CXXMemberCallExpr *expr) {
+  if (!spvContext.isPS()) {
+    emitError("SubpassInput(MS) only allowed in pixel shader",
+              expr->getExprLoc());
+    return nullptr;
+  }
   const auto *object = expr->getImplicitObjectArgument()->IgnoreParens();
   SpirvInstruction *sample =
       expr->getNumArgs() == 1 ? doExpr(expr->getArg(0)) : nullptr;
@@ -4251,6 +4300,9 @@ SpirvInstruction *SpirvEmitter::processBufferTextureLoad(
                       : elemType;
     retVal = castToBool(retVal, toType, sampledType, loc);
   }
+  if (!retVal)
+    return nullptr;
+
   retVal->setRValue();
   return retVal;
 }
@@ -4374,6 +4426,9 @@ SpirvInstruction *SpirvEmitter::processByteAddressBufferLoadStore(
           astContext.getExtVectorType(addressType, numWords);
       result = spvBuilder.createCompositeConstruct(resultType, values,
                                                    expr->getLocStart(), range);
+      if (!result)
+        return nullptr;
+
       result->setRValue();
     }
   }
@@ -4426,16 +4481,16 @@ SpirvEmitter::incDecRWACSBufferCounter(const CXXMemberCallExpr *expr,
     (void)doExpr(object);
   }
 
-  const auto *counterPair = getFinalACSBufferCounter(object);
-  if (!counterPair) {
+  auto *counter = getFinalACSBufferCounterInstruction(object);
+  if (!counter) {
     emitFatalError("cannot find the associated counter variable",
                    object->getExprLoc());
     return nullptr;
   }
 
-  auto *counterPtr = spvBuilder.createAccessChain(
-      astContext.IntTy, counterPair->get(spvBuilder, spvContext), {zero},
-      srcLoc, srcRange);
+  // Add an extra 0 because the counter is wrapped in a struct.
+  auto *counterPtr = spvBuilder.createAccessChain(astContext.IntTy, counter,
+                                                  {zero}, srcLoc, srcRange);
 
   SpirvInstruction *index = nullptr;
   if (isInc) {
@@ -4473,13 +4528,13 @@ bool SpirvEmitter::tryToAssignCounterVar(const DeclaratorDecl *dstDecl,
   // Handle AssocCounter#1 (see CounterVarFields comment)
   if (const auto *dstPair =
           declIdMapper.createOrGetCounterIdAliasPair(dstDecl)) {
-    const auto *srcPair = getFinalACSBufferCounter(srcExpr);
-    if (!srcPair) {
+    auto *srcCounter = getFinalACSBufferCounterInstruction(srcExpr);
+    if (!srcCounter) {
       emitFatalError("cannot find the associated counter variable",
                      srcExpr->getExprLoc());
       return false;
     }
-    dstPair->assign(*srcPair, spvBuilder, spvContext);
+    dstPair->assign(srcCounter, spvBuilder);
     return true;
   }
 
@@ -4510,18 +4565,18 @@ bool SpirvEmitter::tryToAssignCounterVar(const Expr *dstExpr,
   dstExpr = dstExpr->IgnoreParenCasts();
   srcExpr = srcExpr->IgnoreParenCasts();
 
-  const auto *dstPair = getFinalACSBufferCounter(dstExpr);
-  const auto *srcPair = getFinalACSBufferCounter(srcExpr);
+  auto *dstCounter = getFinalACSBufferCounterAliasAddressInstruction(dstExpr);
+  auto *srcCounter = getFinalACSBufferCounterInstruction(srcExpr);
 
-  if ((dstPair == nullptr) != (srcPair == nullptr)) {
+  if ((dstCounter == nullptr) != (srcCounter == nullptr)) {
     emitFatalError("cannot handle associated counter variable assignment",
                    srcExpr->getExprLoc());
     return false;
   }
 
   // Handle AssocCounter#1 & AssocCounter#2
-  if (dstPair && srcPair) {
-    dstPair->assign(*srcPair, spvBuilder, spvContext);
+  if (dstCounter && srcCounter) {
+    spvBuilder.createStore(dstCounter, srcCounter, /* SourceLocation */ {});
     return true;
   }
 
@@ -4537,6 +4592,37 @@ bool SpirvEmitter::tryToAssignCounterVar(const Expr *dstExpr,
   }
 
   return false;
+}
+
+SpirvInstruction *SpirvEmitter::getFinalACSBufferCounterAliasAddressInstruction(
+    const Expr *expr) {
+  const CounterIdAliasPair *counter = getFinalACSBufferCounter(expr);
+  return (counter ? counter->getAliasAddress() : nullptr);
+}
+
+SpirvInstruction *
+SpirvEmitter::getFinalACSBufferCounterInstruction(const Expr *expr) {
+  const CounterIdAliasPair *counterPair = getFinalACSBufferCounter(expr);
+  if (!counterPair)
+    return nullptr;
+
+  SpirvInstruction *counter =
+      counterPair->getCounterVariable(spvBuilder, spvContext);
+  const auto srcLoc = expr->getExprLoc();
+
+  // TODO(5440): This codes does not handle multi-dimensional arrays. We need
+  // to look at specific example to determine the best way to do it. Could a
+  // call to collectArrayStructIndices handle that for us?
+  llvm::SmallVector<SpirvInstruction *, 2> indexes;
+  if (const auto *arraySubscriptExpr = dyn_cast<ArraySubscriptExpr>(expr)) {
+    indexes.push_back(doExpr(arraySubscriptExpr->getIdx()));
+  }
+
+  if (!indexes.empty()) {
+    counter = spvBuilder.createAccessChain(spvContext.getACSBufferCounterType(),
+                                           counter, indexes, srcLoc);
+  }
+  return counter;
 }
 
 const CounterIdAliasPair *
@@ -5725,6 +5811,8 @@ SpirvEmitter::doExtMatrixElementExpr(const ExtMatrixElementExpr *expr) {
                   : astContext.getExtVectorType(astContext.BoolTy, size);
     value = castToBool(value, fromType, toType, expr->getLocStart());
   }
+  if (!value)
+    return nullptr;
   value->setRValue();
   return value;
 }
@@ -5798,6 +5886,9 @@ SpirvEmitter::doHLSLVectorElementExpr(const HLSLVectorElementExpr *expr,
     llvm::SmallVector<SpirvInstruction *, 4> components(accessorSize, info);
     info = spvBuilder.createCompositeConstruct(type, components,
                                                expr->getLocStart(), range);
+    if (!info)
+      return nullptr;
+
     info->setRValue();
     return info;
   }
@@ -5813,10 +5904,14 @@ SpirvEmitter::doHLSLVectorElementExpr(const HLSLVectorElementExpr *expr,
     originalOrder &= selectors[i] == i;
   }
 
-  if (originalOrder)
-    return doExpr(baseExpr, range);
-
   auto *info = loadIfGLValue(baseExpr, range);
+
+  if (originalOrder) {
+    // If the elements are simply the original vector, then return it without a
+    // vector shuffle.
+    return info;
+  }
+
   // Use base for both vectors. But we are only selecting values from the
   // first one.
   return spvBuilder.createVectorShuffle(expr->getType(), info, info, selectors,
@@ -5936,7 +6031,8 @@ SpirvInstruction *SpirvEmitter::doUnaryOperator(const UnaryOperator *expr) {
                                         SpirvInstruction *lhsVec) {
         auto *val = spvBuilder.createBinaryOp(spvOp, vecType, lhsVec, one,
                                               expr->getOperatorLoc(), range);
-        val->setRValue();
+        if (val)
+          val->setRValue();
         return val;
       };
       incValue = processEachVectorInMatrix(subExpr, originValue, actOnEachVec,
@@ -5949,6 +6045,8 @@ SpirvInstruction *SpirvEmitter::doUnaryOperator(const UnaryOperator *expr) {
     // If this is a RWBuffer/RWTexture assignment, OpImageWrite will be used.
     // Otherwise, store using OpStore.
     if (tryToAssignToRWBufferRWTexture(subExpr, incValue, range)) {
+      if (!incValue)
+        return nullptr;
       incValue->setRValue();
       subValue = incValue;
     } else {
@@ -5959,14 +6057,19 @@ SpirvInstruction *SpirvEmitter::doUnaryOperator(const UnaryOperator *expr) {
     // increment/decrement returns a rvalue.
     if (isPre) {
       return subValue;
-    } else {
-      originValue->setRValue();
-      return originValue;
     }
+
+    if (!originValue)
+      return nullptr;
+    originValue->setRValue();
+    return originValue;
   }
   case UO_Not: {
     subValue = spvBuilder.createUnaryOp(spv::Op::OpNot, subType, subValue,
                                         expr->getOperatorLoc(), range);
+    if (!subValue)
+      return nullptr;
+
     subValue->setRValue();
     return subValue;
   }
@@ -5976,6 +6079,9 @@ SpirvInstruction *SpirvEmitter::doUnaryOperator(const UnaryOperator *expr) {
     subValue =
         spvBuilder.createUnaryOp(spv::Op::OpLogicalNot, subType, subValue,
                                  expr->getOperatorLoc(), range);
+    if (!subValue)
+      return nullptr;
+
     subValue->setRValue();
     return subValue;
   }
@@ -6001,6 +6107,9 @@ SpirvInstruction *SpirvEmitter::doUnaryOperator(const UnaryOperator *expr) {
     } else {
       subValue = spvBuilder.createUnaryOp(spvOp, subType, subValue,
                                           expr->getOperatorLoc(), range);
+      if (!subValue)
+        return nullptr;
+
       subValue->setRValue();
       return subValue;
     }
@@ -6390,29 +6499,26 @@ SpirvInstruction *SpirvEmitter::reconstructValue(SpirvInstruction *srcVal,
 
   // Structs
   if (const auto *recordType = valType->getAs<RecordType>()) {
-    uint32_t index = 0;
+    assert(recordType->isStructureType());
+
+    LowerTypeVisitor lowerTypeVisitor(astContext, spvContext, spirvOptions);
+    const StructType *spirvStructType =
+        lowerStructType(spirvOptions, lowerTypeVisitor, recordType->desugar());
+
     llvm::SmallVector<SpirvInstruction *, 4> elements;
+    forEachSpirvField(
+        recordType, spirvStructType,
+        [&](size_t spirvFieldIndex, const QualType &fieldType,
+            const auto &field) {
+          SpirvInstruction *subSrcVal = spvBuilder.createCompositeExtract(
+              fieldType, srcVal, {static_cast<uint32_t>(spirvFieldIndex)}, loc, range);
+          subSrcVal->setLayoutRule(srcVal->getLayoutRule());
+          elements.push_back(
+              reconstructValue(subSrcVal, fieldType, dstLR, loc, range));
 
-    // If the struct inherits from other structs, visit the bases.
-    const auto *decl = valType->getAsCXXRecordDecl();
-    for (auto baseIt = decl->bases_begin(), baseIe = decl->bases_end();
-         baseIt != baseIe; ++baseIt, ++index) {
-      SpirvInstruction *subSrcVal = spvBuilder.createCompositeExtract(
-          baseIt->getType(), srcVal, {index}, loc, range);
-      subSrcVal->setLayoutRule(srcVal->getLayoutRule());
-      elements.push_back(
-          reconstructValue(subSrcVal, baseIt->getType(), dstLR, loc, range));
-    }
+          return true;
+        });
 
-    // Go over struct fields.
-    for (const auto *field : recordType->getDecl()->fields()) {
-      SpirvInstruction *subSrcVal = spvBuilder.createCompositeExtract(
-          field->getType(), srcVal, {index}, loc, range);
-      subSrcVal->setLayoutRule(srcVal->getLayoutRule());
-      elements.push_back(
-          reconstructValue(subSrcVal, field->getType(), dstLR, loc, range));
-      ++index;
-    }
     auto *result = spvBuilder.createCompositeConstruct(
         valType, elements, srcVal->getSourceLocation(), range);
     result->setLayoutRule(dstLR);
@@ -6504,6 +6610,9 @@ SpirvInstruction *SpirvEmitter::processBinaryOp(
     SpirvInstruction *result =
         castToType(tempVar, astContext.BoolTy, resultType, loc, sourceRange);
     result = spvBuilder.createLoad(resultType, tempVar, loc, sourceRange);
+    if (!result)
+      return nullptr;
+
     result->setRValue();
     return result;
   }
@@ -6588,6 +6697,9 @@ SpirvInstruction *SpirvEmitter::processBinaryOp(
               rhsValConstant->isSpecConstant()) {
             auto *val = spvBuilder.createSpecConstantBinaryOp(
                 spvOp, resultType, lhsVal, rhsVal, loc);
+            if (!val)
+              return nullptr;
+
             val->setRValue();
             return val;
           }
@@ -6610,6 +6722,8 @@ SpirvInstruction *SpirvEmitter::processBinaryOp(
                                       sourceRange);
     }
 
+    if (!val)
+      return nullptr;
     val->setRValue();
 
     // Propagate RelaxedPrecision
@@ -6864,6 +6978,8 @@ SpirvInstruction *SpirvEmitter::createVectorSplat(const Expr *scalarExpr,
   // Try to evaluate the element as constant first. If successful, then we
   // can generate constant instructions for this vector splat.
   if ((scalarVal = tryToEvaluateAsConst(scalarExpr))) {
+    if (!scalarVal)
+      return nullptr;
     scalarVal->setRValue();
   } else {
     scalarVal = loadIfGLValue(scalarExpr, range);
@@ -6882,13 +6998,18 @@ SpirvInstruction *SpirvEmitter::createVectorSplat(const Expr *scalarExpr,
   // Should find a more meaningful one.
   if (auto *constVal = dyn_cast<SpirvConstant>(scalarVal)) {
     llvm::SmallVector<SpirvConstant *, 4> elements(size_t(size), constVal);
-    auto *value = spvBuilder.getConstantComposite(vecType, elements);
+    const bool isSpecConst = constVal->getopcode() == spv::Op::OpSpecConstant;
+    auto *value = spvBuilder.getConstantComposite(vecType, elements, isSpecConst);
+    if (!value)
+      return nullptr;
     value->setRValue();
     return value;
   } else {
     llvm::SmallVector<SpirvInstruction *, 4> elements(size_t(size), scalarVal);
     auto *value = spvBuilder.createCompositeConstruct(
         vecType, elements, scalarExpr->getLocStart(), range);
+    if (!value)
+      return nullptr;
     value->setRValue();
     return value;
   }
@@ -6926,47 +7047,35 @@ SpirvInstruction *SpirvEmitter::convertVectorToStruct(QualType astStructType,
                                                       SourceRange range) {
   assert(astStructType->isStructureType());
 
-  const auto *structDecl = astStructType->getAsStructureType()->getDecl();
   LowerTypeVisitor lowerTypeVisitor(astContext, spvContext, spirvOptions);
   const StructType *spirvStructType =
       lowerStructType(spirvOptions, lowerTypeVisitor, astStructType);
-
   uint32_t vectorIndex = 0;
   uint32_t elemCount = 1;
-  uint32_t lastConvertedIndex = 0;
   llvm::SmallVector<SpirvInstruction *, 4> members;
-  for (auto field = structDecl->field_begin(); field != structDecl->field_end();
-       field++) {
-    // Multiple bitfields can share the same storing type. In such case, we only
-    // want to append the whole storage once.
-    const size_t astFieldIndex =
-        std::distance(structDecl->field_begin(), field);
-    const uint32_t currentFieldIndex =
-        spirvStructType->getFields()[astFieldIndex].fieldIndex;
-    if (astFieldIndex > 0 && currentFieldIndex == lastConvertedIndex) {
-      continue;
-    }
-    lastConvertedIndex = currentFieldIndex;
+  forEachSpirvField(astStructType->getAs<RecordType>(), spirvStructType,
+                    [&](size_t spirvFieldIndex, const QualType &fieldType,
+                        const auto &field) {
+                      if (isScalarType(fieldType)) {
+                        members.push_back(spvBuilder.createCompositeExtract(
+                            elemType, vector, {vectorIndex++}, loc, range));
+                        return true;
+                      }
 
-    if (isScalarType(field->getType())) {
-      members.push_back(spvBuilder.createCompositeExtract(
-          elemType, vector, {vectorIndex++}, loc, range));
-      continue;
-    }
+                      if (isVectorType(fieldType, nullptr, &elemCount)) {
+                        llvm::SmallVector<uint32_t, 4> indices;
+                        for (uint32_t i = 0; i < elemCount; ++i)
+                          indices.push_back(vectorIndex++);
 
-    if (isVectorType(field->getType(), nullptr, &elemCount)) {
-      llvm::SmallVector<uint32_t, 4> indices;
-      for (uint32_t i = 0; i < elemCount; ++i)
-        indices.push_back(vectorIndex++);
+                        members.push_back(spvBuilder.createVectorShuffle(
+                            astContext.getExtVectorType(elemType, elemCount),
+                            vector, vector, indices, loc, range));
+                        return true;
+                      }
 
-      members.push_back(spvBuilder.createVectorShuffle(
-          astContext.getExtVectorType(elemType, elemCount), vector, vector,
-          indices, loc, range));
-      continue;
-    }
-
-    assert(false && "unhandled type");
-  }
+                      assert(false && "unhandled type");
+                      return false;
+                    });
 
   return spvBuilder.createCompositeConstruct(
       astStructType, members, vector->getSourceLocation(), range);
@@ -7557,6 +7666,8 @@ SpirvInstruction *SpirvEmitter::processEachVectorInMatrix(
 
   // Construct the result matrix
   auto *val = spvBuilder.createCompositeConstruct(matType, vectors, loc, range);
+  if (!val)
+    return nullptr;
   val->setRValue();
   return val;
 }
@@ -7669,7 +7780,8 @@ SpirvEmitter::processMatrixBinaryOp(const Expr *lhs, const Expr *rhs,
                                                        rhs->getLocStart());
       auto *val =
           spvBuilder.createBinaryOp(spvOp, vecType, lhsVec, rhsVec, loc, range);
-      val->setRValue();
+      if (val)
+        val->setRValue();
       return val;
     };
     return processEachVectorInMatrix(lhs, lhsVal, actOnEachVec,
@@ -8405,7 +8517,7 @@ SpirvEmitter::processIntrinsicCallExpr(const CallExpr *callExpr) {
     retVal = processWaveVote(callExpr, spv::Op::OpGroupNonUniformBallot);
     break;
   case hlsl::IntrinsicOp::IOP_WaveActiveAllEqual:
-    retVal = processWaveVote(callExpr, spv::Op::OpGroupNonUniformAllEqual);
+    retVal = processWaveActiveAllEqual(callExpr);
     break;
   case hlsl::IntrinsicOp::IOP_WaveActiveCountBits:
     retVal = processWaveCountBits(callExpr, spv::GroupOperation::Reduce);
@@ -9247,6 +9359,74 @@ SpirvEmitter::processWaveQuadWideShuffle(const CallExpr *callExpr,
 
   return spvBuilder.createGroupNonUniformBinaryOp(
       opcode, retType, spv::Scope::Subgroup, value, target, srcLoc);
+}
+
+SpirvInstruction *
+SpirvEmitter::processWaveActiveAllEqual(const CallExpr *callExpr) {
+  assert(callExpr->getNumArgs() == 1);
+  featureManager.requestTargetEnv(SPV_ENV_VULKAN_1_1, "Wave Operation",
+                                  callExpr->getExprLoc());
+  SpirvInstruction *arg = doExpr(callExpr->getArg(0));
+  const QualType retType = callExpr->getCallReturnType(astContext);
+
+  if (isScalarType(retType))
+    return processWaveActiveAllEqualScalar(arg, callExpr->getExprLoc());
+
+  if (isVectorType(retType))
+    return processWaveActiveAllEqualVector(arg, callExpr->getExprLoc());
+
+  assert(isMxNMatrix(retType));
+  return processWaveActiveAllEqualMatrix(arg, retType, callExpr->getExprLoc());
+}
+
+SpirvInstruction *
+SpirvEmitter::processWaveActiveAllEqualScalar(SpirvInstruction *arg,
+                                              clang::SourceLocation srcLoc) {
+  return spvBuilder.createGroupNonUniformUnaryOp(
+      srcLoc, spv::Op::OpGroupNonUniformAllEqual, astContext.BoolTy,
+      spv::Scope::Subgroup, arg);
+}
+
+SpirvInstruction *
+SpirvEmitter::processWaveActiveAllEqualVector(SpirvInstruction *arg,
+                                              clang::SourceLocation srcLoc) {
+  uint32_t vectorSize = 0;
+  QualType elementType;
+  isVectorType(arg->getAstResultType(), &elementType, &vectorSize);
+  assert(vectorSize >= 2 && "Vector size in spir-v must be at least 2");
+
+  llvm::SmallVector<SpirvInstruction *, 4> elements;
+  for (uint32_t i = 0; i < vectorSize; ++i) {
+    SpirvInstruction *element =
+        spvBuilder.createCompositeExtract(elementType, arg, {i}, srcLoc);
+    elements.push_back(processWaveActiveAllEqualScalar(element, srcLoc));
+  }
+
+  QualType booleanVectortype =
+      astContext.getExtVectorType(astContext.BoolTy, vectorSize);
+  return spvBuilder.createCompositeConstruct(booleanVectortype, elements,
+                                             srcLoc);
+}
+
+SpirvInstruction *
+SpirvEmitter::processWaveActiveAllEqualMatrix(SpirvInstruction *arg,
+                                              QualType booleanMatrixType,
+                                              clang::SourceLocation srcLoc) {
+  uint32_t numberOfRows = 0;
+  uint32_t numberOfColumns = 0;
+  QualType elementType;
+  isMxNMatrix(arg->getAstResultType(), &elementType, &numberOfRows,
+              &numberOfColumns);
+  assert(numberOfRows >= 2 && "Vector size in spir-v must be at least 2");
+
+  QualType rowType = astContext.getExtVectorType(elementType, numberOfColumns);
+  llvm::SmallVector<SpirvInstruction *, 4> rows;
+  for (uint32_t i = 0; i < numberOfRows; ++i) {
+    SpirvInstruction *row =
+        spvBuilder.createCompositeExtract(rowType, arg, {i}, srcLoc);
+    rows.push_back(processWaveActiveAllEqualVector(row, srcLoc));
+  }
+  return spvBuilder.createCompositeConstruct(booleanMatrixType, rows, srcLoc);
 }
 
 SpirvInstruction *SpirvEmitter::processIntrinsicModf(const CallExpr *callExpr) {
@@ -10264,8 +10444,7 @@ SpirvInstruction *SpirvEmitter::processIntrinsicDot(const CallExpr *callExpr) {
   assert(arg0isScalarOrVec && arg1isScalarOrVec);
   // The result type must be a scalar.
   assert(returnIsScalar);
-  // The element type of each argument and the return type must be the same.
-  assert(returnType == vec1ComponentType);
+  // The element type of each argument must be the same.
   assert(vec0ComponentType == vec1ComponentType);
   // The size of the two arguments must be equal.
   assert(vec0Size == vec1Size);
@@ -11887,7 +12066,7 @@ SpirvEmitter::getSpirvShaderStage(hlsl::ShaderModel::Kind smk, bool extMeshShadi
     return spv::ExecutionModel::CallableNV;
   case hlsl::ShaderModel::Kind::Mesh:
     return extMeshShading ?
-           spv::ExecutionModel::MeshEXT: 
+           spv::ExecutionModel::MeshEXT:
            spv::ExecutionModel::MeshNV;
   case hlsl::ShaderModel::Kind::Amplification:
     return extMeshShading ?
@@ -13472,6 +13651,8 @@ SpirvInstruction *SpirvEmitter::createSpirvIntrInstExt(
 
   SpirvInstruction *retVal = spvBuilder.createSpirvIntrInstExt(
       op, retType, spvArgs, extensions, instSet, capbilities, loc);
+  if (!retVal)
+    return nullptr;
 
   // TODO: Revisit this r-value setting when handling vk::ext_result_id<T> ?
   retVal->setRValue();
@@ -13590,6 +13771,8 @@ SpirvInstruction *SpirvEmitter::processRawBufferLoad(const CallExpr *callExpr) {
   SpirvInstruction *load =
       loadDataFromRawAddress(address, bufferType, alignment, loc);
   auto *loadAsBool = castToBool(load, bufferType, boolType, loc);
+  if (!loadAsBool)
+    return nullptr;
   loadAsBool->setRValue();
   return loadAsBool;
 }
@@ -13617,23 +13800,39 @@ SpirvEmitter::loadDataFromRawAddress(SpirvInstruction *addressInUInt64,
   return loadInst;
 }
 
-SpirvInstruction *SpirvEmitter::storeDataToRawAddress(
-    SpirvInstruction *addressInUInt64, SpirvInstruction *value,
-    QualType bufferType, uint32_t alignment, SourceLocation loc) {
-
+SpirvInstruction *
+SpirvEmitter::storeDataToRawAddress(SpirvInstruction *addressInUInt64,
+                                    SpirvInstruction *value,
+                                    QualType bufferType, uint32_t alignment,
+                                    SourceLocation loc, SourceRange range) {
   // Summary:
   //   %address = OpBitcast %ptrTobufferType %addressInUInt64
   //   %storeInst = OpStore %address %value alignment %alignment
+  if (!value || !addressInUInt64)
+    return nullptr;
 
   const HybridPointerType *bufferPtrType =
       spvBuilder.getPhysicalStorageBufferType(bufferType);
 
   SpirvUnaryOp *address = spvBuilder.createUnaryOp(
       spv::Op::OpBitcast, bufferPtrType, addressInUInt64, loc);
+  if (!address)
+    return nullptr;
   address->setStorageClass(spv::StorageClass::PhysicalStorageBuffer);
 
-  SpirvStore *storeInst = spvBuilder.createStore(address, value, loc);
+  // If the source value has a different layout, it is not safe to directly
+  // store it. It needs to be component-wise reconstructed to the new layout.
+  SpirvInstruction *source = value;
+  if (value->getStorageClass() != address->getStorageClass()) {
+    source = reconstructValue(value, bufferType, address->getLayoutRule(), loc,
+                              range);
+  }
+  if (!source)
+    return nullptr;
+
+  SpirvStore *storeInst = spvBuilder.createStore(address, source, loc);
   storeInst->setAlignment(alignment);
+  storeInst->setStorageClass(spv::StorageClass::PhysicalStorageBuffer);
   return nullptr;
 }
 
@@ -13645,10 +13844,14 @@ SpirvEmitter::processRawBufferStore(const CallExpr *callExpr) {
 
   SpirvInstruction *address = doExpr(callExpr->getArg(0));
   SpirvInstruction *value = doExpr(callExpr->getArg(1));
+  if (!address || !value)
+    return nullptr;
+
   QualType bufferType = value->getAstResultType();
   clang::SourceLocation loc = callExpr->getExprLoc();
   if (!isBoolOrVecMatOfBoolType(bufferType)) {
-    return storeDataToRawAddress(address, value, bufferType, alignment, loc);
+    return storeDataToRawAddress(address, value, bufferType, alignment, loc,
+                                 callExpr->getLocStart());
   }
 
   // If callExpr is `vk::RawBufferLoad<bool>(..)`, we have to load 'uint' and
@@ -13664,7 +13867,8 @@ SpirvEmitter::processRawBufferStore(const CallExpr *callExpr) {
   QualType boolType = bufferType;
   bufferType = getUintTypeForBool(astContext, theCompilerInstance, boolType);
   auto *storeAsInt = castToInt(value, boolType, bufferType, loc);
-  return storeDataToRawAddress(address, storeAsInt, bufferType, alignment, loc);
+  return storeDataToRawAddress(address, storeAsInt, bufferType, alignment, loc,
+                               callExpr->getLocStart());
 }
 
 SpirvInstruction *
@@ -13775,10 +13979,11 @@ bool SpirvEmitter::spirvToolsOptimize(std::vector<uint32_t> *mod,
 
   spvtools::OptimizerOptions options;
   options.set_run_validator(false);
+  options.set_preserve_bindings(spirvOptions.preserveBindings);
 
   if (spirvOptions.optConfig.empty()) {
     // Add performance passes.
-    optimizer.RegisterPerformancePasses();
+    optimizer.RegisterPerformancePasses(spirvOptions.preserveInterface);
 
     // Add propagation of volatile semantics passes.
     optimizer.RegisterPass(spvtools::CreateSpreadVolatileSemanticsPass());
@@ -13815,22 +14020,25 @@ bool SpirvEmitter::spirvToolsLegalize(std::vector<uint32_t> *mod,
 
   spvtools::OptimizerOptions options;
   options.set_run_validator(false);
+  options.set_preserve_bindings(spirvOptions.preserveBindings);
   // Add interface variable SROA if the signature packing is enabled.
   if (spirvOptions.signaturePacking) {
     optimizer.RegisterPass(
         spvtools::CreateInterfaceVariableScalarReplacementPass());
   }
-  optimizer.RegisterLegalizationPasses();
+  optimizer.RegisterLegalizationPasses(spirvOptions.preserveInterface);
   // Add flattening of resources if needed.
   if (spirvOptions.flattenResourceArrays ||
       declIdMapper.requiresFlatteningCompositeResources()) {
     optimizer.RegisterPass(
         spvtools::CreateReplaceDescArrayAccessUsingVarIndexPass());
-    optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
+    optimizer.RegisterPass(
+        spvtools::CreateAggressiveDCEPass(spirvOptions.preserveInterface));
     optimizer.RegisterPass(spvtools::CreateDescriptorScalarReplacementPass());
     // ADCE should be run after desc_sroa in order to remove potentially
     // illegal types such as structures containing opaque types.
-    optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
+    optimizer.RegisterPass(
+        spvtools::CreateAggressiveDCEPass(spirvOptions.preserveInterface));
   }
   if (dsetbindingsToCombineImageSampler &&
       !dsetbindingsToCombineImageSampler->empty()) {
@@ -13839,14 +14047,16 @@ bool SpirvEmitter::spirvToolsLegalize(std::vector<uint32_t> *mod,
     // ADCE should be run after combining images and samplers in order to
     // remove potentially illegal types such as structures containing opaque
     // types.
-    optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
+    optimizer.RegisterPass(
+        spvtools::CreateAggressiveDCEPass(spirvOptions.preserveInterface));
   }
   if (spirvOptions.reduceLoadSize) {
     // The threshold must be bigger than 1.0 to reduce all possible loads.
     optimizer.RegisterPass(spvtools::CreateReduceLoadSizePass(1.1));
     // ADCE should be run after reduce-load-size pass in order to remove
     // dead instructions.
-    optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
+    optimizer.RegisterPass(
+        spvtools::CreateAggressiveDCEPass(spirvOptions.preserveInterface));
   }
   optimizer.RegisterPass(spvtools::CreateReplaceInvalidOpcodePass());
   optimizer.RegisterPass(spvtools::CreateCompactIdsPass());

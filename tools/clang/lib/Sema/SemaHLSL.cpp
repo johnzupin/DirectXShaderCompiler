@@ -871,8 +871,6 @@ QualType GetOrCreateVectorSpecialization(ASTContext& context, Sema* sema,
 
 static const LPCSTR kBuiltinIntrinsicTableName = "op";
 
-static const unsigned kAtomicDstOperandIdx = 1;
-
 static const ArTypeObjectKind g_ScalarTT[] =
 {
   AR_TOBJ_SCALAR,
@@ -1835,6 +1833,8 @@ ParamModsFromIntrinsicArg(const HLSL_INTRINSIC_ARGUMENT *pArg) {
   if (pArg->qwUsage == AR_QUAL_OUT) {
     return hlsl::ParameterModifier(hlsl::ParameterModifier::Kind::Out);
   }
+  if (pArg->qwUsage == AR_QUAL_REF)
+    return hlsl::ParameterModifier(hlsl::ParameterModifier::Kind::Ref);
   DXASSERT(pArg->qwUsage & AR_QUAL_IN, "else usage is incorrect");
   return hlsl::ParameterModifier(hlsl::ParameterModifier::Kind::In);
 }
@@ -1862,52 +1862,6 @@ static void InitParamMods(const HLSL_INTRINSIC *pIntrinsic,
 
 static bool IsBuiltinTable(LPCSTR tableName) {
   return tableName == kBuiltinIntrinsicTableName;
-}
-
-// Return true if the give <op> within the <tableName> namespace
-// maps to an atomic operation.
-// <acceptMethods> determines if atomic method operations will return true
-static bool IsAtomicOperation(LPCSTR tableName, IntrinsicOp op, bool acceptMethods=true) {
-  if (!IsBuiltinTable(tableName))
-    return false;
-  switch (op) {
-  case IntrinsicOp::IOP_InterlockedAdd:
-  case IntrinsicOp::IOP_InterlockedAnd:
-  case IntrinsicOp::IOP_InterlockedCompareExchange:
-  case IntrinsicOp::IOP_InterlockedCompareStore:
-  case IntrinsicOp::IOP_InterlockedCompareExchangeFloatBitwise:
-  case IntrinsicOp::IOP_InterlockedCompareStoreFloatBitwise:
-  case IntrinsicOp::IOP_InterlockedExchange:
-  case IntrinsicOp::IOP_InterlockedMax:
-  case IntrinsicOp::IOP_InterlockedMin:
-  case IntrinsicOp::IOP_InterlockedOr:
-  case IntrinsicOp::IOP_InterlockedXor:
-    return true;
-  case IntrinsicOp::MOP_InterlockedAdd:
-  case IntrinsicOp::MOP_InterlockedAnd:
-  case IntrinsicOp::MOP_InterlockedCompareExchange:
-  case IntrinsicOp::MOP_InterlockedCompareStore:
-  case IntrinsicOp::MOP_InterlockedExchange:
-  case IntrinsicOp::MOP_InterlockedMax:
-  case IntrinsicOp::MOP_InterlockedMin:
-  case IntrinsicOp::MOP_InterlockedOr:
-  case IntrinsicOp::MOP_InterlockedXor:
-  case IntrinsicOp::MOP_InterlockedAdd64:
-  case IntrinsicOp::MOP_InterlockedAnd64:
-  case IntrinsicOp::MOP_InterlockedCompareExchange64:
-  case IntrinsicOp::MOP_InterlockedCompareStore64:
-  case IntrinsicOp::MOP_InterlockedExchange64:
-  case IntrinsicOp::MOP_InterlockedMax64:
-  case IntrinsicOp::MOP_InterlockedMin64:
-  case IntrinsicOp::MOP_InterlockedOr64:
-  case IntrinsicOp::MOP_InterlockedXor64:
-  case IntrinsicOp::MOP_InterlockedExchangeFloat:
-  case IntrinsicOp::MOP_InterlockedCompareExchangeFloatBitwise:
-  case IntrinsicOp::MOP_InterlockedCompareStoreFloatBitwise:
-    return acceptMethods;
-  default:
-    return false;
-  }
 }
 
 static bool HasUnsignedOpcode(LPCSTR tableName, IntrinsicOp opcode) {
@@ -1976,17 +1930,10 @@ FunctionDecl *AddHLSLIntrinsicFunction(
 
   InitParamMods(pIntrinsic, paramMods);
 
-  // Change dest address into reference type for atomic.
-  if (IsAtomicOperation(tableName, static_cast<IntrinsicOp>(pIntrinsic->Op))) {
-    DXASSERT(functionArgTypeCount > kAtomicDstOperandIdx,
-             "else operation was misrecognized");
-    functionArgQualTypes[kAtomicDstOperandIdx] =
-      context.getLValueReferenceType(functionArgQualTypes[kAtomicDstOperandIdx]);
-  }
-
   for (size_t i = 1; i < functionArgTypeCount; i++) {
     // Change out/inout param to reference type.
-    if (paramMods[i-1].isAnyOut()) {
+    if (paramMods[i - 1].isAnyOut() ||
+        paramMods[i - 1].GetKind() == hlsl::ParameterModifier::Kind::Ref) {
       QualType Ty = functionArgQualTypes[i];
       // Aggregate type will be indirect param convert to pointer type.
       // Don't need add reference for it.
@@ -3121,7 +3068,7 @@ private:
   /// <summary>Adds all supporting declarations to reference scalar types.</summary>
   void AddHLSLScalarTypes();
 
-  /// <summary>Adds string type QualType for HSLS string declarations</summary>
+  /// <summary>Adds string type QualType for HLSL string declarations</summary>
   void AddHLSLStringType();
 
   QualType GetTemplateObjectDataType(_In_ CXXRecordDecl* recordDecl)
@@ -6189,19 +6136,15 @@ bool HLSLExternalSource::MatchArguments(
 
     ASTContext &actx = m_sema->getASTContext();
     // Usage
-    if (pIntrinsicArg->qwUsage & AR_QUAL_OUT) {
-      if (pType.isConstant(actx)) {
-        // Can't use a const type in an out or inout parameter.
-        badArgIdx = std::min(badArgIdx, iArg);
-      }
-    }
 
-    // Catch invalid atomic dest parameters
-    if (iArg == kAtomicDstOperandIdx &&
-        IsAtomicOperation(tableName, builtinOp, false /*acceptMethods*/)) {
-      // This produces an error for bitfields that is a bit confusing
-      // because it says uint can't cast to uint
+    // Argument must be non-constant and non-bitfield for out, inout, and ref
+    // parameters because they may be treated as pass-by-reference.
+    // This is hacky. We should actually be handling this by failing reference
+    // binding in sema init with SK_BindReference*. That code path is currently
+    // hacked off for HLSL and less trivial to fix.
+    if (pIntrinsicArg->qwUsage & AR_QUAL_OUT || pIntrinsicArg->qwUsage & AR_QUAL_REF) {
       if (pType.isConstant(actx) || pCallArg->getObjectKind() == OK_BitField) {
+        // Can't use a const type in an out or inout parameter.
         badArgIdx = std::min(badArgIdx, iArg);
       }
     }
@@ -6493,11 +6436,6 @@ bool HLSLExternalSource::MatchArguments(
 
     DXASSERT(!pNewType.isNull(), "otherwise there's a branch in this function that fails to assign this");
     argTypes[i] = QualType(pNewType.getTypePtr(), quals);
-
-    // TODO: support out modifier
-    //if (pArgument->qwUsage & AR_QUAL_OUT) {
-    //  argTypes[i] = m_context->getLValueReferenceType(argTypes[i].withConst());
-    //}
   }
 
   // For variadic functions, we need to add the additional arguments here.
@@ -12140,18 +12078,39 @@ void Sema::DiagnoseHLSLDeclAttr(const Decl *D, const Attr *A) {
   if (const HLSLGloballyCoherentAttr *HLSLGCAttr =
           dyn_cast<HLSLGloballyCoherentAttr>(A)) {
     const ValueDecl *TD = cast<ValueDecl>(D);
-    if (!TD->getType()->isDependentType()) {
-      QualType DeclType = TD->getType();
-      while (DeclType->isArrayType())
-        DeclType = QualType(DeclType->getArrayElementTypeNoTypeQual(), 0);
-      if (ExtSource->GetTypeObjectKind(DeclType) != AR_TOBJ_OBJECT ||
-          hlsl::GetResourceClassForType(getASTContext(), DeclType) !=
-              hlsl::DXIL::ResourceClass::UAV) {
-        Diag(A->getLocation(), diag::err_hlsl_varmodifierna)
-            << A << "non-UAV type";
-      }
+    if (TD->getType()->isDependentType())
+      return;
+    QualType DeclType = TD->getType();
+    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(TD))
+      DeclType = FD->getReturnType();
+    while (DeclType->isArrayType())
+      DeclType = QualType(DeclType->getArrayElementTypeNoTypeQual(), 0);
+    if (ExtSource->GetTypeObjectKind(DeclType) != AR_TOBJ_OBJECT ||
+        hlsl::GetResourceClassForType(getASTContext(), DeclType) !=
+            hlsl::DXIL::ResourceClass::UAV) {
+      Diag(A->getLocation(), diag::err_hlsl_varmodifierna)
+          << A << "non-UAV type";
     }
     return;
+  }
+}
+
+void Sema::DiagnoseGloballyCoherentMismatch(const Expr *SrcExpr,
+                                            QualType TargetType,
+                                            SourceLocation Loc) {
+  QualType SrcTy = SrcExpr->getType();
+  QualType DstTy = TargetType;
+  if (SrcTy->isArrayType() && DstTy->isArrayType()) {
+    SrcTy = QualType(SrcTy->getBaseElementTypeUnsafe(), 0);
+    DstTy = QualType(DstTy->getBaseElementTypeUnsafe(), 0);
+  }
+  if (hlsl::IsHLSLResourceType(DstTy) &&
+      !hlsl::IsHLSLDynamicResourceType(SrcTy)) {
+    bool SrcGL = hlsl::HasHLSLGloballyCoherent(SrcTy);
+    bool DstGL = hlsl::HasHLSLGloballyCoherent(DstTy);
+    if (SrcGL != DstGL)
+      Diag(Loc, diag::warn_hlsl_impcast_glc_mismatch)
+          << SrcExpr->getType() << TargetType << /*loses|adds*/ DstGL;
   }
 }
 

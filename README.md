@@ -47,7 +47,7 @@ Building DXC requires:
 
 * [Git](http://git-scm.com/downloads).
 * [Python](https://www.python.org/downloads/) - version 3.x is required
-* [CMake](https://cmake.org/download/) - version >= 3.10
+* [CMake](https://cmake.org/download/) - version >= 3.17.2
     * The bundled version with Visual Studio works for Windows.
 * The C++ 14 compiler and runtime of your choosing.
     * DXC is known to compile with recent versions of GCC, Clang and MSVC.
@@ -62,7 +62,6 @@ Building on windows additionally requires:
 
 > A new experimental simplified build and test workflow is documented [here](docs/BuildingAndTestingDXC.rst).
 
-Note: If you intend to build from sources on Linux/macOS, follow [these instructions](docs/DxcOnUnix.rst).
 
 Before you build, you will need to have some additional software installed. This is the most straightforward path - see [Building Sources](https://github.com/microsoft/DirectXShaderCompiler/wiki/Building-Sources) on the Wiki for more options, including Visual Studio 2015 and Ninja support.
 
@@ -82,9 +81,9 @@ To build, run this command on the HLSL Console.
 
     hctbuild
 
-You can also clean, build and run tests with this command.
+You can also run tests with this command.
 
-    hctcheckin
+    hcttest
 
 
 To see a list of additional commands available, run `hcthelp`
