@@ -104,6 +104,13 @@ public:
                : (var->getAttr<HLSLGroupSharedAttr>() != nullptr);
   }
 
+  /// Create SpirvIntrinsicInstruction for arbitrary SPIR-V instructions
+  /// specified by [[vk::ext_instruction(..)]] or [[vk::ext_type_def(..)]]
+  SpirvInstruction *
+  createSpirvIntrInstExt(llvm::ArrayRef<const Attr *> attrs, QualType retType,
+                         llvm::ArrayRef<SpirvInstruction *> spvArgs,
+                         bool isInstr, SourceLocation loc);
+
 private:
   void doFunctionDecl(const FunctionDecl *decl);
   void doVarDecl(const VarDecl *decl);
@@ -173,6 +180,10 @@ private:
   bool loadIfAliasVarRef(const Expr *aliasVarExpr,
                          SpirvInstruction **aliasVarInstr,
                          SourceRange rangeOverride = {});
+
+  /// Check whether a member value has a nointerpolation qualifier in its type
+  /// declaration or any parents' type declaration recursively.
+  bool isNoInterpMemberExpr(const MemberExpr *expr);
 
 private:
   /// Translates the given frontend binary operator into its SPIR-V equivalent
@@ -379,7 +390,8 @@ private:
   collectArrayStructIndices(const Expr *expr, bool rawIndex,
                             llvm::SmallVectorImpl<uint32_t> *rawIndices,
                             llvm::SmallVectorImpl<SpirvInstruction *> *indices,
-                            bool *isMSOutAttribute = nullptr);
+                            bool *isMSOutAttribute = nullptr,
+                            bool *isNointerp = nullptr);
 
   /// For L-values, creates an access chain to index into the given SPIR-V
   /// evaluation result and returns the new SPIR-V evaluation result.
@@ -590,6 +602,10 @@ private:
   /// Processes SM6.0 wave query intrinsic calls.
   SpirvInstruction *processWaveQuery(const CallExpr *, spv::Op opcode);
 
+  /// Processes SM6.6 IsHelperLane intrisic calls.
+  SpirvInstruction *processIsHelperLane(const CallExpr *, SourceLocation loc,
+                                        SourceRange range);
+
   /// Processes SM6.0 wave vote intrinsic calls.
   SpirvInstruction *processWaveVote(const CallExpr *, spv::Op opcode);
 
@@ -640,6 +656,10 @@ private:
   /// Processes the NonUniformResourceIndex intrinsic function.
   SpirvInstruction *processIntrinsicNonUniformResourceIndex(const CallExpr *);
 
+  /// Processes the SM 6.4 dot4add_{i|u}8packed intrinsic functions.
+  SpirvInstruction *processIntrinsicDP4a(const CallExpr *callExpr,
+                                         hlsl::IntrinsicOp op);
+
   /// Processes the SM 6.6 pack_{s|u}8 and pack_clamp_{s|u}8 intrinsic
   /// functions.
   SpirvInstruction *processIntrinsic8BitPack(const CallExpr *,
@@ -663,19 +683,15 @@ private:
   /// Process mesh shader intrinsics.
   void processMeshOutputCounts(const CallExpr *callExpr);
 
+  /// Process GetAttributeAtVertex for barycentrics.
+  SpirvInstruction *processGetAttributeAtVertex(const CallExpr *expr);
+
   /// Process ray query traceinline intrinsics.
   SpirvInstruction *processTraceRayInline(const CXXMemberCallExpr *expr);
 
   /// Process ray query intrinsics
   SpirvInstruction *processRayQueryIntrinsics(const CXXMemberCallExpr *expr,
                                               hlsl::IntrinsicOp opcode);
-
-  /// Create SpirvIntrinsicInstruction for arbitrary SPIR-V instructions
-  /// specified by [[vk::ext_instruction(..)]] or [[vk::ext_type_def(..)]]
-  SpirvInstruction *createSpirvIntrInstExt(
-      llvm::ArrayRef<const Attr *> attrs, QualType retType,
-      const llvm::SmallVectorImpl<SpirvInstruction *> &spvArgs, bool isInstr,
-      SourceLocation loc);
   /// Process spirv intrinsic instruction
   SpirvInstruction *processSpvIntrinsicCallExpr(const CallExpr *expr);
 
@@ -700,15 +716,17 @@ private:
                                           SourceLocation loc,
                                           SourceRange range);
 
-  /// Returns the alignment of `vk::RawBufferLoad()`.
-  uint32_t getAlignmentForRawBufferLoad(const CallExpr *callExpr);
-
-  /// Returns the alignment of `vk::RawBufferStore()`.
-  uint32_t getAlignmentForRawBufferStore(const CallExpr *callExpr);
+  /// Returns the value of the alignment argument for `vk::RawBufferLoad()` and
+  /// `vk::RawBufferStore()`.
+  uint32_t getRawBufferAlignment(const Expr *expr);
 
   /// Process vk::ext_execution_mode intrinsic
   SpirvInstruction *processIntrinsicExecutionMode(const CallExpr *expr,
                                                   bool useIdParams);
+
+  /// Processes the 'firstbit{high|low}' intrinsic functions.
+  SpirvInstruction *processIntrinsicFirstbit(const CallExpr *,
+                                             GLSLstd450 glslOpcode);
 
 private:
   /// Returns the <result-id> for constant value 0 of the given type.
@@ -791,7 +809,11 @@ private:
   spv::LoopControlMask translateLoopAttribute(const Stmt *, const Attr &);
 
   static hlsl::ShaderModel::Kind getShaderModelKind(StringRef stageName);
-  static spv::ExecutionModel getSpirvShaderStage(hlsl::ShaderModel::Kind smk, bool);
+  static spv::ExecutionModel getSpirvShaderStage(hlsl::ShaderModel::Kind smk,
+                                                 bool);
+
+  /// \brief Handle inline SPIR-V attributes for the entry function.
+  void processInlineSpirvAttributes(const FunctionDecl *entryFunction);
 
   /// \brief Adds necessary execution modes for the hull/domain shaders based on
   /// the HLSL attributes of the entry point function.
@@ -897,7 +919,7 @@ private:
   /// method panics if it finds a case value that is not an integer literal.
   void discoverAllCaseStmtInSwitchStmt(
       const Stmt *root, SpirvBasicBlock **defaultBB,
-      std::vector<std::pair<uint32_t, SpirvBasicBlock *>> *targets);
+      std::vector<std::pair<llvm::APInt, SpirvBasicBlock *>> *targets);
 
   /// Flattens structured AST of the given switch statement into a vector of AST
   /// nodes and stores into flatSwitch.
@@ -1169,6 +1191,10 @@ private:
   std::vector<SpirvVariable *>
   getInterfacesForEntryPoint(SpirvFunction *entryPoint);
 
+  /// \brief Emits OpBeginInvocationInterlockEXT and add the appropriate
+  /// execution mode, if it has not already been added.
+  void beginInvocationInterlock(SourceLocation loc, SourceRange range);
+
 private:
   /// \brief If the given FunctionDecl is not already in the workQueue, creates
   /// a FunctionInfo object for it, and inserts it into the workQueue. It also
@@ -1182,6 +1208,14 @@ private:
   /// gets the info/warning/error messages via |messages|.
   /// Returns true on success and false otherwise.
   bool spirvToolsOptimize(std::vector<uint32_t> *mod, std::string *messages);
+
+  // \brief Calls SPIRV-Tools optimizer's, but only with the capability trimming
+  // pass. Removes unused capabilities from the given SPIR-V module |mod|, and
+  // returns info/warning/error messages via |messages|. This pass doesn't trim
+  // all capabilities. To see the list of supported capabilities, check the pass
+  // headers.
+  bool spirvToolsTrimCapabilities(std::vector<uint32_t> *mod,
+                                  std::string *messages);
 
   /// \brief Helper function to run SPIRV-Tools optimizer's legalization passes.
   /// Runs the SPIRV-Tools legalization on the given SPIR-V module |mod|, and
@@ -1199,6 +1233,13 @@ private:
   /// gets the info/warning/error messages via |messages|.
   /// Returns true on success and false otherwise.
   bool spirvToolsValidate(std::vector<uint32_t> *mod, std::string *messages);
+
+  /// Adds the appropriate derivative group execution mode to the entry point.
+  /// The entry point must already have a LocalSize execution mode, which will
+  ///  be used to determine which execution mode (quad or linear) is required.
+  ///  This decision is made according to the rules in
+  ///  https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_Derivatives.html.
+  void addDerivativeGroupExecutionMode();
 
 public:
   /// \brief Wrapper method to create a fatal error message and report it

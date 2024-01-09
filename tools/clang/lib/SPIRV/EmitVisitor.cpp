@@ -262,8 +262,9 @@ void EmitVisitor::emitDebugLine(spv::Op op, const SourceLocation &loc,
   // Technically entry function wrappers do not exist in HLSL. They are just
   // created by DXC. We do not want to emit line information for their
   // instructions. To prevent spirv-opt from removing all debug info, we emit
-  // at least a single OpLine to specify the end of the shader.
-  if (inEntryFunctionWrapper && op != spv::Op::OpReturn)
+  // OpLines to specify the beginning and end of the function.
+  if (inEntryFunctionWrapper && 
+      (op != spv::Op::OpReturn && op != spv::Op::OpFunction))
     return;
 
   // Based on SPIR-V spec, OpSelectionMerge must immediately precede either an
@@ -846,7 +847,7 @@ bool EmitVisitor::visit(SpirvSwitch *inst) {
   curInst.push_back(
       getOrAssignResultId<SpirvBasicBlock>(inst->getDefaultLabel()));
   for (const auto &target : inst->getTargets()) {
-    curInst.push_back(target.first);
+    typeHandler.emitIntLiteral(target.first, curInst);
     curInst.push_back(getOrAssignResultId<SpirvBasicBlock>(target.second));
   }
   finalizeInstruction(&mainBinary);
@@ -1328,6 +1329,13 @@ bool EmitVisitor::visit(SpirvStore *inst) {
       curInst.push_back(inst->getAlignment());
     }
   }
+  finalizeInstruction(&mainBinary);
+  return true;
+}
+
+bool EmitVisitor::visit(SpirvNullaryOp *inst) {
+  initInstruction(inst);
+
   finalizeInstruction(&mainBinary);
   return true;
 }
@@ -1966,12 +1974,15 @@ bool EmitVisitor::visit(SpirvIntrinsicInstruction *inst) {
 bool EmitVisitor::visit(SpirvEmitMeshTasksEXT *inst) {
   initInstruction(inst);
 
-  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getXDimension()));
-  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getYDimension()));
-  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getZDimension()));
-  if (inst->getPayload() != nullptr)
-  {
-      curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getPayload()));
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getXDimension()));
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getYDimension()));
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getZDimension()));
+  if (inst->getPayload() != nullptr) {
+    curInst.push_back(
+        getOrAssignResultId<SpirvInstruction>(inst->getPayload()));
   }
 
   finalizeInstruction(&mainBinary);
@@ -1980,8 +1991,10 @@ bool EmitVisitor::visit(SpirvEmitMeshTasksEXT *inst) {
 bool EmitVisitor::visit(SpirvSetMeshOutputsEXT *inst) {
   initInstruction(inst);
 
-  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getVertexCount()));
-  curInst.push_back(getOrAssignResultId<SpirvInstruction>(inst->getPrimitiveCount()));
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getVertexCount()));
+  curInst.push_back(
+      getOrAssignResultId<SpirvInstruction>(inst->getPrimitiveCount()));
 
   finalizeInstruction(&mainBinary);
   return true;
@@ -2599,6 +2612,12 @@ template <typename vecType>
 void EmitTypeHandler::emitIntLiteral(const SpirvConstantInteger *intLiteral,
                                      vecType &outInst) {
   const auto &literalVal = intLiteral->getValue();
+  emitIntLiteral(literalVal, outInst);
+}
+
+template <typename vecType>
+void EmitTypeHandler::emitIntLiteral(const llvm::APInt &literalVal,
+                                     vecType &outInst) {
   bool positive = !literalVal.isNegative();
   if (literalVal.getBitWidth() <= 32) {
     outInst.push_back(positive ? literalVal.getZExtValue()
