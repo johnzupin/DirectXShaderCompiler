@@ -45,6 +45,7 @@ set SHOW_CMAKE_LOG=0
 set WINSDK_MIN_VERSION=10.0.17763.0
 set INSTALL_DIR=
 set DEFAULT_EXEC_ADAPTER=-DTAEF_EXEC_ADAPTER=
+set LIT_ARGS=
 
 :parse_args
 if "%1"=="" (
@@ -190,8 +191,12 @@ if "%1"=="-show-cmake-log" (
   shift /1 & goto :parse_args
 )
 if "%1"=="-lit-xml-output-path" (
-  set "CMAKE_OPTS=%CMAKE_OPTS% -DLLVM_LIT_ARGS=--xunit-xml-output=%~2"
+  set "LIT_ARGS=%LIT_ARGS% --xunit-xml-output=%~2"
   shift /1
+  shift /1 & goto :parse_args
+)
+if "%1"=="-lit-verbose" (
+  set "LIT_ARGS=%LIT_ARGS% -v --no-progress-bar"
   shift /1 & goto :parse_args
 )
 if "%1"=="-default-adapter" (
@@ -199,6 +204,12 @@ if "%1"=="-default-adapter" (
   shift /1
   shift /1 & goto :parse_args
 )
+if "%1"=="-sanitizer" (
+  set CMAKE_OPTS=%CMAKE_OPTS% -DLLVM_USE_SANITIZER:STRING=Address
+  shift /1 & goto :parse_args
+)
+
+
 rem Begin SPIRV change
 if "%1"=="-spirv" (
   echo SPIR-V codegen is enabled.
@@ -218,6 +229,10 @@ if "%1"=="-ninja" (
 )
 if "%1"=="-clang" (
   set CMAKE_OPTS=%CMAKE_OPTS% -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+  shift /1 & goto :parse_args
+)
+if "%1"=="-clang-cl" (
+  set CMAKE_OPTS=%CMAKE_OPTS% -T ClangCL
   shift /1 & goto :parse_args
 )
 if "%1"=="-update-generated-sources" (
@@ -334,6 +349,10 @@ set CMAKE_OPTS=%CMAKE_OPTS% -DCLANG_CL:BOOL=OFF
 set CMAKE_OPTS=%CMAKE_OPTS% -DCMAKE_SYSTEM_VERSION=%DXC_CMAKE_SYSTEM_VERSION%
 set CMAKE_OPTS=%CMAKE_OPTS% -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR%
 
+if "%LIT_ARGS%" NEQ "" (
+  set CMAKE_OPTS=%CMAKE_OPTS% -DLLVM_LIT_ARGS="%LIT_ARGS%"
+)
+
 rem Setup taef exec adapter.
 set CMAKE_OPTS=%CMAKE_OPTS% %DEFAULT_EXEC_ADAPTER%
 
@@ -386,7 +405,7 @@ exit /b 0
 echo Builds HLSL solutions and the product and test binaries for the current
 echo flavor and architecture.
 echo.
-echo hctbuild [-s or -b] [-alldef] [-analyze] [-official] [-fv] [-fvloc <path>] [-rel] [-arm or -arm64 or -x86 or -x64] [-Release] [-Debug] [-vs2019] [-ninja] [-tblgen path] [-speak-up] [-no-parallel] [-no-dxilconv] [-update-generated-sources]
+echo hctbuild [-s or -b] [-alldef] [-analyze] [-official] [-fv] [-fvloc ^<path^>] [-rel] [-arm or -arm64 or -x86 or -x64] [-Release] [-Debug] [-vs2019] [-ninja] [-tblgen path] [-speak-up] [-no-parallel] [-no-dxilconv] [-update-generated-sources]
 echo.
 echo   -s   creates the projects only, without building
 echo   -b   builds the existing project
@@ -395,15 +414,17 @@ echo   -alldef        adds optional projects to the default build
 echo   -analyze       adds /analyze option
 echo   -official      will generate official version for build
 echo   -fv            fixes the resource version for release (utils\version\version.inc)
-echo   -fvloc <path>  directory with the version.inc file
+echo   -fvloc ^<path^>  directory with the version.inc file
 echo   -rel           builds release rather than debug
+echo   -spirv         enable SPIR-V codegen
+echo   -spirvtest     enable building SPIR-V tests
 echo   -speak-up      enables audible build confirmation
 echo   -no-parallel   disables parallel build
 echo   -no-dxilconv   disables build of DXBC to DXIL converter and tools
 echo   -vs2019        uses Visual Studio 2019 to build
 echo   -vs2022        uses Visual Studio 2022 to build
-echo
-echo   -update-generated-soures   Updates generated soures in the source tree
+echo.
+echo   -update-generated-sources   Updates generated sources in the source tree
 echo.
 echo current BUILD_ARCH=%BUILD_ARCH%.  Override with:
 echo   -x86 targets an x86 build (aka. Win32)
@@ -450,10 +471,10 @@ if "%DO_SETUP%"=="1" (
     echo Running "%CMAKE_PATH%" -DCMAKE_BUILD_TYPE:STRING=%1 %CMAKE_OPTS% -G %4 %HLSL_SRC_DIR% > %3\cmake-log.txt
     "%CMAKE_PATH%" -DCMAKE_BUILD_TYPE:STRING=%1 %CMAKE_OPTS% -G %4 %HLSL_SRC_DIR% >> %3\cmake-log.txt 2>&1
   ) else (
-    rem -DCMAKE_BUILD_TYPE:STRING=%1 is not necessary for multi-config generators like VS
-    rem but need CMAKE_BUILD_TYPE to generate lit cfg.
+    rem BUILD_TYPE is mostly ignored in this path as VS generates multiple targets
+    rem it is still needed to satisfy cmake file expectations
     echo Running "%CMAKE_PATH%" -DCMAKE_BUILD_TYPE:STRING=%1  %CMAKE_OPTS% -G %4 %5 %HLSL_SRC_DIR% > %3\cmake-log.txt
-    "%CMAKE_PATH%" %CMAKE_OPTS% -G %4 %5 %HLSL_SRC_DIR% >> %3\cmake-log.txt 2>&1
+    "%CMAKE_PATH%" -DCMAKE_BUILD_TYPE:STRING=%1 %CMAKE_OPTS% -G %4 %5 %HLSL_SRC_DIR% >> %3\cmake-log.txt 2>&1
   )
   if %SHOW_CMAKE_LOG%==1 (
     echo ------- Start of %3\cmake-log.txt -------

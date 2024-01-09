@@ -1,6 +1,9 @@
 # See docs/CMake.html for instructions about how to build LLVM with CMake.
 cmake_minimum_required(VERSION 3.17.2) # HLSL Change - Require CMake 3.17.2.
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if (NOT "${DXC_CMAKE_BEGINS_INCLUDE}" STREQUAL "")
   include(${DXC_CMAKE_BEGINS_INCLUDE})
 endif()
@@ -30,9 +33,6 @@ else()
 endif()
 
 project(LLVM)
-
-# This requires a more recent version than CMake 3.4 but is a noop in prior versions. # HLSL Change
-set(VS_STARTUP_PROJECT "dndxc" CACHE STRING "VS startup project in solution")         # HLSL Change
 
 # The following only works with the Ninja generator in CMake >= 3.0.
 set(LLVM_PARALLEL_COMPILE_JOBS "" CACHE STRING
@@ -114,6 +114,11 @@ if(WIN32)
 add_compile_options(/guard:cf)
 add_link_options(/guard:cf)
 endif(WIN32)
+
+# Enable CET Shadow Stack
+if(WIN32 AND NOT (CMAKE_C_COMPILER_ARCHITECTURE_ID MATCHES "ARM.*"))
+  add_link_options(/CETCOMPAT)
+endif()
 
 # HLSL Change Ends
 
@@ -583,8 +588,10 @@ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX} 
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 if (APPLE)
-  set(CMAKE_INSTALL_NAME_DIR "@rpath")
-  set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
+  if(NOT DEFINED CMAKE_INSTALL_RPATH)
+    set(CMAKE_INSTALL_NAME_DIR "@rpath")
+    set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
+    endif(NOT DEFINED CMAKE_INSTALL_RPATH)
 else(UNIX)
   if(NOT DEFINED CMAKE_INSTALL_RPATH)
     set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib${LLVM_LIBDIR_SUFFIX}")
