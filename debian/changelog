@@ -1,3 +1,898 @@
+directxshadercompiler (1.4.0.2274-1999~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Helena Kotas ]
+  * Merged PR 5765: Update version to 1.8.2306 and fork commit sha to 6a3e2485
+
+  [ Chris Bieneman ]
+  * Merged PR 5704: Add SM 6.8 preview features to release-preview-1.8.2306
+
+  [ Tex Riddell ]
+  * Merged PR 5769: Replace incorrect sizeof() with strlen() in compiler version test
+
+  [ Helena Kotas ]
+  * Merged PR 5770: Remove extra space in sha value in latest-release.json
+
+  [ Tex Riddell ]
+  * Add missing dxilver 1.8 to test. (#5313)
+
+  [ Greg Roth ]
+  * Disambiguate RecordDispatchGrid type name for GCC (#5314)
+
+  [ Joshua Batista ]
+  * [NFC] Add more information on testing MDVals insertion in EmitDxilFunctionProps (#5335)
+
+  [ Jesse Natalie ]
+  * Fix include in DxilNodeProps.h (#5433)
+
+  [ Xiang Li ]
+  * [lit] Add git usr bin to path automatically. (#5355)
+  * [lit] allow find git usr bin in path directly. (#5385)
+
+  [ Joshua Batista ]
+  * [Validation] Prevent instructions that accept handle arguments from accepting malformed handle arguments (#5399)
+
+  [ Tex Riddell ]
+  * WaveMatrix test data refactor: remove ShaderOpArithTable.xml dependency (#5336)
+
+  [ Tim Corringham ]
+  * Cleanup HLSLCheckForModifiableLValue (#5458)
+
+  [ Joshua Batista ]
+  * [Verifier] Move shader attribute diagnostics earlier. (#5453)
+  * [Verifier] Add verifier tests to catch MaxRecord errors earlier (#5484)
+  * [Test] Replace size integer literal with regex (#5495)
+
+  [ Helena Kotas ]
+  * Lit TAEF fixes: Use filter when listing tests and fix verbose parameter (#5494)
+
+  [ Greg Roth ]
+  * Enable testing HLSL 2021 short-circuit tests (#5509)
+
+  [ Xiang Li ]
+  * [C++17] Merge Replace uses of std::iterator with explicit using (#5485)
+  * [linux] Enable linker test for linux (#5519)
+  * [lit] support dxopt in lit (#5515)
+
+  [ Chris B ]
+  * This is really a reference (#5473)
+
+  [ Greg Roth ]
+  * Allow select() to work with samplers (#5508)
+
+  [ Tex Riddell ]
+  * Fix attribute collision for HL intrinsics (#5451)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] Convert SPIRV matrix tests to lit (#5497)
+
+  [ Steven Perron ]
+  * Handle local arrays of RWStructrued buffers (#5523)
+
+  [ Greg Roth ]
+  * Relocate select_sample test to a proper location (#5525)
+
+  [ Natalie Chouinard ]
+  * [spirv] Emit error message when -Gec flag is used (#5526)
+
+  [ Jeff Noyle ]
+  * PIX: Updates to shader debugging pass to support DXR hit groups/miss shaders (#5499)
+
+  [ Joshua Batista ]
+  * [Wave Matrix] Improve stability of wave matrix tests (#5533)
+
+  [ Chris B ]
+  * Fix debug info generation for `this` (#5534)
+
+  [ Xiang Li ]
+  * [lit] [SPIRV] move unused spirv test to lit folder (#5535)
+
+  [ Jeremy Hayes ]
+  * [SPIRV] Add SM6.6 IsHelperLane (#5488)
+
+  [ Adam Yang ]
+  * [NFC] Refactor -opt-enable and -opt-disable (#5516)
+
+  [ David Peixotto ]
+  * Add `-HV 2021` to test that uses templates (#5544)
+
+  [ Tim Corringham ]
+  * Update node compute compatibility tests (#5527)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] move test to lit folder
+
+  [ Chris B ]
+  * Enable some tests on non-Windows (#5549)
+
+  [ Steven Perron ]
+  * Add tests for multi-dim arrays and unbounded arrays (#5532)
+
+  [ Chris B ]
+  * Enable CodeGenHashStability tests by default on all platforms (#5548)
+
+  [ Helena Kotas ]
+  * DXC Tests: Filter out unsupported test, add verbose option and improve output (#5537)
+
+  [ Greg Roth ]
+  * update dndxc to support latest shader models (#5565)
+
+  [ Joshua Batista ]
+  * [ExecutionTests] Add validation and signing step to isNormal Test (#5568)
+
+  [ Antonio Maiorano ]
+  * Inline sub-licenses into root license file (#5569)
+
+  [ Xiang Li ]
+  * [ClangCL] exception related fix for ClangCL (#5496)
+
+  [ Jeff Noyle ]
+  * PIX: Educate debug data interface about nested namespaces (#5558)
+
+  [ Xiang Li ]
+  * [C++17] Force C++17 when build DXC (#5520)
+  * [Test] Fix typo in RunDxcHashTest (#5583)
+
+  [ Greg Roth ]
+  * Move work graph CodeGen diagnostics to Sema  (#5467) (#5577)
+
+  [ Joshua Batista ]
+  * [HCT] Fix up typos, add spirv options to help msg (#5586)
+
+  [ Natalie Chouinard ]
+  * [spirv] Re-enable MeshShading tests (#5584)
+
+  [ Xiang Li ]
+  * [lit] [SPIRV] update to lit FileCheck
+
+  [ Helena Kotas ]
+  * WArgV is needed only on non-Windows platforms (#5576)
+
+  [ Chris B ]
+  * [NFC] Prepare DXC sources for clang-format (#5571)
+
+  [ Xiang Li ]
+  * [C++17] Remove std option for linux build (#5582)
+
+  [ Brian Favela ]
+  * Custom extensions to enable lowering for non-resource based functions (#5579)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Add capability trimming pass (#5518)
+
+  [ Natalie Chouinard ]
+  * [spirv] Prevent overlapping explicit locations (#5557)
+
+  [ Chris B ]
+  * [NFC] Update DXC sources for clang-format (#5593)
+
+  [ David Peixotto ]
+  * [bug] Fix crash in dxilgen when buffer subscript gep feeds an lcssa phi (#5570)
+
+  [ Justin Bogner ]
+  * Add `-print-before` and `-print-before-all` flags (#5590)
+
+  [ Tex Riddell ]
+  * Fix asserts when compiling node objects with -Od (#5598)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] move test to lit folder.
+  * [lit][SPIRV] update to lit FileCheck test
+  * [BUILD] add clang-cl to CMakeSettings (#5596)
+
+  [ Tim Corringham ]
+  * Move entry diagnostics from SemaDXR to SemaHLSL (#5599)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Correctly use halfword-aligned byte address (#5594)
+
+  [ Joshua Batista ]
+  * [Test][NFC] Add shader stage attribute to test shaders (#5624)
+
+  [ Greg Roth ]
+  * Make select_sampler handle different opcodes (#5631)
+  * Require validator ver 1.7 for link without version (#5629)
+
+  [ Helena Kotas ]
+  * Add CET Shadow Stack Compatible flag (#5637)
+
+  [ Xiang Li ]
+  * [lit] [SPIRV] Move test to lit folder
+  * [lit][SPIRV] move whole file test to lit folder.
+  * [lit] [SPIRV] Update whole file test as lit FileCheck test.
+
+  [ Chris B ]
+  * [NFC] Fix most egregious clang-format missteps (#5642)
+
+  [ Xiang Li ]
+  * [lit] [SPIRV] convert validation test to lit FileCheck test.
+
+  [ Justin Bogner ]
+  * Avoid extra dependencies in the DxilRuntimeReflection header. NFC (#5645)
+
+  [ Steven Perron ]
+  * Give more meaningful filecheck names (#5644)
+
+  [ Greg Roth ]
+  * Consolidate EmitInstrNote into common function (#5615)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Update submodules (#5655)
+
+  [ Natalie Chouinard ]
+  * Fix Appveyor whole file test test paths (#5650)
+
+  [ Jeff Noyle ]
+  * Pix: Fix crash getting type name of unnamed structs (#5658)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Add fragment interlock extension by default (#5646)
+
+  [ Jeff Noyle ]
+  * Pix: Shader debug speedup (#5666)
+
+  [ Xiang Li ]
+  * [lit] [SPIRV] convert layout related tests to lit FileCheck test (#5664)
+
+  [ Nathan Gauër ]
+  * spirv: correctly choose ray_tracing/ray_query caps (#5662)
+  * spirv: validates parameters for InterlockedAddExch (#5661)
+
+  [ Natalie Chouinard ]
+  * [SPIRV] Evaluate RawBuffer alignment argument (#5654)
+
+  [ Steven Perron ]
+  * Handle log10 with float16_t parameter (#5659)
+
+  [ Natalie Chouinard ]
+  * [spirv] Fix firstbithigh/low signedness (#5665)
+
+  [ Nathan Gauër ]
+  * spirv: stop emitting ImageMSArray capability (#5663)
+
+  [ Xiang Li ]
+  * [NFC] Add dxcutil::ComputeSerializeDxilFlags to share code with linker (#5334)
+
+  [ Nathan Gauër ]
+  * spirv: remove superfluous test lines. (#5676)
+
+  [ Helena Kotas ]
+  * Update DXC help default language version (#5677)
+
+  [ Xiang Li ]
+  * [SPIRV] simplify FileTest. (#5673)
+
+  [ r-a-sattarov ]
+  * Added e2k support (MCST Elbrus 2000) (#5222)
+
+  [ David Peixotto ]
+  * Add outputs to the IDxcResult when linking (#5678)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert error message check shaders to lit FileCheck test (#5691)
+
+  [ Joshua Batista ]
+  * Disallow multiple shader attributes from existing on a single declaration (#5679)
+  * [HCT] Add user defined query functionality (#5555)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert error check test to lit FileCheck test (#5698)
+
+  [ Tex Riddell ]
+  * Fix debug info nondeterminism in SROAGlobalsAndAllocas from staticGVs (#5259)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] move error check shaders to lit folder.
+  * [lit][SPIRV] convert error check shaders to lit FileCheck test
+
+  [ Jeff Noyle ]
+  * PIX: Use CA2W in original fashion, to avoid build issue on release branch (#5671)
+
+  [ Joshua Batista ]
+  * [DCE] Move output complete removal code later to DCE (#5620)
+
+  [ Chris B ]
+  * [NFC] Remove SAL annotations from internal APIs (#5639)
+
+  [ Antonio Maiorano ]
+  * Fix asan container-overflow (#5619)
+  * Fix asan stack use after return (#5628)
+
+  [ Xiang Li ]
+  * [CLANG_CL] Fix clang-cl warnings (#5660)
+
+  [ Greg Roth ]
+  * Require validator ver 1.3 for link without version (#5714)
+
+  [ Minmin Gong ]
+  * Use the correct header for stringstream (#5685)
+
+  [ Chris B ]
+  * [NFC] Fix ubsan failure (#5700)
+  * [NFC] Add missing includes in reflection headers (#5715)
+
+  [ Joshua Batista ]
+  * Add profile target shader attribute to entry point function declaration (#5627)
+
+  [ Xiang Li ]
+  * [lit] set clang_taef_site_config in llvm-lit.py (#5717)
+
+  [ Joshua Batista ]
+  * Remove node + compute validation exemption in sema (#5726)
+
+  [ Greg Roth ]
+  * StringSwitch CodeGen/HLops string->enums (#5735)
+
+  [ Antonio Maiorano ]
+  * Fix memory leaks of debug name in a couple of tests (#5727)
+  * Fix memory leak on DxcCreateBlob of empty string (#5725)
+  * Fix ASAN alloc-dealloc-mismatch (operator new vs free) (#5728)
+  * Fix ASAN stack-use-after-scope in unit test (#5730)
+  * Fix ASAN memory leak in FileChecker (#5718)
+  * Fix ASAN container-overflow in FunctionTests (#5731)
+
+  [ Helena Kotas ]
+  * WaveMatrix tests cleanup (#5724)
+
+  [ Greg Roth ]
+  * [lit] allow for spaces in taef commands (#5720)
+  * Remove unneeded Sema equal param special case (#5734)
+
+  [ Chris B ]
+  * Add clang-format checker GitHub action. (#5617)
+  * [NFC] Integrate clang-format to hctgen (#5732)
+  * Revert "Add clang-format checker GitHub action." (#5746)
+
+  [ Greg Roth ]
+  *  Merge branch 'main' into 'staging-sm-6.8' (#5741)
+
+  [ Chris B ]
+  * [NFC] Clang-format DXC sources (#5602)
+
+  [ Minmin Gong ]
+  * Fix compilation issues on clang (#5683)
+  * Fix build on ARM with non-VS generator (#5684)
+
+  [ Helena Kotas ]
+  * Execution tests: allow sharing of compile arguments (#5742)
+
+  [ Chris B ]
+  * [NFC] Fix clang-formatting generated sources (#5755)
+  * Add clang-format checker GitHub action. (#5753)
+
+  [ Antonio Maiorano ]
+  * Fix cross-compile from non-Windows to Windows (#5754)
+
+  [ Helena Kotas ]
+  * Remove placeholder implementation of IsHelperLane() (#5743)
+  * Fix HelperLaneTest (#5745)
+
+  [ Chris B ]
+  * Add a clang-format error to force workflow failure (#5757)
+
+  [ Xiang Li ]
+  * Add SampleCmpBias and SampleCmpGrad (#5716)
+  * [lit] Enable exec test by default for hcttest (#5652)
+
+  [ Chris B ]
+  * Fix the clang-format workflow (#5761)
+
+  [ Antonio Maiorano ]
+  * Fix apple-clang debug build failing to link llvm_assert (#5759)
+
+  [ Chris B ]
+  * Properly escape parenthesis (#5764)
+
+  [ Greg Roth ]
+  * Indicate extra metadata with unknown nodeio tag (#5711)
+
+  [ Chris B ]
+  * Use GITHUB_SHA instead of GITHUB_REF (#5766)
+  * Don't string match node type names (#5763)
+  * [NFC] Use llvm::StringSwitch (#5760)
+
+  [ Joshua Batista ]
+  * Remove implicit node records from being added when there are no node inputs (#5722)
+
+  [ Xiang Li ]
+  * [ClangCL] Fix warnings on PixTest.cpp (#5689)
+
+  [ Minmin Gong ]
+  * More conforming to C++ standards (#4521)
+
+  [ Natalie Chouinard ]
+  * Add missing StringRef include (#5774)
+
+  [ Minmin Gong ]
+  * Fix several bugs in code (#4516)
+
+  [ Jeff Noyle ]
+  * WinPIX: Find correct filename for subroutines in included headers within namespaces (#5776)
+
+  [ Adam Yang ]
+  * Fixed a crash in unroller when exiting blocks use switch instead of branch (#5779)
+
+  [ Joshua Batista ]
+  * Allow wavesize attribute on library shaders (#5758)
+
+  [ Tex Riddell ]
+  * Fixed QueryInterface for ID3D12ShaderReflection interface (#5445)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Add error for rasterizer ordered view types (#5781)
+
+  [ Helena Kotas ]
+  * Add test for FieldAnnotationVectorSize and similar metadata tags (#5786)
+
+  [ Chris B ]
+  * [NFC] Remove unneeded IsComplete parameter (#5793)
+
+  [ Tim Corringham ]
+  * Make NodeLaunch attribute strings case sensitive (#5622)
+
+  [ Chris B ]
+  * Error when declaring global operator overloads (#5796)
+
+  [ Kleber Garcia ]
+  * Fixing documentation code tag for BuildingAndTestingDXC.rst  (#5778)
+
+  [ Antonio Maiorano ]
+  * Fix UBSAN error in iterator.h (#5794)
+  * Fix UBSAN error in DxilRootSignatureSerializer (#5795)
+
+  [ Chris B ]
+  * Enable asan on our Linux Release pipeline (#5799)
+
+  [ danbrown-amd ]
+  * [SPIRV] Implements struct-to-int casting (#5492)
+
+  [ Xiang Li ]
+  * [ClangCL] Fix warnings in HLSLExec (#5690)
+  * [ClangCL] fix warning for clang unit test. (#5708)
+
+  [ Tim Corringham ]
+  * Disallow NodeOutput or EmptyNodeOutput array node parameters (#5588)
+
+  [ Xiang Li ]
+  * [ClangCL] Fix warning for DxilDia (#5693)
+
+  [ Joshua Batista ]
+  * Make member expressions of bitfields emit as an RValue instead of LValue (#5740)
+  * Improve library profile diagnostics (#5789)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Update submodules (#5819)
+
+  [ Xiang Li ]
+  * [ClangCL] fix warning in clang tools (#5706)
+
+  [ Helena Kotas ]
+  * Move NodeMaxDispatchGrid diagnostic into Sema (#5806)
+
+  [ Xiang Li ]
+  * Allow SamplerComparisonState when CalculateLevelOfDetail (#5802)
+
+  [ Adam Yang ]
+  * Removing dx.temp for lib target, since it's disallowed by the validator (#5832)
+
+  [ Antonio Maiorano ]
+  * Disable UBSAN sanitizing alignment errors (#5803)
+
+  [ Chris B ]
+  * Pull in llvm-project's clang-format check action (#5834)
+
+  [ Xiang Li ]
+  * [ClangCL] fix warning in DxbcConverter (#5694)
+  * [ClangCL] Fix warning for rest part except clang. (#5705)
+  * Flatten non-object parameters for node shaders (#5818)
+  * Set tiled resource in shader flags. (#5830)
+
+  [ Tim Corringham ]
+  * Improve diagnostics for objects in node records (#5712)
+  * Amend compute node compatibility DXIL validation (#5589)
+
+  [ Tex Riddell ]
+  * Support [UnboundedSparseNodes] on node output (#5817)
+  * Update Barrier intrinsic to merge ACCESS and SYNC flags (#5825)
+
+  [ Helena Kotas ]
+  * Direct3D WSL build header changes (#5843)
+  * More NodeMaxDispatchGrid diagnostic fixes in Sema (#5844)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Update submodules (#5850)
+
+  [ Tex Riddell ]
+  * Fix clang diagnostics overflow in SEMA group; add static_assert (#5853)
+  * Support globallycoherent RWDispatchNodeInputRecord (#5816)
+
+  [ Helena Kotas ]
+  * Exec test changes to enable build inside undocked Direct3D repo (#5856)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Implement rasterizer ordered views (#5820)
+
+  [ Tex Riddell ]
+  * allow [AllowSparseNodes] on non-array outputs (#5865)
+
+  [ dependabot[bot] ]
+  * Bump cryptography from 41.0.3 to 41.0.4 in /utils/git (#5840)
+
+  [ dependabot[bot] ]
+  * Bump urllib3 from 2.0.4 to 2.0.6 in /utils/git (#5839)
+
+  [ Xiang Li ]
+  * Allow DependentType for Node objects template argument. (#5833)
+  * [ClangCL] Cleanup rest clang-cl warnings (#5847)
+
+  [ Steven Perron ]
+  * Add nullptr checks to handle undefined arrays (#5872)
+
+  [ Chris B ]
+  * [Docs] Update contributing doc for clang-format (#5873)
+
+  [ Helena Kotas ]
+  * Add _FORCE_EXPERIMENTAL_SHADERS define to ExecutionTests (#5874)
+
+  [ Xiang Li ]
+  * [Sanitizer] Fix sanitizer fails in msvc (#5851)
+
+  [ Greg Roth ]
+  * Make hctbuild cmake gen consistent with asserts (#5881)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Remove incorrect assert from Decl mapper (#5884)
+
+  [ Chris B ]
+  * Enable `.ll` test suffix for LLVM tests (#5887)
+
+  [ Joshua Batista ]
+  * Remove implicit record to struct cast intrinsic (#5871)
+
+  [ Greg Roth ]
+  * Revert mistaken debug changes to hctbuild (#5888)
+
+  [ Xiang Li ]
+  * [NFC] Update comment (#5882)
+
+  [ Tex Riddell ]
+  * Make DxilSignatureElement::m_SemanticName canonical for system values (#5889)
+
+  [ Xiang Li ]
+  * [CI] Remove redundant SPIRV tests run for Windows pipeline (#5891)
+  * [lit][SPIRV] move shaders to lit folder
+  * [lit][SPIRV] convert shaders to lit FileCheck test
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Initialize base classes first  (#5894)
+  * [SPIR-V] Correctly handle subscript overload in access chain (#5896)
+
+  [ Xiang Li ]
+  *  [lit][SPIRV] move shaders to lit folder
+  * [lit][SPIRV] convert shaders to lit FileCheck test
+
+  [ Chris B ]
+  * [Instcombine] Disable bswap match for DXIL (#5899)
+
+  [ Xiang Li ]
+  * [Test] Remove use of -verify-ignore-unexpected. (#5902)
+  * [lit] convert verify test as lit FileCheck test part1 (#5904)
+
+  [ David Peixotto ]
+  * [bug] Fix crash when lowering multi-dimension groupshared variable (#5895)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] move shaders to lit folder
+  * [lit][SPIRV] convert shaders to lit FileCheck test
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Fixup tests failing downstream (#5907)
+
+  [ Tex Riddell ]
+  * Reformat hct python scripts with black (#5917)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Remove invalid CHECK-COUNTs (#5915)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] move shaders to lit folder
+  * [lit][SPIRV] convert shaders to lit FileCheck test
+
+  [ Joshua Batista ]
+  * Remove unnecessary in C++11 c_str() calls (#5932)
+
+  [ Xiang Li ]
+  * Remove integer variants of SampleCmp (#5930)
+
+  [ Joshua Batista ]
+  * [UNIX] Clean up Signals.inc (#5934)
+
+  [ Tex Riddell ]
+  * Add missing '-' for pass in ExtractIRForPassTest.py (#5918)
+  * Make DxilRemoveDeadBlocks init DxilModule, fix test (#5919)
+
+  [ Joshua Batista ]
+  * Remove unnecessary in C++11 c_str() calls (#5932) (#5933)
+
+  [ Steven Perron ]
+  * [SPIRV] Implement SM6.6 implicit LOD operations in compute shaders (#5829)
+
+  [ Xiang Li ]
+  * [Diag] disallow array of WaveMatrix (#5920)
+  * Add PixDiaTest to put Dia related PixTests (#5936)
+
+  [ Chow ]
+  * Support PerVertexKHR decorated input and SV_Barycentric (#5649)
+
+  [ Steven Perron ]
+  * Add execution mode for derivatives in compute shaders (#5939)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] implement vk::spvexecutionmode attribute for inline SPIR-V (#5927)
+
+  [ Xiang Li ]
+  * [Linux] Enable PixTest for Linux (#5945)
+  * [lit] convert verify test as lit FileCheck test part3 (#5910)
+  * Add SV_BaseVertexLocation and SV_StartInstanceLocation to VSIn (#5770)
+  * [Test] enable rewriter test for linux (#5908)
+  * [lit] convert verify test as lit FileCheck test part1.5 (#5912)
+
+  [ Tex Riddell ]
+  * Fix module loading and validation issues (#5880)
+  * Fix RDAT table versioning for ver 1.8 (#5943)
+
+  [ Xiang Li ]
+  * [Diag] report error when SV_DispatchGrid has illegal type. (#5953)
+
+  [ Antonio Maiorano ]
+  * Fix UBSAN out-of-range of representable values errors (#5805)
+
+  [ Xiang Li ]
+  * [lit] convert verify test as lit FileCheck test part2 (#5909)
+
+  [ Joshua Batista ]
+  * [Diagnostics] Improve recursion diagnostics, specifically for library shaders (#5858)
+
+  [ Helena Kotas ]
+  * Format hctdb.py and hctdb_instrhelp.py with black for conflict resolution in the upcoming merge
+  * Add 2 verifier tests that were accidentally removed; update expected diags in template-diag-deferred.hlsl
+  * Update invalid_barrier_1.ll DXIL
+  * Update SPIR-V submodules to be the same as main branch
+  * Add back shader attribute to couple of PIX dia tests
+  * One more conflict resolution fix
+
+  [ Steven Perron ]
+  * Use OpDemoteToHelper for clip (#5970)
+  * Add error message for incompatible image format and sampled type. (#5969)
+
+  [ Tex Riddell ]
+  * Fix downlevel validation testing failures (#5979)
+
+  [ Helena Kotas ]
+  * clang-format
+
+  [ Antonio Maiorano ]
+  * Fix ASAN leak in HLSL/ClangHLSLTests/RewriterTest.RunSpirv (#5972)
+  * Fix ASAN heap-buffer-overflow in PixTests (#5974)
+  * Fix ASAN stack-use-after-scope in SpirvEmitter::processGetAttributeAt… (#5975)
+  * Improve pipeline build (#5977)
+  * Fix enable asan on pipeline (#5976)
+  * azure-pipelines: Enable UBSAN on Linux_Clang_Release (#5978)
+
+  [ Alexey Panteleev ]
+  * [SPIRV] Implement dot4add_i8packed and dot4add_u8packed intrinsics (#5959)
+
+  [ Helena Kotas ]
+  * Addressing code review feedback
+  * Clang formatting
+  * Turn off clang formatting for RDAT_LibraryTypes.inl and RDAT_SubobjectTypes.inl (#5986)
+  * Fix typo in Decl.RayQueryInFnSig validation rule
+  * Fix typo in DXIL.rst
+
+  [ Xiang Li ]
+  * [CI] add workflow to apply clang-format diff (#5984)
+  * [Linux] Enable PDBUtil test for Linux build (#5942)
+  * [SM68] convert workgraph verify test as lit test (#6000)
+  * [Build] remove VS_STARTUP_PROJECT to avoid require cmake3.4 (#5994)
+
+  [ Nathan Gauër ]
+  * [SPIRV][NFC] Fix iterator usage after invalidation (#5926)
+
+  [ Xiang Li ]
+  * Remove InsertAddrSpaceCastIfRequired which is redundant (#5862)
+  * [lit][SPIRV] move shaders to lit folder (471 left to go) (#5998)
+
+  [ Tex Riddell ]
+  * Make tests robust for high-level opcode changes. (#6010)
+
+  [ Xiang Li ]
+  * [CI] trigger apply format with task list (#6004)
+
+  [ Jeff Noyle ]
+  * WinPix: variables in subroutines called from multiple functions (#5954)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert runFileTest shaders to lit FileCheck test (425 left to go) (#6013)
+  * [lit][SPIRV] convert runFileTest shaders to lit FileCheck test (381 left to go)  (#6017)
+
+  [ Justin Bogner ]
+  * [Diag] Diagnose missing numthreads in compute shaders
+
+  [ Helena Kotas ]
+  * Run CI builds only on main and release branches (#6026)
+
+  [ Justin Bogner ]
+  * [Diag] Treat entry points as active even if they already have a stage
+  * [Diag] Warn instead of error on invalid numthreads
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert runFileTst shaders to lit FileCheck test (340 left to go) (#6020)
+
+  [ Justin Bogner ]
+  * [Diag] Reword `err_hlsl_missing_attr`
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert runFileTest shaders to lit FileCheck test (294 left to go) (#6030)
+
+  [ Joshua Batista ]
+  * Only diagnose exported library function declarations (#6009)
+
+  [ Tex Riddell ]
+  * Add EntryFunctionName to PSV0 data (#5946)
+
+  [ Xiang Li ]
+  * [CI] fix issue when apply format (#6019)
+
+  [ Jeff Noyle ]
+  * PIX: Instrument ret instructions for shader debugging (#6033)
+  * WinPix: Inline functions test update (#6014)
+
+  [ Justin Bogner ]
+  * Don't rely on a high level opcode in a test (#6035)
+
+  [ Xiang Li ]
+  * [CI] use build/main_src instead main when checkout main for save diff (#6034)
+
+  [ Steven Perron ]
+  * [SM66,SPIRV] Implement InterlockedExchange for floats (#6032)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Add name to unregisterd decl error (#5957)
+
+  [ Helena Kotas ]
+  * Update WinSDK version with WaveMatrix support (#6040)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix interlock output parameter validation (#6029)
+  * [SPIRV] allow location index to be > than 64 (#6015)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] move shaders to lit folder (245 left to go)
+  * [lit][SPIRV] convert shaders to lit FileCheck test (245 left to go)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Emit error for unsupported HLSL res obj (#5956)
+
+  [ Helena Kotas ]
+  * Update WinSDK version with WaveMatrix support to 613 (#6046)
+
+  [ Joshua Batista ]
+  * [Sema] Move more diagnostics over (#5992)
+
+  [ Nathan Gauër ]
+  * Update submodules (#6043)
+
+  [ Xiang Li ]
+  * [SM6.8] Diagnostic for output records with SV_DispatchGrid (#5996)
+
+  [ Nathan Gauër ]
+  * build: add missing include file (#6045)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert runFileTest shaders to lit FileCheck test (204 left to go)  (#6048)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] disable validation on error (#6044)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert runFileTest shaders to lit FileCheck test (154 left to go) (#6051)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Fix push_constant and shader_record_ext to work with LowerTypeVisitor (#6011)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Add support for 64-bit switch sel (#6049)
+
+  [ Jeff Noyle ]
+  * PIX: Fix recent regression in debug instrumentation of void instructions (#6053)
+
+  [ Antonio Maiorano ]
+  * CMake dxc as subproject fixes (#6050)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Enable vk::ext_extension and vk::ext_capability for variables (#6052)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert runFileTest shaders to lit FileCheck test (107 left to go) (#6055)
+  * [lit][SPIRV] convert runFileTest shaders to lit FileCheck test (61 left to go)  (#6062)
+  * [lit][SPIRV] move shaders to lit folder (36 left to go)
+  * [lit][SPIRV] convert shaders to lit FileCheck test (36 left to go)
+  * [lit][SPIRV] move shaders to lit folder
+  * [lit][SPIRV] convert shaders to lit FileCheck test
+
+  [ Greg Roth ]
+  * Update format checker action (#6067)
+
+  [ Xiang Li ]
+  * [CI] remove contents write permission from code_formatter job. (#6068)
+
+  [ Antonio Maiorano ]
+  * Python: fix calls to os.makedirs to avoid existence check races (#6060)
+
+  [ ChristianReinbold ]
+  * Fix segfault when compiling hlsl intrinsics with variadic argu… (#6012)
+
+  [ Xiang Li ]
+  * [CMake] add another hint for DIASDK (#6061)
+  * [lit][SPIRV] move shaders back to CodeGenSPIRV (#6072)
+  * [Test] add test for different matrix representations in refection (#5995)
+
+  [ Antonio Maiorano ]
+  * CMake: fix FindD3D12.cmake when using non-VS generators (#6056)
+
+  [ S. Bharadwaj Yadavalli ]
+  * Update DXIL.rst (#6078)
+
+  [ Adam Yang ]
+  * Fixed an OOB that potentially causes a crash (#6079)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Emit OpLine for internally generated SPIR-V wrapper function (#6074)
+
+  [ Steven Perron ]
+  * Refactor create stage vars (#6059)
+  * Rename test dir in appveyor (#6083)
+  * Propagate precise from formal parameter to actual parameter (#6058)
+
+  [ Joshua Batista ]
+  * Remove ExtractRecordStructFromArray intrinsic (#6025)
+
+  [ S. Bharadwaj Yadavalli ]
+  * Update DXIL.rst (#6080)
+
+  [ Joshua Batista ]
+  * [NFC] Remove misleading function (#6088)
+  * [Sema] Change data type in MaxDispatchGrid validation calculation to uint64_t to prevent overflow (#6090)
+
+  [ Tex Riddell ]
+  * Check WaveMatrix support; locally declare feature struct for now (#6089)
+
+  [ Jeff Noyle ]
+  * PIX: Fix scope ascension for variable lookup (#6091)
+
+  [ Natalie Chouinard ]
+  * Revert "Add /bigobj flag on big spirvtest object (#3858)" (#6095)
+
+  [ Steven Perron ]
+  * Refactor stage var function (#6099)
+
+  [ Xiang Li ]
+  * [lit][SPIRV] convert runCodeTest to lit and remove dependence on effcee (#6077)
+  * [ClangCL] fix clang-cl warning (#6106)
+
+  [ Nathan Gauër ]
+  * spirv: fix build for C++20 (#6105)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Implement vk::ext_builtin_input and vk::ext_builtin_output (#6027)
+
+  [ Nathan Gauër ]
+  * deps: update SPIRV-Tools for SDK release (#6114)
+
+  [ John Zupin ]
+  * packaging: debian: update patches
+
+ -- john <john@odin>  Tue, 09 Jan 2024 15:27:40 -0700
+
 directxshadercompiler (1.4.0.2274-1615~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Jeff Noyle ]
