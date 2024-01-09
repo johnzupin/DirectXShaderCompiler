@@ -7,10 +7,10 @@ Subject: update install targets for root CMakeLists.txt file to include/dxc/
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 4a9a60c..1868944 100644
+index 15097b8..90ba91a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -752,7 +752,7 @@ add_subdirectory(cmake/modules)
+@@ -767,7 +767,7 @@ add_subdirectory(cmake/modules)
  
  if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
    install(DIRECTORY include/llvm include/llvm-c
@@ -19,7 +19,7 @@ index 4a9a60c..1868944 100644
      COMPONENT llvm-headers
      FILES_MATCHING
      PATTERN "*.def"
-@@ -764,7 +764,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+@@ -779,7 +779,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
      )
  
    install(DIRECTORY ${LLVM_INCLUDE_DIR}/llvm

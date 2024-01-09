@@ -7,7 +7,7 @@ Subject: update install targest for llvm files
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/cmake/modules/AddLLVM.cmake b/cmake/modules/AddLLVM.cmake
-index d600ec7..2578bb0 100644
+index 3282063..7a974b9 100644
 --- a/cmake/modules/AddLLVM.cmake
 +++ b/cmake/modules/AddLLVM.cmake
 @@ -553,7 +553,7 @@ macro(add_llvm_library name)
