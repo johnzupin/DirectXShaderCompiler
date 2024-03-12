@@ -1809,8 +1809,10 @@ void CGMSHLSLRuntime::AddHLSLFunctionInfo(Function *F, const FunctionDecl *FD) {
     funcProps->ShaderProps.PS.EarlyDepthStencil = true;
   }
 
-  if (const HLSLWaveSizeAttr *Attr = FD->getAttr<HLSLWaveSizeAttr>())
-    funcProps->waveSize = Attr->getSize();
+  if (const HLSLWaveSizeAttr *Attr = FD->getAttr<HLSLWaveSizeAttr>()) {
+    funcProps->WaveSize = DxilWaveSize::Translate(
+        Attr->getMin(), Attr->getMax(), Attr->getPreferred());
+  }
 
   // Node shader
   if (isNode) {
@@ -2600,8 +2602,7 @@ void CGMSHLSLRuntime::AddHLSLNodeRecordTypeInfo(
         auto &Rec = TemplateArgs.get(0);
         clang::QualType RecType = Rec.getAsType();
         llvm::Type *Type = CGM.getTypes().ConvertType(RecType);
-        const RecordType *recordtype = RecType->getAsStructureType();
-        RecordDecl *RD = recordtype->getDecl();
+        CXXRecordDecl *RD = RecType->getAsCXXRecordDecl();
 
         // Get the TrackRWInputSharing flag from the record attribute
         if (RD->hasAttr<HLSLNodeTrackRWInputSharingAttr>()) {
@@ -2619,8 +2620,10 @@ void CGMSHLSLRuntime::AddHLSLNodeRecordTypeInfo(
         }
 
         // Ex: For DispatchNodeInputRecord<MY_RECORD>, set size =
-        // size(MY_RECORD)
+        // size(MY_RECORD), alignment = alignof(MY_RECORD)
         node.RecordType.size = CGM.getDataLayout().getTypeAllocSize(Type);
+        node.RecordType.alignment =
+            CGM.getDataLayout().getABITypeAlignment(Type);
         // Iterate over fields of the MY_RECORD(example) struct
         for (auto fieldDecl : RD->fields()) {
           // Check if any of the fields have a semantic annotation =
