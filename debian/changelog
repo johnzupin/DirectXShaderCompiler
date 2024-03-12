@@ -1,3 +1,337 @@
+directxshadercompiler (1.4.0.2274-2119~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Steven Perron ]
+  * Allow unsigned int for nonzero base instance (#6120)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Remove dead code and correct Float16 docs (#6127)
+
+  [ Tex Riddell ]
+  * Fix bad arg indexing after array of struct in semantic assignment (#6122)
+
+  [ David Peixotto ]
+  * Write lit xml output as utf-8 (#6130)
+
+  [ Xiang Li ]
+  * [NFC] Move hlsl::DiagnoseTranslationUnit to separate file. (#6126)
+
+  [ Greg Roth ]
+  * Correct sampling param error in DXIL docs (#6131)
+
+  [ Helena Kotas ]
+  * Remove LLVM_C_FALLTHROUGH instances that cause warnings on clang-12 (#6134)
+
+  [ Steven Perron ]
+  * Handle bool in HS input and outputs (#6129)
+
+  [ Chris B ]
+  * Fix YAML formatting for clang-format action (#6139)
+
+  [ dependabot[bot] ]
+  * Bump tj-actions/changed-files from 39 to 41 in /.github/workflows (#6141)
+
+  [ Natalie Chouinard ]
+  * Require outputtopology attribute on Hull shader (#6137)
+
+  [ Steven Perron ]
+  * [SPIRV] Implement out variables in patch control functions (#6135)
+
+  [ Tim Corringham ]
+  * Allow node input record to be a class (#6123)
+
+  [ Nathan Gauër ]
+  * sema: gracefully reject 0-sized IO patch (#6138)
+
+  [ Alexey Panteleev ]
+  * [SPIRV] Fix the code generated for dot4add_u8packed and dot4add_i8packed (#6097)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Generate OpSource for All Includes (#6094)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Handle vk::ext_capability and vk::ext_extension on entry point (#6145)
+  * [SPIR-V] Implement type alias, type alias templates, and variable templates (#6157)
+
+  [ Helena Kotas ]
+  * Remove SPIRV test case from Sema tests related to DS/HS patch size (#6166)
+  * Add DXIL 1.8 op code cap and move WaveMatrix intrisics to SM 6.9 (#6163)
+
+  [ Xiang Li ]
+  * [SM68] Add feature flag for SampleCmpBias/Grad and StartInstance/VertexLocation (#6164)
+
+  [ Tex Riddell ]
+  * Update WaveMatrix test shader model requirement to 6.9 (#6169)
+
+  [ Joshua Batista ]
+  * Implement wave size range (#6167)
+
+  [ Natalie Chouinard ]
+  * Remove AppVeyor (#6176)
+  * Make clang-format happy (#6177)
+
+  [ Helena Kotas ]
+  * Add test to make sure WaveMatrix is not allowed in shader model 6.7 and 6.8 (#6178)
+
+  [ Tex Riddell ]
+  * Fix bad WaveSize non-range PSV0 and improve things (#6172)
+
+  [ Helena Kotas ]
+  * Use internal validator for WaveMatrix67.hlsl test (#6191)
+
+  [ Jeff Noyle ]
+  * Defer DiaSession's symbol init (it is unused by WinPix (or anyone?)) (#6187)
+
+  [ Xiang Li ]
+  * [Sema] Not report error when invalid intrinsic call is not used. (#6140)
+
+  [ Joshua Batista ]
+  * [Validation] Add validation and tests for invalid system values in incompatible node launch type (#6108)
+
+  [ Antonio Maiorano ]
+  * Fix empty control statement warnings when asserts are diabled on MSVC (#6197)
+
+  [ dependabot[bot] ]
+  * Bump cryptography from 41.0.4 to 41.0.6 in /utils/git (#6075)
+
+  [ Joshua Batista ]
+  * Ensure dxil validator 1.8 runs for launch type tests (#6209)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Propagate stage variables for inout (#6198)
+
+  [ Helena Kotas ]
+  * Gate WaveMatrix runtime structs definitions on D3D12_EXPERIMENTAL_WAVE_MATRIX define (#6208)
+  * Update version to 1.8.2403 (#6210)
+
+  [ Xiang Li ]
+  * [SM6.8] Add validation for sampleCmpBias/Grad. (#6204)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Move constant evaluation code into a new class (#6195)
+
+  [ Steven Perron ]
+  * Add testing infrastructure to test SPIR-V codegen from lib call (#6152)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Evaluate arguments to ext_execution_mode (#6200)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Add VulkanMemoryModelDeviceScope (#6186)
+
+  [ Steven Perron ]
+  * Add member variable comments. (#6215)
+
+  [ Xiang Li ]
+  * [SM68] add dxilver check for validation tests. (#6214)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Update SPV_GOOGLE_user_type (#6217)
+
+  [ Steven Perron ]
+  * [SPIRV] Reimplement flat conversion. (#6189)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix invalid optional read (#6221)
+  * [SPIR-V] add SPV_EXT_mesh_shader to opt allowlist (#6224)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Allow `using` and `using namespace` declarations (#6229)
+
+  [ Helena Kotas ]
+  * Recognize 'Microsoft Basic Render Driver' in execution tests (#6234)
+
+  [ Jeremy Hayes ]
+  * [SPIR-V] Fix literal float assertion (#6236)
+
+  [ Natalie Chouinard ]
+  * Update submodules (#6237)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Always provide original source to debug (#6085)
+
+  [ Jeff Noyle ]
+  * WinPIX: Changes to support bitfields in PIX's shader debugger (#6219)
+
+  [ rj12122 ]
+  * [SPIR-V] Don't always force EXT_mesh_shader override (#6194)
+
+  [ Chris B ]
+  * [CMake] Don't always run compare steps (#6241)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Emit error for 16-bit texture types (#6242)
+  * [SPIR-V] Allow SubpassInput without InputAttachmentIndex (#6240)
+
+  [ Steven Perron ]
+  * [SPIR-V] Mark array reference to aliased var as unaliased (#6232)
+
+  [ Tex Riddell ]
+  * NFC: Resolve PRERELEASE-TODO cases related to deep RDAT validation (#6226)
+
+  [ Steven Perron ]
+  * [SPIRV] Fix out of bounds vector access (#6253)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Add fspv-enable-maximal-reconvergence opt (#6248)
+
+  [ Xiang Li ]
+  * [SM68] Add AST test for [Empty]NodeOutputArray types (#6245)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Apply nointerpolation to mesh output (#6260)
+
+  [ Steven Perron ]
+  * [SPIR-V] Process array subscript individually (#6255)
+  * [SPIRV] Allows variable vertex index for GetAttributeAtVertex (#6261)
+
+  [ Xiang Li ]
+  * [DIAG] Limit derivative warning to intrinsic overload added in sm6.8 (#6244)
+
+  [ Joshua Batista ]
+  * [Sema] Add diagnostics for incompatible combination of System Values and node Launch Types.  (#6252)
+
+  [ Greg Roth ]
+  * Warn on ignored attributes on library non-entry points (#6243)
+
+  [ Tex Riddell ]
+  * RDAT: Check flags and WaveSize for min SM; fix flag detection and merging (#6207)
+
+  [ Joshua Batista ]
+  * [Sema] Add final touches to wave size range implementation (#6202)
+
+  [ Steven Perron ]
+  * [SPIRV] Do not ignore RValue cast for vertex id in GetAttributeAtVertex (#6263)
+  * [SPIRV] Using 64-bit int literals in flat conversion (#6283)
+
+  [ Tex Riddell ]
+  * Correct metadata load for NodeRecordType for robustness (#6277)
+
+  [ Joshua Batista ]
+  * [Sema] Only emit warnings on entry point attrs with missing shader attr for libraries (#6284)
+
+  [ Adam Yang ]
+  * Added a ground truth path normalization. (#6213)
+
+  [ Tex Riddell ]
+  * NFC: Fix switch with missing default case in DxilShaderModel.cpp (#6288)
+
+  [ Jeff Noyle ]
+  * PIX: Optimize debug instrumentation for fewest emitted instructions (#6281)
+
+  [ Steven Perron ]
+  * [SPIRV] Cast SV_CULLPRIMITIVE to uint (#6297)
+
+  [ Xiang Li ]
+  * [SM68] Add test for node objects as function parameter. (#6231)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Remove duplication of raytracing stage vars (#6268)
+  * [SPIR-V] Update dependencies (#6303)
+
+  [ Adam Yang ]
+  * Made the `this` variable in templated struct member functions references (#6296)
+  * Fixed the new test depending on the order of functions in the module (#6304)
+
+  [ Steven Perron ]
+  * [SPIRV] Handle bit fields with initializer lists (#6301)
+
+  [ Jeff Noyle ]
+  * PIX: Deduplicate globals when referenced in multiple library fns (#6305)
+
+  [ Tex Riddell ]
+  * NFC: Fix DXIL op is_const for Barrier and node create handle ops (#6280)
+
+  [ Xiang Li ]
+  * [DXIL generation] Merge GepUse last to avoid crash in EmitGetNodeRecordPtrAndUpdateUsers (#6314)
+  * [lit] Add dxil version to available_features for lit (#6310)
+
+  [ Tex Riddell ]
+  * Don't set RaytracingTier1_1 based on subobjects; enable flag validation (#6320)
+
+  [ Adam Yang ]
+  * Fixed PdbUtils not actually normalizing the file paths (#6317)
+
+  [ Tex Riddell ]
+  * New barrier DXIL Op fixes for Validation and RDAT function compatibility info (#6291)
+
+  [ Xiang Li ]
+  * Fix crash in DXIL.dll caused by illegal DXIL intrinsic. (#6302)
+  * [Test] Limit NodeObjects test to dxil-1-8 (#6330)
+
+  [ Tex Riddell ]
+  * Fix downlevel validator compatibility with DXR 1.1 flag (#6333)
+
+  [ Jannik Silvanus ]
+  * Fix crash in dominator tree construction used by DiagnoseRaytracingPayloadAccess (#5605)
+
+  [ Xiang Li ]
+  * [lit] Simplify regex for dxil version check. (#6335)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Allow SamplerComparisonState in combinedImageSampler (#6338)
+
+  [ Helena Kotas ]
+  * Fix ExecutionTest::DerivativesTest issues (#6311)
+
+  [ Cassandra Beckley ]
+  * [Sema] Allow int arguments for attributes to be enum values (#6353)
+
+  [ Tex Riddell ]
+  * DxilValidation: add ShaderCompatInfo call graph checking (#6332)
+
+  [ Jonas Meyer ]
+  * Expose clang option `-fdiagnostics-format=` in dxc (#6357)
+
+  [ Joshua Batista ]
+  * [ExecutionTest] Add Wave Range Size HLK Tests (#6348)
+
+  [ Jeff Noyle ]
+  * PIX: Preclude debug output of ray query handle from phi or select (since the value isn't really an int, it's a handle) (#6309)
+
+  [ Tex Riddell ]
+  * Add dxilver to tests using -Vd to work around auto-dxilver bug (#6369)
+  * Add alignment to NodeRecordType including DXIL metadata update (#6279)
+
+  [ Helena Kotas ]
+  * Use git rev-parse to get last commit sha (#6366)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Allow arbitrary exprs in ReportHit (#6365)
+
+  [ Adam Yang ]
+  * Fixed invalid debug metadata for LexicalBlock in include files. (#6373)
+
+  [ Chow ]
+  * [SPIR-V] Fix for an issue when noninterpolation is decorated on structure inputs. (#6041)
+
+  [ Cooper Partin ]
+  * Implement -ftime-trace-granularity option to set time granularity value for the time profiler (#6381)
+
+  [ Chris B ]
+  * [Docs] Update Readme and build instruction docs (#6185)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Evaluate void return expressions (#6388)
+  * [SPIR-V] Set layout rule when decomposing struct (#6391)
+  * [SPIR-V] Disallow variable offsets in texture Load (#6389)
+
+  [ Nathan Gauër ]
+  * sema: check input patch size mismatch earlier. (#6363)
+
+  [ Helena Kotas ]
+  * Add lit.local.cfg to CodeGenSPIRV_Lit (#6394)
+
+  [ Laura Hermanns ]
+  * [SPIR-V] Fix null pointer crash in short-circuit ternary op. (#6393)
+
+  [ Michael Anttila ]
+  * Update submodules (#6397)
+
+  [ Xiang Li ]
+  * [ClangCL] Fix warning in PixDiaTest.cpp (#6395)
+
+ -- john <john@odin>  Tue, 12 Mar 2024 12:58:00 -0600
+
 directxshadercompiler (1.4.0.2274-1999~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Helena Kotas ]
