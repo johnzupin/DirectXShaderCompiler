@@ -1,3 +1,182 @@
+directxshadercompiler (1.4.0.2274-2186~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Block semantic annotation reuse for input (#6396)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Allow literal selectors in switch stmts (#6399)
+
+  [ Helena Kotas ]
+  * Fix verification in ExecutionTest::ComputeSampleTest (#6405)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix static const in push constants (#6403)
+
+  [ dependabot[bot] ]
+  * Bump cryptography from 41.0.6 to 42.0.4 in /utils/git (#6339)
+  * [SPIR-V] Fix list initializer code (#6408)
+  * [SPIR-V] Only allow GetAttributeAtVertex in PS (#6422)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Allow evaluating enum values to APInt (#6424)
+
+  [ Antonio Maiorano ]
+  * Fix ubsan failure on uninitialized read of bool param to WideCharToMultiByte (#6429)
+  * Fix asan heap overflow in PixTests (again) (#6430)
+  * Disable ubsan alignment errors properly (#6431)
+
+  [ Chris B ]
+  * Fix HLMatrixLowerPass leaving call to dangling FunctionVal (#6441)
+
+  [ Xiang Li ]
+  * [ClangCL] Fix warning in PixDiaTest.cpp (#6440)
+  * [Sema] Check FunctionDecl has identifier before getName. (#6439)
+
+  [ Antonio Maiorano ]
+  * Disable "downcast of address" UBSAN runtime error (#6448)
+  * azure-pipelines: Fix the fact that neither asan+ubsan were not actually enabled (#6428)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Add support for Denorm Mode (#6435)
+
+  [ Nathan Gauër ]
+  * Sema: warn when POSITION[0] is used intead of SV_Position (#6401)
+
+  [ Natalie Chouinard ]
+  * Require valid outputcontrolpoints on Hull shader (#6196)
+
+  [ Chris B ]
+  * Add User Support issue template. (#5651)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Fix test (#6456)
+  * [SPIR-V] Implement dot2add intrinsic function (#6445)
+
+  [ Fumitoshi Ukai ]
+  * fix non-portable include path (#6380)
+
+  [ Antonio Maiorano ]
+  * Fix ASAN use-after-free on unreferenced self-assignment of struct instance (#6466)
+
+  [ Helena Kotas ]
+  * Remove -spirv from new HLSL Sema tests (#6467)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix bitfields with RWStructured & Push-constants (#6463)
+
+  [ Greg Roth ]
+  * Allow disabling payload access qualifiers in 6.8+ (#6468)
+
+  [ Fumitoshi Ukai ]
+  * fix #include path separator from backslash to slash (#6379)
+
+  [ Nathan Gauër ]
+  * [Sema] Move outputcontrolpoints check to Sema (#6460)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Fix test runline (#6474)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix struct size computation with bitfields (#6471)
+  * [SPIR-V] Fix crash in GetAttributeAtVertex impl. (#6459)
+
+  [ Helena Kotas ]
+  * dxexp: add support for mesh shaders, derivatives in mesh/amp shaders and wave matrix (#6355)
+
+  [ Xiang Li ]
+  * [Test] skip test for older validator which check different value. (#6477)
+
+  [ Nathan Gauër ]
+  * [SPIR-V][Sema] Requires nointerpolation on GetAttributeAtVertex param #0 (#6453)
+
+  [ Xiang Li ]
+  * [ClangCL] fix clang-cl build warning. (#6492)
+
+  [ Helena Kotas ]
+  * Set supported validator version on DXC/disable_paq.hlsl (#6493)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] fix silent failure if disassembly fails (#6490)
+
+  [ Helena Kotas ]
+  * DerivativesTest: Remove invalid thread group size test cases  (#6496)
+
+  [ Xiang Li ]
+  * [ClangCL] fix x86 only warning (#6504)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Emulate OpBitFieldInsert for type != i32 (#6491)
+
+  [ Cooper Partin ]
+  * Update locale setting logic to support UTF-8 only for Apple and Linux distros (#6488)
+
+  [ Antonio Maiorano ]
+  * Replace dynamic_cast with virtual call (#6515)
+
+  [ Tex Riddell ]
+  * Add barrier MemoryTypeFlags and SemanticFlags diagnostics (#6513)
+
+  [ Chris B ]
+  * Add CODEOWNERS to main (#6520)
+
+  [ David Neto ]
+  * Fix recursive zero replacement bottoming out in scalars. (#6516)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Implement SpirvType and SpirvOpaqueType (#6156)
+
+  [ Cooper Partin ]
+  * Increase filter time value for failing ftime-trace-granularity test (#6532)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Fix mesh payload global variable for VK_EXT_mesh_shaders (#6526)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix debug instruction with cbuffer + FXC (#6531)
+  * [SPIR-V] Emulate OpBitFieldExtract for type != i32 (#6500)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Remove bitcast from float->int conversion (#6533)
+  * [SPIR-V] Scope Atomic ops on Workgroup memory (#6527)
+  * [SPIR-V] Warn when wave size is used (#6542)
+
+  [ dependabot[bot] ]
+  * Bump urllib3 from 2.0.6 to 2.0.7 in /utils/git (#5886)
+
+  [ Jannik Silvanus ]
+  * Don't reuse WaveGetLaneIndex result across thread repacking points (#5607)
+
+  [ dependabot[bot] ]
+  * Bump idna from 3.4 to 3.7 in /utils/git (#6525)
+
+  [ Adam Yang ]
+  * Fixed crash in loop unroll caused by bug in structurize loop exits (#6548)
+
+  [ Xiang Li ]
+  * [Sema] Report warning when mix packoffset with nonpackoffset (#6553)
+
+  [ Greg Roth ]
+  * Disable non-legacy cbuffer flags (#6559)
+
+  [ Tex Riddell ]
+  * Add diag for new Barrier intrinsic on SM < 6.8 (#6558)
+  * Fix auto-dxilver logic in FileCheckerTest (#6368)
+
+  [ dependabot[bot] ]
+  * Bump black from 23.9.1 to 24.3.0 in /utils/git (#6438)
+
+  [ Xiang Li ]
+  * [DxilOp] Allow generation of illegal DXIL operations. (#6543)
+
+  [ Chris B ]
+  * [202x] Implementaiton of conforming literals (#6572)
+  * Backport `-Wdouble-promotion` from Clang 3.8 (#6574)
+
+  [ Natalie Chouinard ]
+  * Bump submodules (#6577)
+
+ -- john <john@odin>  Tue, 07 May 2024 10:14:27 -0600
+
 directxshadercompiler (1.4.0.2274-2119~rc1-1lunarg20.04-1) focal; urgency=medium
 
   [ Steven Perron ]
