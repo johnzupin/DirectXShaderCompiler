@@ -1,3 +1,204 @@
+directxshadercompiler (1.4.0.2274-2261~rc1-1lunarg24.04-1) noble; urgency=medium
+
+  [ Jeff Noyle ]
+  * PIX: Cope with arbitrary <32 integer widths in debugger pass (#6551)
+
+  [ Xiang Li ]
+  * [DOC] Add doc about string function attribute in DXIL. (#6579)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Implement WaveMatch intrinsic function (#6546)
+
+  [ Antonio Maiorano ]
+  * Fix invalid IR from scalarrepl-param-hlsl in ReplaceConstantWithInst (#6556)
+
+  [ Chris B ]
+  * [202x] Implement -Whlsl-legacy-literal warnings (#6580)
+
+  [ Cooper Partin ]
+  * Add compiler option -Qsource_in_debug_module for embedding source in debug builds to documented help text (#6597)
+  * Add test to validate that -Qsource_in_debug_module is present in help… (#6601)
+
+  [ Jesse Natalie ]
+  * Remove all WARP skips (#6602)
+
+  [ Greg Roth ]
+  * Update version to 1.8.2405 (#6603)
+
+  [ Antonio Maiorano ]
+  * Fix invalid module bitcode when indexing a swizzled bool vector (#6582)
+
+  [ David Neto ]
+  * ExtractIRForPassTest: use %dxopt on the RUN line (#6519)
+
+  [ Chris B ]
+  * Add local lit config to re-enable reassociate tests (#6605)
+
+  [ rj12122 ]
+  * [SPIR-V] Add debug type for acceleration structure (#6562)
+
+  [ Jeff Noyle ]
+  * PIX: Correct the disambiguation of AS+MS threads for mesh shader output (#6592)
+  * PIX: Test for source locations for class methods (#5176)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Best effort const eval of vk::ext_literal (#6604)
+  * [SPIR-V] Allow const-evaluatable spec constants (#6606)
+  * [SPIR-V] Fix InterlockedMin/Max codegen (#6609)
+  * [SPIR-V] Fix firstbit{high,low} elem check (#6607)
+
+  [ Jeff Noyle ]
+  * PIX: Emit correct input sig elements and view ID state into PSV0 when input sigs are changed by debug instrumentation (#6351)
+
+  [ Natalie Chouinard ]
+  * [NFC][SPIR-V] Refactor SpirvGroupNonUniformOps (#6596)
+
+  [ Jeff Noyle ]
+  * Pix: Cope with group shared AS->MS payload (#6619)
+
+  [ Antonio Maiorano ]
+  * Fix false positive assert in SuccIterator::operator+= (#6623)
+  * Fix dxil-remove-dead-blocks removing switch with multiple same successor (#6610)
+  * Fix use-after-free in SimplifyCFG (#6628)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Remove bad test (#6632)
+  * [SPIR-V] Enable rayquery tests (#6627)
+  * [SPIR-V] Implement WaveMutliPrefix* (#6608)
+  * [SPIR-V] Enable more unsupported tests (#6630)
+  * [SPIR-V] Remove always disabled test (#6634)
+
+  [ Zhengxing li ]
+  * Reassociate: add global reassociation algorithm (#6598)
+
+  [ dependabot[bot] ]
+  * Bump requests from 2.31.0 to 2.32.0 in /utils/git (#6638)
+  * Add a flag for the upstream global reassociation algorithm change (#6625)
+  * More aggressive reassociations (#6626)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Add support for SampleCmpLevel (#6618)
+
+  [ Nielsbishere ]
+  * Update SPIR-V.rst (#6642)
+
+  [ Steven Perron ]
+  * Fix aligment for empty structs (#6635)
+
+  [ Greg Roth ]
+  * Calculate preferred alignment when lowering groupshared matrices (#6589)
+
+  [ Antonio Maiorano ]
+  * Fix LoopDeletion incorrectly updating PHI with multiple duplicate inputs (#6643)
+
+  [ David Neto ]
+  * Loop exit restructurizer: don't iterate over uses while mutating them (#6644)
+
+  [ Natalie Chouinard ]
+  * [SPIR-V] Add error message for SamplerFeedback (#6640)
+
+  [ Tex Riddell ]
+  * NFC: ExtractIRForPassTest.py error reporting when pass not found (#6325)
+
+  [ David Neto ]
+  * NFC: Comment, refactor, and test hlsl::RemoveUnstructuredLoopExits (#6655)
+
+  [ Takuto Ikuta ]
+  * fix compile error for newer VS toolchain (#6648)
+
+  [ Zhengxing li ]
+  * Use accessors for ValueHandleBase::V; NFC (#6660)
+
+  [ David Neto ]
+  * Fix RemoveUnstructuredLoopExits when an exiting edge jumps out multiple levels of loops. (#6668)
+
+  [ Antonio Maiorano ]
+  * Fix crash in scalarrepl-param-hlsl when dynamically indexing a GEP of a constant indexed GEP (#6670)
+
+  [ Steven Perron ]
+  * Add option to set the max id (#6654)
+
+  [ Chris B ]
+  * Workaround broken GitHub runner images (#6683)
+
+  [ Natalie Chouinard ]
+  * Fix another UAF in SimplifyCFG (#6680)
+
+  [ Antonio Maiorano ]
+  * Revert "Fix RemoveUnstructuredLoopExits when an exiting edge jumps out multiple levels of loops. (#6668)" (#6685)
+  * Fix instcombine overflow check inserting inst at wrong place (#6679)
+
+  [ Zhengxing li ]
+  * Emulate TrackingVH using WeakVH (#6662)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix GroupNonUniform capabilities+ext  (#6687)
+
+  [ Steven Perron ]
+  * Make the location map run per entry point (#6688)
+
+  [ Helena Kotas ]
+  * ExecutionTest::UnaryHalfOpTest#AcosHalf: Update tolerance (#6690)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Emit OpUndef for undefined values (#6686)
+
+  [ David Neto ]
+  * Remove unstructured loop exits: Don't introduce loops (#6676)
+
+  [ Steven Perron ]
+  * Add warning when vk::offset is not correctly aligned (#6694)
+
+  [ Chris B ]
+  * Remove Windows C++ redist hack (#6692)
+
+  [ David Neto ]
+  * indvars: don't replace a phi when that breaks LCSSA (#6695)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Re-enable rich debug instructions for objects (#6696)
+
+  [ Steven Perron ]
+  * Add error for invalid arguments to GetDimension (#6698)
+
+  [ dependabot[bot] ]
+  * Bump urllib3 from 2.0.7 to 2.2.2 in /utils/git (#6699)
+
+  [ Zhengxing li ]
+  * Rename WeakVH to WeakTrackingVH; NFC (#6663)
+
+  [ Steven Perron ]
+  * Update spirv deps (#6709)
+
+  [ David Neto ]
+  * CMake: Use find_package(Python3) (#6675)
+
+  [ Steven Perron ]
+  * Avoid adding types to default namespace (#6700)
+
+  [ Adam Yang ]
+  * Add a new WeakVH value handle; NFC (#6703)
+
+  [ Zhengxing li ]
+  * [llc/opt] Add an option to run all passes twice (#6666)
+
+  [ Raed Rizqie ]
+  * CMake: Add initial support for MinGW-w64 (#6715)
+
+  [ Adam Yang ]
+  * Fix non-determinism in Reassociate caused by address coincidences (#6717)
+
+  [ Steven Perron ]
+  * Set the layout rule explicitly for raw buffer operations (#6701)
+
+  [ David Neto ]
+  * HLMatrixLower: allow exceptions to propagate out (#6710)
+
+  [ Helena Kotas ]
+  * Add duplicate pragma (#6732)
+
+ -- john <john@odin>  Tue, 16 Jul 2024 14:13:59 -0600
+
 directxshadercompiler (1.4.0.2274-2186~rc1-1lunarg22.04-1) jammy; urgency=medium
 
   [ Nathan Gauër ]
