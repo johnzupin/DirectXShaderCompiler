@@ -50,8 +50,9 @@ static_assert((unsigned)PSVShaderKind::Invalid ==
                   (unsigned)DXIL::ShaderKind::Invalid,
               "otherwise, PSVShaderKind enum out of sync.");
 
-static DxilProgramSigSemantic
-KindToSystemValue(Semantic::Kind kind, DXIL::TessellatorDomain domain) {
+DxilProgramSigSemantic
+hlsl::SemanticKindToSystemValue(Semantic::Kind kind,
+                                DXIL::TessellatorDomain domain) {
   switch (kind) {
   case Semantic::Kind::Arbitrary:
     return DxilProgramSigSemantic::Undefined;
@@ -133,9 +134,9 @@ KindToSystemValue(Semantic::Kind kind, DXIL::TessellatorDomain domain) {
   // TODO: Final_* values need mappings
 }
 
-static DxilProgramSigCompType CompTypeToSigCompType(hlsl::CompType value,
-                                                    bool i1ToUnknownCompat) {
-  switch (value.GetKind()) {
+DxilProgramSigCompType hlsl::CompTypeToSigCompType(hlsl::CompType::Kind Kind,
+                                                   bool i1ToUnknownCompat) {
+  switch (Kind) {
   case CompType::Kind::I32:
     return DxilProgramSigCompType::SInt32;
 
@@ -291,9 +292,9 @@ private:
     memset(&sig, 0, sizeof(DxilProgramSignatureElement));
     sig.Stream = pElement->GetOutputStream();
     sig.SemanticName = GetSemanticOffset(pElement);
-    sig.SystemValue = KindToSystemValue(pElement->GetKind(), m_domain);
+    sig.SystemValue = SemanticKindToSystemValue(pElement->GetKind(), m_domain);
     sig.CompType =
-        CompTypeToSigCompType(pElement->GetCompType(), m_bCompat_1_4);
+        CompTypeToSigCompType(pElement->GetCompType().GetKind(), m_bCompat_1_4);
     sig.Register = pElement->GetStartRow();
 
     sig.Mask = pElement->GetColsAsMask();
@@ -693,6 +694,10 @@ private:
   void SetPSVSigElement(PSVSignatureElement0 &E,
                         const DxilSignatureElement &SE) {
     memset(&E, 0, sizeof(PSVSignatureElement0));
+    bool i1ToUnknownCompat =
+        DXIL::CompareVersions(m_ValMajor, m_ValMinor, 1, 5) < 0;
+    InitPSVSignatureElement(E, SE, i1ToUnknownCompat);
+    // Setup semantic name.
     if (SE.GetKind() == DXIL::SemanticKind::Arbitrary &&
         strlen(SE.GetName()) > 0) {
       E.SemanticName = (uint32_t)m_StringBuffer.size();
@@ -727,25 +732,6 @@ private:
         m_SemanticIndexBuffer.push_back((uint32_t)SemIdx[row]);
       }
     }
-    DXASSERT_NOMSG(SE.GetRows() <= 32);
-    E.Rows = (uint8_t)SE.GetRows();
-    DXASSERT_NOMSG(SE.GetCols() <= 4);
-    E.ColsAndStart = (uint8_t)SE.GetCols() & 0xF;
-    if (SE.IsAllocated()) {
-      DXASSERT_NOMSG(SE.GetStartCol() < 4);
-      DXASSERT_NOMSG(SE.GetStartRow() < 32);
-      E.ColsAndStart |= 0x40 | (SE.GetStartCol() << 4);
-      E.StartRow = (uint8_t)SE.GetStartRow();
-    }
-    E.SemanticKind = (uint8_t)SE.GetKind();
-    E.ComponentType = (uint8_t)CompTypeToSigCompType(
-        SE.GetCompType(),
-        /*i1ToUnknownCompat*/ DXIL::CompareVersions(m_ValMajor, m_ValMinor, 1,
-                                                    5) < 0);
-    E.InterpolationMode = (uint8_t)SE.GetInterpolationMode()->GetKind();
-    DXASSERT_NOMSG(SE.GetOutputStream() < 4);
-    E.DynamicMaskAndStream = (uint8_t)((SE.GetOutputStream() & 0x3) << 4);
-    E.DynamicMaskAndStream |= (SE.GetDynIdxCompMask()) & 0xF;
   }
 
 public:
@@ -753,17 +739,9 @@ public:
       : m_Module(mod), m_PSVInitInfo(PSVVersion) {
     m_Module.GetValidatorVersion(m_ValMajor, m_ValMinor);
     // Constraint PSVVersion based on validator version
-    if (PSVVersion > 0 &&
-        DXIL::CompareVersions(m_ValMajor, m_ValMinor, 1, 1) < 0)
-      m_PSVInitInfo.PSVVersion = 0;
-    else if (PSVVersion > 1 &&
-             DXIL::CompareVersions(m_ValMajor, m_ValMinor, 1, 6) < 0)
-      m_PSVInitInfo.PSVVersion = 1;
-    else if (PSVVersion > 2 &&
-             DXIL::CompareVersions(m_ValMajor, m_ValMinor, 1, 8) < 0)
-      m_PSVInitInfo.PSVVersion = 2;
-    else if (PSVVersion > MAX_PSV_VERSION)
-      m_PSVInitInfo.PSVVersion = MAX_PSV_VERSION;
+    uint32_t PSVVersionConstraint = hlsl::GetPSVVersion(m_ValMajor, m_ValMinor);
+    if (PSVVersion > PSVVersionConstraint)
+      m_PSVInitInfo.PSVVersion = PSVVersionConstraint;
 
     const ShaderModel *SM = m_Module.GetShaderModel();
     UINT uCBuffers = m_Module.GetCBuffers().size();
@@ -849,147 +827,14 @@ public:
     PSVRuntimeInfo1 *pInfo1 = m_PSV.GetPSVRuntimeInfo1();
     PSVRuntimeInfo2 *pInfo2 = m_PSV.GetPSVRuntimeInfo2();
     PSVRuntimeInfo3 *pInfo3 = m_PSV.GetPSVRuntimeInfo3();
-    const ShaderModel *SM = m_Module.GetShaderModel();
-    pInfo->MinimumExpectedWaveLaneCount = 0;
-    pInfo->MaximumExpectedWaveLaneCount = (UINT)-1;
-
+    if (pInfo)
+      hlsl::SetShaderProps(pInfo, m_Module);
+    if (pInfo1)
+      hlsl::SetShaderProps(pInfo1, m_Module);
+    if (pInfo2)
+      hlsl::SetShaderProps(pInfo2, m_Module);
     if (pInfo3)
       pInfo3->EntryFunctionName = EntryFunctionName;
-
-    switch (SM->GetKind()) {
-    case ShaderModel::Kind::Vertex: {
-      pInfo->VS.OutputPositionPresent = 0;
-      const DxilSignature &S = m_Module.GetOutputSignature();
-      for (auto &&E : S.GetElements()) {
-        if (E->GetKind() == Semantic::Kind::Position) {
-          // Ideally, we might check never writes mask here,
-          // but this is not yet part of the signature element in Dxil
-          pInfo->VS.OutputPositionPresent = 1;
-          break;
-        }
-      }
-      break;
-    }
-    case ShaderModel::Kind::Hull: {
-      pInfo->HS.InputControlPointCount =
-          (UINT)m_Module.GetInputControlPointCount();
-      pInfo->HS.OutputControlPointCount =
-          (UINT)m_Module.GetOutputControlPointCount();
-      pInfo->HS.TessellatorDomain = (UINT)m_Module.GetTessellatorDomain();
-      pInfo->HS.TessellatorOutputPrimitive =
-          (UINT)m_Module.GetTessellatorOutputPrimitive();
-      break;
-    }
-    case ShaderModel::Kind::Domain: {
-      pInfo->DS.InputControlPointCount =
-          (UINT)m_Module.GetInputControlPointCount();
-      pInfo->DS.OutputPositionPresent = 0;
-      const DxilSignature &S = m_Module.GetOutputSignature();
-      for (auto &&E : S.GetElements()) {
-        if (E->GetKind() == Semantic::Kind::Position) {
-          // Ideally, we might check never writes mask here,
-          // but this is not yet part of the signature element in Dxil
-          pInfo->DS.OutputPositionPresent = 1;
-          break;
-        }
-      }
-      pInfo->DS.TessellatorDomain = (UINT)m_Module.GetTessellatorDomain();
-      break;
-    }
-    case ShaderModel::Kind::Geometry: {
-      pInfo->GS.InputPrimitive = (UINT)m_Module.GetInputPrimitive();
-      // NOTE: For OutputTopology, pick one from a used stream, or if none
-      // are used, use stream 0, and set OutputStreamMask to 1.
-      pInfo->GS.OutputTopology = (UINT)m_Module.GetStreamPrimitiveTopology();
-      pInfo->GS.OutputStreamMask = m_Module.GetActiveStreamMask();
-      if (pInfo->GS.OutputStreamMask == 0) {
-        pInfo->GS.OutputStreamMask = 1; // This is what runtime expects.
-      }
-      pInfo->GS.OutputPositionPresent = 0;
-      const DxilSignature &S = m_Module.GetOutputSignature();
-      for (auto &&E : S.GetElements()) {
-        if (E->GetKind() == Semantic::Kind::Position) {
-          // Ideally, we might check never writes mask here,
-          // but this is not yet part of the signature element in Dxil
-          pInfo->GS.OutputPositionPresent = 1;
-          break;
-        }
-      }
-      break;
-    }
-    case ShaderModel::Kind::Pixel: {
-      pInfo->PS.DepthOutput = 0;
-      pInfo->PS.SampleFrequency = 0;
-      {
-        const DxilSignature &S = m_Module.GetInputSignature();
-        for (auto &&E : S.GetElements()) {
-          if (E->GetInterpolationMode()->IsAnySample() ||
-              E->GetKind() == Semantic::Kind::SampleIndex) {
-            pInfo->PS.SampleFrequency = 1;
-          }
-        }
-      }
-      {
-        const DxilSignature &S = m_Module.GetOutputSignature();
-        for (auto &&E : S.GetElements()) {
-          if (E->IsAnyDepth()) {
-            pInfo->PS.DepthOutput = 1;
-            break;
-          }
-        }
-      }
-      break;
-    }
-    case ShaderModel::Kind::Compute: {
-      DxilWaveSize waveSize = m_Module.GetWaveSize();
-      pInfo->MinimumExpectedWaveLaneCount = 0;
-      pInfo->MaximumExpectedWaveLaneCount = UINT32_MAX;
-      if (waveSize.IsDefined()) {
-        pInfo->MinimumExpectedWaveLaneCount = waveSize.Min;
-        pInfo->MaximumExpectedWaveLaneCount =
-            waveSize.IsRange() ? waveSize.Max : waveSize.Min;
-      }
-      break;
-    }
-    case ShaderModel::Kind::Library:
-    case ShaderModel::Kind::Invalid:
-      // Library and Invalid not relevant to PSVRuntimeInfo0
-      break;
-    case ShaderModel::Kind::Mesh: {
-      pInfo->MS.MaxOutputVertices = (UINT)m_Module.GetMaxOutputVertices();
-      pInfo->MS.MaxOutputPrimitives = (UINT)m_Module.GetMaxOutputPrimitives();
-      pInfo1->MS1.MeshOutputTopology = (UINT)m_Module.GetMeshOutputTopology();
-      Module *mod = m_Module.GetModule();
-      const DataLayout &DL = mod->getDataLayout();
-      unsigned totalByteSize = 0;
-      for (GlobalVariable &GV : mod->globals()) {
-        PointerType *gvPtrType = cast<PointerType>(GV.getType());
-        if (gvPtrType->getAddressSpace() == hlsl::DXIL::kTGSMAddrSpace) {
-          Type *gvType = gvPtrType->getPointerElementType();
-          unsigned byteSize = DL.getTypeAllocSize(gvType);
-          totalByteSize += byteSize;
-        }
-      }
-      pInfo->MS.GroupSharedBytesUsed = totalByteSize;
-      pInfo->MS.PayloadSizeInBytes = m_Module.GetPayloadSizeInBytes();
-      break;
-    }
-    case ShaderModel::Kind::Amplification: {
-      pInfo->AS.PayloadSizeInBytes = m_Module.GetPayloadSizeInBytes();
-      break;
-    }
-    }
-    if (pInfo2) {
-      switch (SM->GetKind()) {
-      case ShaderModel::Kind::Compute:
-      case ShaderModel::Kind::Mesh:
-      case ShaderModel::Kind::Amplification:
-        pInfo2->NumThreadsX = m_Module.GetNumThreads(0);
-        pInfo2->NumThreadsY = m_Module.GetNumThreads(1);
-        pInfo2->NumThreadsZ = m_Module.GetNumThreads(2);
-        break;
-      }
-    }
 
     // Set resource binding information
     UINT uResIndex = 0;
@@ -1000,13 +845,7 @@ public:
       PSVResourceBindInfo1 *pBindInfo1 =
           m_PSV.GetPSVResourceBindInfo1(uResIndex);
       DXASSERT_NOMSG(pBindInfo);
-      pBindInfo->ResType = (UINT)PSVResourceType::CBV;
-      pBindInfo->Space = R->GetSpaceID();
-      pBindInfo->LowerBound = R->GetLowerBound();
-      pBindInfo->UpperBound = R->GetUpperBound();
-      if (pBindInfo1) {
-        pBindInfo1->ResKind = (UINT)R->GetKind();
-      }
+      InitPSVResourceBinding(pBindInfo, pBindInfo1, R.get());
       uResIndex++;
     }
     for (auto &&R : m_Module.GetSamplers()) {
@@ -1016,13 +855,7 @@ public:
       PSVResourceBindInfo1 *pBindInfo1 =
           m_PSV.GetPSVResourceBindInfo1(uResIndex);
       DXASSERT_NOMSG(pBindInfo);
-      pBindInfo->ResType = (UINT)PSVResourceType::Sampler;
-      pBindInfo->Space = R->GetSpaceID();
-      pBindInfo->LowerBound = R->GetLowerBound();
-      pBindInfo->UpperBound = R->GetUpperBound();
-      if (pBindInfo1) {
-        pBindInfo1->ResKind = (UINT)R->GetKind();
-      }
+      InitPSVResourceBinding(pBindInfo, pBindInfo1, R.get());
       uResIndex++;
     }
     for (auto &&R : m_Module.GetSRVs()) {
@@ -1032,21 +865,7 @@ public:
       PSVResourceBindInfo1 *pBindInfo1 =
           m_PSV.GetPSVResourceBindInfo1(uResIndex);
       DXASSERT_NOMSG(pBindInfo);
-      if (R->IsStructuredBuffer()) {
-        pBindInfo->ResType = (UINT)PSVResourceType::SRVStructured;
-      } else if (R->IsRawBuffer() ||
-                 (R->GetKind() ==
-                  DxilResourceBase::Kind::RTAccelerationStructure)) {
-        pBindInfo->ResType = (UINT)PSVResourceType::SRVRaw;
-      } else {
-        pBindInfo->ResType = (UINT)PSVResourceType::SRVTyped;
-      }
-      pBindInfo->Space = R->GetSpaceID();
-      pBindInfo->LowerBound = R->GetLowerBound();
-      pBindInfo->UpperBound = R->GetUpperBound();
-      if (pBindInfo1) {
-        pBindInfo1->ResKind = (UINT)R->GetKind();
-      }
+      InitPSVResourceBinding(pBindInfo, pBindInfo1, R.get());
       uResIndex++;
     }
     for (auto &&R : m_Module.GetUAVs()) {
@@ -1056,36 +875,13 @@ public:
       PSVResourceBindInfo1 *pBindInfo1 =
           m_PSV.GetPSVResourceBindInfo1(uResIndex);
       DXASSERT_NOMSG(pBindInfo);
-      if (R->IsStructuredBuffer()) {
-        if (R->HasCounter())
-          pBindInfo->ResType = (UINT)PSVResourceType::UAVStructuredWithCounter;
-        else
-          pBindInfo->ResType = (UINT)PSVResourceType::UAVStructured;
-      } else if (R->IsRawBuffer()) {
-        pBindInfo->ResType = (UINT)PSVResourceType::UAVRaw;
-      } else {
-        pBindInfo->ResType = (UINT)PSVResourceType::UAVTyped;
-      }
-      pBindInfo->Space = R->GetSpaceID();
-      pBindInfo->LowerBound = R->GetLowerBound();
-      pBindInfo->UpperBound = R->GetUpperBound();
-      if (pBindInfo1) {
-        pBindInfo1->ResKind = (UINT)R->GetKind();
-        pBindInfo1->ResFlags |=
-            R->HasAtomic64Use() ? (UINT)PSVResourceFlag::UsedByAtomic64 : 0;
-      }
+      InitPSVResourceBinding(pBindInfo, pBindInfo1, R.get());
       uResIndex++;
     }
     DXASSERT_NOMSG(uResIndex == m_PSVInitInfo.ResourceCount);
 
     if (m_PSVInitInfo.PSVVersion > 0) {
       DXASSERT_NOMSG(pInfo1);
-
-      // Write MaxVertexCount
-      if (SM->IsGS()) {
-        DXASSERT_NOMSG(m_Module.GetMaxVertexCount() <= 1024);
-        pInfo1->MaxVertexCount = (uint16_t)m_Module.GetMaxVertexCount();
-      }
 
       // Write Dxil Signature Elements
       for (unsigned i = 0; i < m_PSV.GetSigInputElements(); i++) {

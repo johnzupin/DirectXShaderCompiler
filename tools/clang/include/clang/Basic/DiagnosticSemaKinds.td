@@ -7663,8 +7663,8 @@ def err_hlsl_unsupported_nested_typedef : Error<
 def err_hlsl_unsupported_operator : Error<
   "operator is not supported">;
 // This error is unused because the HLSL parser will catch all cases.
-//def err_hlsl_unsupported_string_literal : Error<
-//  "unsupported style of string literal - use a char-based literal">;
+def err_hlsl_unsupported_string_literal : Error<
+  "string literals parameters are not supported in HLSL">;
 def err_hlsl_unsupported_struct_op: Error<
   "operator cannot be used with user-defined type %0">;
 def err_hlsl_unsupported_subscript_base_rhs : Error<
@@ -7962,6 +7962,8 @@ def warn_hlsl_barrier_no_mem_with_required_device_scope: Warning<
 def warn_hlsl_legacy_integer_literal_signedness: Warning<
   "literal value is treated as signed in HLSL 2021 and earlier, and unsigned in later language versions">,
   InGroup<HLSLLegacyLiterals>, DefaultIgnore;
+def err_hlsl_unsupported_semantic_index: Error<
+  "'%0' is defined with semantic index %1, but only values 0 through %2 are supported">;
 // HLSL Change Ends
 
 // SPIRV Change Starts
