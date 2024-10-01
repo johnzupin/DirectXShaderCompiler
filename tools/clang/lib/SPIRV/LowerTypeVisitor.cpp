@@ -619,6 +619,14 @@ const SpirvType *LowerTypeVisitor::lowerType(QualType type,
     return spvContext.getSIntType(32);
   }
 
+  // Templated types.
+  if (const auto *spec = type->getAs<TemplateSpecializationType>()) {
+    return lowerType(spec->desugar(), rule, isRowMajor, srcLoc);
+  }
+  if (const auto *spec = type->getAs<SubstTemplateTypeParmType>()) {
+    return lowerType(spec->desugar(), rule, isRowMajor, srcLoc);
+  }
+
   emitError("lower type %0 unimplemented", srcLoc) << type->getTypeClassName();
   type->dump();
   return 0;
@@ -723,6 +731,15 @@ const SpirvType *LowerTypeVisitor::lowerInlineSpirvType(
     operandsIndex = 3;
 
   auto args = specDecl->getTemplateArgs()[operandsIndex].getPackAsArray();
+
+  if (operandsIndex == 1 && args.size() == 2 &&
+      static_cast<spv::Op>(opcode) == spv::Op::OpTypePointer) {
+    const SpirvType *result =
+        getSpirvPointerFromInlineSpirvType(args, rule, isRowMajor, srcLoc);
+    if (result) {
+      return result;
+    }
+  }
 
   for (TemplateArgument arg : args) {
     switch (arg.getKind()) {
@@ -1085,6 +1102,19 @@ LowerTypeVisitor::lowerStructFields(const RecordDecl *decl,
           field->getBitWidthValue(field->getASTContext());
     }
 
+    if (field->hasAttrs()) {
+      for (auto &attr : field->getAttrs()) {
+        if (auto capAttr = dyn_cast<VKCapabilityExtAttr>(attr)) {
+          spvBuilder.requireCapability(
+              static_cast<spv::Capability>(capAttr->getCapability()),
+              capAttr->getLocation());
+        } else if (auto extAttr = dyn_cast<VKExtensionExtAttr>(attr)) {
+          spvBuilder.requireExtension(extAttr->getName(),
+                                      extAttr->getLocation());
+        }
+      }
+    }
+
     fields.push_back(HybridStructType::FieldInfo(
         field->getType(), field->getName(),
         /*vkoffset*/ field->getAttr<VKOffsetAttr>(),
@@ -1340,6 +1370,42 @@ LowerTypeVisitor::populateLayoutInformation(
   for (const auto &field : fields)
     result.push_back(loweredFields[fieldToIndexMap[&field]]);
   return result;
+}
+
+const SpirvType *LowerTypeVisitor::getSpirvPointerFromInlineSpirvType(
+    ArrayRef<TemplateArgument> args, SpirvLayoutRule rule,
+    Optional<bool> isRowMajor, SourceLocation location) {
+
+  assert(args.size() == 2 && "OpTypePointer requires exactly 2 arguments.");
+  QualType scLiteralType = args[0].getAsType();
+  SpirvConstant *constant = nullptr;
+  if (!getVkIntegralConstantValue(scLiteralType, constant, location) ||
+      !constant) {
+    return nullptr;
+  }
+  if (!constant->isLiteral())
+    return nullptr;
+
+  auto *intConstant = dyn_cast<SpirvConstantInteger>(constant);
+  if (!intConstant) {
+    return nullptr;
+  }
+
+  visitInstruction(constant);
+  spv::StorageClass storageClass =
+      static_cast<spv::StorageClass>(intConstant->getValue().getLimitedValue());
+
+  QualType pointeeType;
+  if (args[1].getKind() == TemplateArgument::ArgKind::Type) {
+    pointeeType = args[1].getAsType();
+  } else {
+    TemplateName templateName = args[1].getAsTemplate();
+    pointeeType = createASTTypeFromTemplateName(templateName);
+  }
+
+  const SpirvType *pointeeSpirvType =
+      lowerType(pointeeType, rule, isRowMajor, location);
+  return spvContext.getPointerType(pointeeSpirvType, storageClass);
 }
 
 } // namespace spirv
