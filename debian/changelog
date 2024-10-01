@@ -1,3 +1,240 @@
+directxshadercompiler (1.4.0.2274-2350~rc1-1lunarg24.04-1) noble; urgency=medium
+
+  [ Jeff Noyle ]
+  * Fix a PIX pass's attempt to set the validator version (#6707)
+
+  [ Damyan Pepper ]
+  * Add template for "release" issues (#6740)
+
+  [ Raed Rizqie ]
+  * Avoid NOMINMAX redefinition warnings (#6729)
+
+  [ dependabot[bot] ]
+  * Bump certifi from 2023.7.22 to 2024.7.4 in /utils/git (#6749)
+
+  [ Biswapriyo Nath ]
+  * [NFC] Use full qualified name with std::nullptr_t type (#6737)
+
+  [ Xiang Li ]
+  * Update Version to 1.8.2407 (#6755)
+
+  [ Justin Bogner ]
+  * Clean up inaccurate type information in resource metadata docs (#6763)
+
+  [ David Neto ]
+  * Use a real instruction for the sentinel in the Instruction intrusive … (#6762)
+
+  [ Greg Roth ]
+  * Enable Living Release Notes (#6772)
+
+  [ David Neto ]
+  * Add CMake option DXC_CODEGEN_EXCEPTIONS_TRAP (#6764)
+
+  [ Natalie Chouinard ]
+  * Add earlier check for invalid SV_Target[n] (#6771)
+
+  [ Greg Roth ]
+  * Add Release Notes Guidance to CONTRIBUTING (#6778)
+  * Release Note for OS-normalized include paths (#6789)
+
+  [ Xiang Li ]
+  * [Release Note] Add release note for 1.8.2407 (#6776)
+
+  [ Steven Perron ]
+  * [SPIRV] Fix documentation for RayTCurrent (#6784)
+  * Allow cap and extention attribute on member variables and type aliases (#6742)
+
+  [ Tex Riddell ]
+  * Fix CB vector to scalar array translation generating invalid IR (#6777)
+
+  [ Chris B ]
+  * [CMake] Add an option to disable source generation (#6730)
+
+  [ Biswapriyo Nath ]
+  * [NFC]: Rename a template parameter conflict with CALLBACK macro (#6759)
+
+  [ Tianlan Zhou ]
+  * Disassembler: Remove duplicated "signature" in output (#6726)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix invalid isnan codegen (#6754)
+  * [SPIR-V] Fix flattened SPIR-V variable codegen. (#6756)
+
+  [ Steven Perron ]
+  * Splat function argument (#6747)
+  * Iterate over the spir-v fields to handle bitfields (#6746)
+
+  [ Biswapriyo Nath ]
+  * [NFC] Fix incorrect use of UNREFERENCED_PARAMETER macro (#6806)
+
+  [ Greg Roth ]
+  * Add upcoming release section to release notes (#6802)
+
+  [ gracezhang72 ]
+  * Fix debug info offsets for vectors with 16-bit types (#6775)
+
+  [ Chris B ]
+  * [Action] Use pull_request_target (#6803)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix crash when using entrypoint prototype (#6760)
+  * [SPIR-V] Lower templated enums correctly. (#6768)
+  * [SPIR-V] Add support for D3D12 descriptor heaps (#6650)
+
+  [ Antonio Maiorano ]
+  * Fix assertion when compiling array of struct init (#6814)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Generate DebugTypeMatrix (#6757)
+
+  [ David Peixotto ]
+  * Fix crash in constant initializer lowering for global variable. (#6820)
+
+  [ Xiang Li ]
+  * [Doc] Release note update for 1.8.2407. (#6821)
+
+  [ Antonio Maiorano ]
+  * Fix MSAN use-after-free in SmallVectorImpl dtor (#6819)
+
+  [ Jesse Natalie ]
+  * Reserve some RDAT/DXIL enum values used by the mesh node preview (#6818)
+
+  [ Xiang Li ]
+  * [NFC] create static lib for validator. (#6811)
+
+  [ David Neto ]
+  * Fix escape in Python string in lit.cfg (#6826)
+  * Avoid OOB index when fixing constant array-initialization (#6825)
+
+  [ Antonio Maiorano ]
+  * Use llvm_assert/assert.h on all platforms, not just Windows (#6815)
+
+  [ Xiang Li ]
+  * Fix warning when use implicit launch type. (#6837)
+
+  [ Steven Perron ]
+  * [spirv] Avoid adding spec and push constants to global ubo (#6832)
+  * [SPRIV] Allow vk-invert-y for MS shaders (#6839)
+  * [SPIRV] Implement Gis option for spir-v (#6840)
+
+  [ David Neto ]
+  * Reassociation: fix counting of constant multiplicative factors (#6830)
+
+  [ Xiang Li ]
+  * Remove WaveMatrix (#6807)
+
+  [ Devon Loehr ]
+  * [NFC] Remove implicit `this` capture in lambdas (#6761)
+
+  [ Minmin Gong ]
+  * Fix the SAL of IDxcResult::GetOutput (#4487)
+
+  [ Antonio Maiorano ]
+  * Add llvm assertions trap and no strings (#6838)
+
+  [ Xiang Li ]
+  * [DOC] update release note for remove WaveMatrix. (#6842)
+  * [Validator] Remove the pModule input for RunInternalValidator (#6845)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Don't flatten arrays during legalization (#6767)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Generate DebugFunctionDefinition in real function instead of wrapper (#6758)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Implement Shader Model 6.8 Extended Command Information (#6843)
+
+  [ Xiang Li ]
+  * Open source DxilHash (#6846)
+
+  [ Steven Perron ]
+  * [SPIRV] Add vulkan memory option to DXC (#6848)
+
+  [ Antonio Maiorano ]
+  * scalarrepl-param-hlsl: fix zero replacement in entry (#6855)
+
+  [ Xiang Li ]
+  * [NFC] Move DxilValidation to a dedicated folder. (#6849)
+  * [Validator] enable validator hash by default. (#6853)
+
+  [ Greg Roth ]
+  * Correct build exclusion in gitignore (#6870)
+
+  [ Xiang Li ]
+  * [NFC] add utils for PSV. (#6869)
+
+  [ Steven Perron ]
+  * Add SPIRV version macros to DXC (#6874)
+  * Remove invalid assert in literal visitor (#6875)
+
+  [ Xiang Li ]
+  * [Build] Update to clang-18 for linux clang pipeline (#6876)
+  * [Dump] Fix PSV dump issues. (#6881)
+
+  [ Steven Perron ]
+  * Process subrecord decls in spirv backend (#6879)
+
+  [ artamonovoleg ]
+  * [SPIR-V] add -fvk-support-nonzero-base-vertex option (#6865)
+
+  [ Jeff Noyle ]
+  * PIX: Rationalize UAV generation (#6883)
+
+  [ Shaikh Yaser ]
+  * Typo fix in Readme file (#6890)
+
+  [ Xiang Li ]
+  * [ViewID] build viewid mask for primitive output (#6886)
+  * Move dxil.dll to DXC repo. (#6866)
+  * [Test] Add validator version check for tests (#6901)
+
+  [ Steven Perron ]
+  * Add linkage capability based on decorations (#6900)
+
+  [ Cassandra Beckley ]
+  * [SPIRV-V] Implement Shader Model 6.8 Expanded Comparison Sampling (#6854)
+
+  [ Steven Perron ]
+  * Enable vk-allow-rwstructuredbuffer-arrays, and remove option (#6903)
+
+  [ Nathan Gauër ]
+  * deps: update spirv-headers/spirv-tools (#6906)
+  * [SPIR-V] Fix isfinite/isinf generation for mat/buffers (#6905)
+
+  [ Antonio Maiorano ]
+  * Fix ASAN UAF in DxilConditionalMem2Reg (#6910)
+  * Fix CMake gen failing when HLSL_BUILD_DXILCONV=0 (#6912)
+
+  [ Chris B ]
+  * Add license and readme for HLSL header library (#6872)
+
+  [ Steven Perron ]
+  * Add specific handling for inline spirv pointer types (#6873)
+
+  [ AndreyVK_D3D ]
+  * Update SPIR-V.rst (#6918)
+
+  [ Xiang Li ]
+  * [Validator] Check content of PSV0 part in validation (#6859)
+
+  [ Nathan Gauër ]
+  * sema: fix string literal allowed in templates (#6920)
+
+  [ Steven Perron ]
+  * Fix mismatched memory allocation and deallocation. (#6923)
+
+  [ Zhengxing li ]
+  * Conditionally include <assert.h> in DxilPipelineStateValidation.h (#6925)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Add -fvk-bind-*-heap flag to DXC (#6919)
+
+  [ Cassandra Beckley ]
+  * Update deps for release (#6929)
+
+ -- john <john@odin>  Tue, 01 Oct 2024 11:18:37 -0600
+
 directxshadercompiler (1.4.0.2274-2261~rc1-1lunarg24.04-1) noble; urgency=medium
 
   [ Jeff Noyle ]
