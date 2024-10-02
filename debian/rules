@@ -30,3 +30,9 @@ override_dh_auto_configure:
 # Do not 'make test`
 override_dh_auto_test: ;
 
+override_dh_install:
+	dh_install
+	rm -v debian/dxc-dev/usr/lib/dxc/libLLVMDXIL.a
+	rm -v debian/dxc-dev/usr/lib/dxc/libLLVMDxilHash.a
+	rm -v debian/dxc-dev/usr/lib/dxc/libLLVMDxilValidation.a
+	rm -v debian/dxc-dev/usr/lib/dxc/libdxcvalidator.a
