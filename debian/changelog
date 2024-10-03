@@ -1,3 +1,10 @@
+directxshadercompiler (1.4.0.2274-2350~rc3-1lunarg24.04-1) noble; urgency=medium
+
+  [ John Zupin ]
+  * packaging: debian: add back a file to package
+
+ -- john <john@odin>  Thu, 03 Oct 2024 11:22:58 -0600
+
 directxshadercompiler (1.4.0.2274-2350~rc2-1lunarg24.04-1) noble; urgency=medium
 
   [ John Zupin ]
