@@ -1,3 +1,10 @@
+directxshadercompiler (1.4.0.2274-2350~rc2-1lunarg24.04-1) noble; urgency=medium
+
+  [ John Zupin ]
+  * packaging: debian: remove certain files
+
+ -- john <john@odin>  Thu, 03 Oct 2024 09:17:12 -0600
+
 directxshadercompiler (1.4.0.2274-2350~rc1-1lunarg24.04-1) noble; urgency=medium
 
   [ Jeff Noyle ]
