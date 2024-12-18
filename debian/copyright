@@ -3,108 +3,11 @@ Upstream-Name: DirectXShaderCompiler
 Source: https://github.com/microsoft/DirectXShaderCompiler
 
 Files: *
-Copyright: /* IsPostRA= */false
-           /*IsPostRA=*/true
-           // @142
-           // Ensure 255 is not returned as -1
-           // expected-error {{parameter type 'C' is an abstract class
-           // expected-error {{reinterpret_cast from scalar 'unsigned char' to vector '__v2si' (vector of 2 'int' values) of different size
-           // expected-error {{virtual base
-           // expected-error{{incomplete class type
-           // expected-note {{used here
-           1953, // expected-warning {{no case matching constant switch condition
-           << 2
-           << R.getName() << "Attr(A->getLocation(), C
-           << R.getName() << "Attr(getLocation(), C
-           2012, = STR(COPYRIGHT); // no-warning
-           ? -1 :
-           2001, Alexander Peslyak and it is hereby released to the
+Copyright: 2001, Alexander Peslyak and it is hereby released to the
            2009, Apple, Inc
-           BinaryOperator(const_cast<Expr*>(LHS)
-           BinaryOperator(const_cast<Expr*>(LHS), const_cast<Expr*>(RHS)
-           BlockCommand<"copyright">
-           CXXBaseSpecifier[VBases.size()
-           CXXBindTemporaryExpr(Temp, SubExpr)
-           CXXConstCastExpr(EmptyShell())
-           CXXConstCastExpr(T, VK, Op, WrittenTy, L, RParenLoc, AngleBrackets)
-           CXXConstructExpr(C, CXXConstructExprClass, T, Loc, D
-           CXXCtorInitializer*[NumIvarInitializers
-           CXXDefaultArgExpr(CXXDefaultArgExprClass, Loc, Param)
-           CXXDefaultInitExpr(C, Loc, Field, Field->getType())
-           CXXDependentScopeMemberExpr(C, Base, BaseType
-           CXXDependentScopeMemberExpr(C, nullptr, QualType()
-           CXXRecordDecl::LambdaDefinitionData(D, nullptr, false, false
-           CXXTemporary(Destructor)
-           CallExpr(C, ICE, None, C.VoidTy, VK_RValue
-           ClassTemplateSpecializationDecl::
-           ClassTemplateSpecializationDecl::ExplicitSpecializationInfo
-           Common
-           CompoundLiteralExpr(SourceLocation(), unionTInfo, UnionType
-           CompoundStmt(C, Stmts, SourceLocation(), SourceLocation())
-           DeclStmt(DeclGroupRef(V), VarRange.getBegin()
-           DependentDiagnostic(PDiag, DiagStorage)
-           Designator[NumDesignators
-           Designator[NumDesignators - 1 + NumNewDesignators
-           Designator[NumDesigs
-           FloatingLiteral(C, Empty)
-           FloatingLiteral(C, V, isexact, Type, L)
            2000, Free Software Foundation, Inc
-           FunctionTemplateSpecializationInfo(FD, Template, TSK
-           HLSLBufferDecl(
-           IdentifierInfo*[NumExprs
-           IfStmt(C, SourceLocation(), nullptr, Comparison, Body
-           InitListExpr(C, SourceLocation()
-           InitListExpr(C, lBraceLoc, None, rBraceLoc)
-           IntegerLiteral(C, V, type, l)
-           IntegerLiteral(Empty)
-           MemberSpecializationInfo(ED, TSK)
-           MemberSpecializationInfo(FD, TSK)
-           MemberSpecializationInfo(RD, TSK)
-           Microsoft
-           2015, Microsoft Corporation
            2010-2011, NVIDIA CORPORATION
-           Nvidia Corporation
-           ObjCBoolLiteralExpr(Val, Ty, SourceLocation())
-           ObjCIvarRefExpr(const_cast<ObjCIvarDecl*>(IVar)
-           ParmVarDecl*[NewParamInfo.size()
-           PartialDiagnostic::Storage
-           Putting 'node' onto freeNodes
-           ReturnStmt(SourceLocation(), const_cast<Expr*>(RetVal)
-           Stmt*[NumArgs+PREARGS_START+NumPreArgs
-           Stmt*[NumExprs
-           Stmt*[NumStmts
-           Stmt*[PREARGS_START+NumPreArgs
-           Stmt*[Stmts.size()
-           Stmt*[TotalSize
-           Stmt*[args.size()
-           Stmt*[args.size()+PREARGS_START+NumPreArgs
-           Stmt*[exprs.size()
-           StringLiteral*[NumClobbers
-           StringLiteral*[NumExprs
-           StringRef[NumClobbers
-           StringRef[NumExprs
-           TemplateArgumentLoc(DefArg))
-           Token[NumAsmToks
-           Try to factorize common
-           UnaryOperator(LValToRval, UO_LNot, C.IntTy
-           UnaryOperator(const_cast<Expr*>(Arg), UO_Deref, Ty
-           VarTemplateSpecializationDecl::ExplicitSpecializationInfo
            2012, XSTR(X) #X
-           are iboutlets
-           available for inlining. When we process
-           case 1: case 257: ; // expected-warning {{overflow
-           char[Length
-           char[size
-           for each child c of 'node
-           in turn calls Traverse(c), completing the
-           int; // expected-error {{no matching function
-           only
-           opy Results\r
-           struct CXXRecordDecl::DefinitionData(D)
-           struct LambdaDefinitionData(R, Info, Dependent, IsGeneric
-           uint16_t[Length
-           uint32_t[Length
-           uint64_t[NumWords
 License: llvm-release-license
 
 Files: tools/clang/docs/Block-ABI-Apple.rst
@@ -221,294 +124,75 @@ Copyright: 2006, Kirill Simonov
 License: Expat
 
 Files: external/SPIRV-Tools/*
-Copyright: 2020-2022, Advanced Micro Devices, Inc
+Copyright: 1999, Adobe Systems Incorporated
+           2020-2022, Advanced Micro Devices, Inc
            2021, Alastair F. Donaldson
            2020, André Perez Maselco
            2021, Arm Ltd
+           2024, Epic Games, Inc
            For conditional branches, |visit_fn| may decide which edge to take out
-           2015-2021, Google Inc
-           2017-2022, Google LLC
-           2016-2022, LunarG Inc
+           2015-2024, Google Inc
+           2017-2024, Google LLC
+           2016-2023, LunarG Inc
            2021, Mostafa Ashraf
-           2019, NVIDIA Corporation
+           2019-2024, NVIDIA Corporation
+           2023, Nintendo
            2017-2018, Pierre Moreau
            2019, Samsung Inc
            2021, Shiyu Liu
            2020, Stefano Milizia
-           2015-2022, The Khronos Group Inc
+           2015-2024, The Khronos Group Inc
            2017-2022, Valve Corporation
            2020, Vasyl Teliman
            2021, ZHOU He
            declaration
            definitions of output ids are
            or Apache 2 license
-License: Apache-2
-
-Files: external/SPIRV-Tools/.clang-format
-       external/SPIRV-Tools/.github/*
-       external/SPIRV-Tools/Android.mk
-       external/SPIRV-Tools/BUILD.bazel
-       external/SPIRV-Tools/CHANGES
-       external/SPIRV-Tools/CODE_OF_CONDUCT.md
-       external/SPIRV-Tools/CONTRIBUTING.md
-       external/SPIRV-Tools/DEPS
-       external/SPIRV-Tools/WORKSPACE
-       external/SPIRV-Tools/android_test/Android.mk
-       external/SPIRV-Tools/android_test/jni/*
-       external/SPIRV-Tools/build_defs.bzl
-       external/SPIRV-Tools/cmake/SPIRV-Tools-shared.pc.in
-       external/SPIRV-Tools/cmake/SPIRV-Tools.pc.in
-       external/SPIRV-Tools/codereview.settings
-       external/SPIRV-Tools/docker-compose.yml
-       external/SPIRV-Tools/docs/*
-       external/SPIRV-Tools/kokoro/img/*
-       external/SPIRV-Tools/source/wasm/README.md
-       external/SPIRV-Tools/source/wasm/package.json
-       external/SPIRV-Tools/test/diff/diff_files/OpExtInst_in_dst_only_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpExtInst_in_dst_only_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpExtInst_in_src_only_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpExtInst_in_src_only_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_basic_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_basic_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_intertwined_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_intertwined_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_mismatching_class_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_mismatching_class_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_mismatching_type_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_mismatching_type_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_nested_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_nested_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_onesided_debug_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/OpTypeForwardPointer_onesided_debug_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/README.md
-       external/SPIRV-Tools/test/diff/diff_files/basic_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/basic_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/constant_array_size_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/constant_array_size_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/different_decorations_fragment_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/different_decorations_fragment_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/different_decorations_vertex_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/different_decorations_vertex_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/different_function_parameter_count_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/different_function_parameter_count_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/extra_if_block_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/extra_if_block_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/index_signedness_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/index_signedness_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/int_vs_uint_constants_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/int_vs_uint_constants_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/large_functions_large_diffs_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/large_functions_large_diffs_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/large_functions_small_diffs_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/large_functions_small_diffs_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/multiple_different_entry_points_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/multiple_different_entry_points_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/multiple_same_entry_points_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/multiple_same_entry_points_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/reordered_if_blocks_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/reordered_if_blocks_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/reordered_switch_blocks_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/reordered_switch_blocks_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/small_functions_small_diffs_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/small_functions_small_diffs_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/spec_constant_array_size_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/spec_constant_array_size_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/spec_constant_composite_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/spec_constant_composite_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/spec_constant_op_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/spec_constant_op_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/spec_constant_specid_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/spec_constant_specid_src.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/unrelated_shaders_dst.spvasm
-       external/SPIRV-Tools/test/diff/diff_files/unrelated_shaders_src.spvasm
-       external/SPIRV-Tools/test/fuzzers/corpora/*
-       external/SPIRV-Tools/test/operand-class-test-coverage.csv
-       external/SPIRV-Tools/tools/sva/.eslintrc.json
-       external/SPIRV-Tools/tools/sva/README.md
-       external/SPIRV-Tools/tools/sva/mocha.opts
-       external/SPIRV-Tools/tools/sva/package.json
-       external/SPIRV-Tools/tools/sva/rollup.config.js
-       external/SPIRV-Tools/tools/sva/tests/*
-       external/SPIRV-Tools/tools/sva/yarn.lock
-       external/SPIRV-Tools/utils/vscode/README.md
-       external/SPIRV-Tools/utils/vscode/go.mod
-       external/SPIRV-Tools/utils/vscode/go.sum
-       external/SPIRV-Tools/utils/vscode/package.json
-       external/SPIRV-Tools/utils/vscode/spirv.json
-       external/SPIRV-Tools/utils/vscode/spirv.json.tmpl
-Copyright: 1999, Adobe Systems Incorporated
            to your changes, even after your contribution becomes part of our
 License: Apache-2
 Comment: No explicit license found, using license(s) from:
  external/SPIRV-Tools/LICENSE
 
-Files: external/re2/*
-Copyright: 2010, ABCD", "abcd
-           2003-2010, Google Inc
-           2012, The Go Authors
-           1999-2022, The RE2 Authors
-           2010, abcd", "abcd
-           f\\2o\\1o", true
-           f\\oo\\1", false
-           foo\\
-           2012, true
-License: BSD
-
 Files: external/SPIRV-Headers/*
-Copyright: 2017-2020, Google LLC
-           2014-2020, The Khronos Group Inc
-License: MIT/X11
-
-Files: external/DirectX-Headers/*
-Copyright: Microsoft Corporation
-License: Expat
-Comment: No explicit license found, using license(s) from:
- external/DirectX-Headers/LICENSE
-
-Files: external/SPIRV-Headers/.gitattributes
-       external/SPIRV-Headers/.github/*
-       external/SPIRV-Headers/BUILD.bazel
-       external/SPIRV-Headers/CODE_OF_CONDUCT.md
-       external/SPIRV-Headers/SPIRV-Headers.pc.in
-       external/SPIRV-Headers/WORKSPACE
-       external/SPIRV-Headers/cmake/*
-       external/SPIRV-Headers/example/CMakeLists.txt
-       external/SPIRV-Headers/include/spirv/1.0/extinst.glsl.std.450.grammar.json
-       external/SPIRV-Headers/include/spirv/1.0/extinst.opencl.std.100.grammar.json
-       external/SPIRV-Headers/include/spirv/1.0/spirv.core.grammar.json
-       external/SPIRV-Headers/include/spirv/1.0/spirv.json
-       external/SPIRV-Headers/include/spirv/1.1/extinst.glsl.std.450.grammar.json
-       external/SPIRV-Headers/include/spirv/1.1/extinst.opencl.std.100.grammar.json
-       external/SPIRV-Headers/include/spirv/1.1/spirv.core.grammar.json
-       external/SPIRV-Headers/include/spirv/1.1/spirv.json
-       external/SPIRV-Headers/include/spirv/1.2/extinst.glsl.std.450.grammar.json
-       external/SPIRV-Headers/include/spirv/1.2/extinst.opencl.std.100.grammar.json
-       external/SPIRV-Headers/include/spirv/1.2/spirv.core.grammar.json
-       external/SPIRV-Headers/include/spirv/1.2/spirv.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.glsl.std.450.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.clspvreflection.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.debugprintf.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.shader.debuginfo.100.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.opencl.std.100.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-gcn-shader.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-ballot.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-trinary-minmax.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json
-       external/SPIRV-Headers/include/spirv/unified1/spirv.json
-       external/SPIRV-Headers/tools/buildHeaders/CMakeLists.txt
-       external/SPIRV-Headers/tools/buildHeaders/bin/makeExtinstHeaders.py
-       external/SPIRV-Headers/tools/buildHeaders/bin/makeHeaders
-Copyright: 2014-2020, The Khronos Group Inc
-License: MIT/X11
+Copyright: 2017-2024, Google LLC
+           2014-2024, The Khronos Group Inc
+License: Expat or MIT/X11 or public-domain
 Comment: No explicit license found, using license(s) from:
  external/SPIRV-Headers/LICENSE
 
-Files: utils/unittest/googletest/*
-Copyright: 2003-2015, Google Inc
-License: BSD-3-clause
-
-Files: external/re2/.github/*
-       external/re2/AUTHORS
-       external/re2/CONTRIBUTING.md
-       external/re2/CONTRIBUTORS
-       external/re2/README
-       external/re2/SECURITY.md
-       external/re2/benchlog/*
-       external/re2/doc/mksyntaxhtml
-       external/re2/doc/mksyntaxwiki
-       external/re2/doc/syntax.html
-       external/re2/doc/syntax.txt
-       external/re2/libre2.symbols
-       external/re2/libre2.symbols.darwin
-       external/re2/re2.pc.in
-       external/re2/re2/perl_groups.cc
-       external/re2/re2/unicode_casefold.cc
-       external/re2/re2/unicode_groups.cc
-       external/re2/runtests
-       external/re2/ucs2.diff
-Copyright: 2005-2009, Free Software Foundation, Inc
-           purposes
-License: BSD-3-clause
-Comment: No explicit license found, using license(s) from:
- external/re2/LICENSE
+Files: external/SPIRV-Headers/LICENSE
+       external/SPIRV-Headers/tools/buildHeaders/jsoncpp/*
+Copyright: 2007-2011, Baptiste Lepilleur
+           2007-2010, Baptiste Lepilleur, and is
+           2015-2024, The Khronos Group Inc
+License: Expat or public-domain
 
 Files: utils/unittest/googlemock/*
 Copyright: 2007-2015, Google Inc
 License: BSD-3-clause
-
-Files: external/SPIRV-Tools/utils/vscode/src/lsp/*
-Copyright: 2018-2019, The Go Authors
-License: Apache-2
-
-Files: external/effcee/*
-Copyright: 2017-2019, The Effcee Authors
-License: Apache-2
-
-Files: external/effcee/.appveyor.yml
-       external/effcee/.clang-format
-       external/effcee/AUTHORS
-       external/effcee/BUILD.bazel
-       external/effcee/CHANGES
-       external/effcee/CMakeLists.txt
-       external/effcee/CONTRIBUTING.md
-       external/effcee/CONTRIBUTORS
-       external/effcee/DEVELOPMENT.howto.md
-       external/effcee/README.md
-       external/effcee/WORKSPACE
-       external/effcee/effcee/CMakeLists.txt
-       external/effcee/examples/CMakeLists.txt
-       external/effcee/examples/example_data.txt
-       external/effcee/fuzzer/CMakeLists.txt
-       external/effcee/third_party/*
-Copyright: purposes
-           to your changes, even after your contribution becomes part of our
-License: Apache-2
-Comment: No explicit license found, using license(s) from:
- external/effcee/LICENSE
-
-Files: lib/DxilCompression/*
-Copyright: Microsoft Corporation
-License: Expat
-Comment: No explicit license found, using license(s) from:
- lib/DxilCompression/LICENSE.TXT
-
-Files: external/SPIRV-Headers/tools/buildHeaders/jsoncpp/*
-Copyright: 2007-2011, Baptiste Lepilleur
-           2007-2010, Baptiste Lepilleur, and is
-License: Expat or public-domain
-
-Files: external/re2/util/rune.cc
-       external/re2/util/utf.h
-Copyright: 2002, Lucent Technologies
-License: ISC-like-dmgfp
-
-Files: external/re2/re2/fuzzing/compiler-rt/*
-License: Apache-2
-
-Files: utils/unittest/googlemock/README.LLVM
-       utils/unittest/googlemock/include/gmock/internal/custom/gmock-generated-actions.h
-License: BSD-3-clause
 Comment: No explicit license found, using license(s) from:
  utils/unittest/googlemock/LICENSE.txt
 
-Files: utils/unittest/googletest/Makefile
-       utils/unittest/googletest/README.LLVM
+Files: utils/unittest/googletest/*
+Copyright: 2003-2015, Google Inc
 License: BSD-3-clause
 Comment: No explicit license found, using license(s) from:
  utils/unittest/googletest/LICENSE.TXT
 
-Files: lib/DxilCompression/miniz.c
+Files: lib/DxilCompression/*
 Copyright: 2016, Martin Raiber
            2013-2014, RAD Game Tools and Valve Software
            2010-2014, Rich Geldreich and Tenacious Software LLC
            laws, the author or authors
 License: Expat or Unlicense
 
-Files: lib/DxilCompression/LICENSE.TXT
-Copyright: 2013-2014, RAD Game Tools and Valve Software
+Files: lib/DxilCompression/CMakeLists.txt
+       lib/DxilCompression/DxilCompression.cpp
+       lib/DxilCompression/LICENSE.TXT
+       lib/DxilCompression/LLVMBuild.txt
+       lib/DxilCompression/miniz.h
+Copyright: Microsoft Corporation
+           2013-2014, RAD Game Tools and Valve Software
            2010-2014, Rich Geldreich and Tenacious Software LLC
 License: Expat
 
@@ -517,24 +201,16 @@ Copyright: 1992-2011, Free
            1992-2011, Free Software Foundation, Inc
 License: GPL-2+ with AutoConf exception
 
-Files: external/re2/lib/*
-Copyright: 2009, The Android Open Source Project
-License: Apache-2
-
 Files: external/SPIRV-Tools/utils/git-sync-deps
 Copyright: 2014, Google Inc
 License: BSD-3-clause
 
-Files: external/re2/LICENSE
-Copyright: 2009, The RE2 Authors
-License: BSD-3-clause
-
-Files: external/DirectX-Headers/LICENSE
+Files: external/DirectX-Headers/*
 Copyright: Microsoft Corporation
 License: Expat
 
 Files: external/SPIRV-Headers/include/spirv/spir-v.xml
-Copyright: 2015, The Khronos Group Inc
+Copyright: 2015-2024, The Khronos Group Inc
 License: Expat
 
 Files: external/SPIRV-Tools/tools/sva/src/spirv.data.js
@@ -542,17 +218,40 @@ Copyright: 2014-2016, The Khronos Group Inc
 License: MIT/X11
 
 Files: LICENSE.TXT
-Copyright: 2003-2015, University of <Illinois@Urbana-Champaign>
+Copyright: 2001, Alexander Peslyak and it is hereby released to the
+           1989-1991, Free Software Foundation, Inc
+           2008, Google Inc
+           2006, Kirill Simonov
+           2013-2014, RAD Game Tools and Valve Software
+           2010-2014, Rich Geldreich and Tenacious Software LLC
+           1998, Todd C. Miller <Todd.Miller@courtesan.com>
+           2001-2004, Unicode, Inc
+           2003-2015, University of <Illinois@Urbana-Champaign>
+           laws, the author or authors
 License: NCSA
 
-Files: external/SPIRV-Tools/utils/vscode/src/lsp/README.md
+Files: external/SPIRV-Tools/utils/vscode/src/lsp/*
+Copyright: 2018-2019, The Go Authors
 License: Apache-2
 Comment: No explicit license found, using license(s) from:
  external/SPIRV-Tools/utils/vscode/src/lsp/LICENSE
 
+Files: tools/clang/lib/Headers/hlsl/*
+Copyright: 2024, Google LLC
+License: Apache-2
+
+Files: utils/git/code-format-helper.py
+       utils/git/code-format-save-diff.py
+License: Apache-2
+
+Files: tools/clang/lib/Headers/hlsl/README.txt
+License: Apache-2
+Comment: No explicit license found, using license(s) from:
+ tools/clang/lib/Headers/hlsl/LICENSE.txt
+
 Files: debian/*
-Copyright: 2023, LunarG, Inc <johnz@lunarg.com>
-License: UnknownCopyrighted
+Copyright: 2024, LunarG, Inc <johnz@lunarg.com>
+License: BSD-3-clause or GPL-3 or MIT
 
 License: Apache-2
  Apache License
@@ -757,9 +456,6 @@ License: Apache-2
  See the License for the specific language governing permissions and
  limitations under the License.
 
-License: BSD
-Comment: Add the corresponding license text here
-
 License: BSD-3-clause
  Copyright <YEAR> <COPYRIGHT HOLDER>
  .
@@ -796,9 +492,6 @@ License: ISC
  .
  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-License: ISC-like-dmgfp
-Comment: Add the corresponding license text here
-
 License: MIT/X11
  Copyright (c) <year> <copyright holders>
  .
@@ -819,7 +512,6 @@ License: MIT/X11
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
-
 
 License: NCSA
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal with the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
