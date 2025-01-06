@@ -1,3 +1,100 @@
+directxshadercompiler (1.4.0.2274-2386~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Antonio Maiorano ]
+  * Fix assertion on splat of groupshared scalar (#6930)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix build with -DENABLE_SPIRV_CODEGEN=OFF (#6933)
+
+  [ Steven Perron ]
+  * Add header file to define cooperative matrices in spir-v (#6720)
+  * [SPIRV] Change "dxc" to "%dxc" in tests (#6934)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Fix NonSemanticDebugInfo to include all files (#6935)
+
+  [ Steven Perron ]
+  * [SPIRV] Update submodules (#6936)
+  * [SPIRV] More test fixes (#6937)
+
+  [ Xiang Li ]
+  * [Doc] Update release notes for dxil validator hash. (#6904)
+  * Unwrap top-level array for OutVertices when flattenArgument. (#6943)
+  * [Validator] Check size of PSV. (#6924)
+
+  [ Cassandra Beckley ]
+  * Update dependencies (#6944)
+
+  [ Jesse Natalie ]
+  * Fix DxilPayloadFieldAnnotation::GetPayloadFieldQualifier (#6942)
+
+  [ Farzon Lotfi ]
+  * [NFC] Fix a spelling mistake (#6946)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Implement EvaluateAttribute* functions (#6945)
+
+  [ Jeff Noyle ]
+  * PIX: Implement shader access tracking for descriptor-heap-indexed TLAS for TraceRay (#6950)
+
+  [ Greg Roth ]
+  * Ready tests for 6.9 version (#6465)
+
+  [ Sergey Muraviov ]
+  * Both blocks of the if statement are identical. (#6965)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Update dependencies (#6970)
+
+  [ Steven Perron ]
+  * [SPIRV] Register all decls for a variable. (#6969)
+  * [SPIRV] Round the stride to be a multiple of the alignment. (#6967)
+  * [SPIRV] Simplify looking for input storage class (#6968)
+
+  [ Antonio Maiorano ]
+  * Do not require __STDC_LIMIT_MACROS and others (#6976)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fixes SPV_KHR_fragment_shading_rate preventing optimizations (#6980)
+  * [SPIR-V] Fix bad OpLoad on loaded texture (#6985)
+  * [SPIR-V] Fix image write to unknown format (#6984)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Handle vectors passed to asuint (#6953)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix cast elision with initializer lists (#6992)
+
+  [ Xiang Li ]
+  * [Test] fix typo in CompileToShaderHash which compares same value. (#6999)
+  * [tools] add -help option for opt. (#7002)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Emit DebugFunction/Definition for both wrapper and real functions (#6966)
+
+  [ Nathan Gauër ]
+  * Update bug_report_spirv.md (#6988)
+
+  [ Steven Perron ]
+  * [SPIRV] Check if decl is identifier before getting name (#7012)
+
+  [ Jeff Noyle ]
+  * PIX: Make shader access tracking pass return whether or not it modified anything (#7010)
+
+  [ Nathan Gauër ]
+  * sema: fix int enum implicit cast to float. (#6977)
+
+  [ Jeff Noyle ]
+  * PIX: split vector alloca writes to enable debug instrumentation (#6990)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Update submodules (#7029)
+
+  [ John Zupin ]
+  * packaging: debian: update copyright
+
+ -- john <john@odin>  Mon, 06 Jan 2025 16:13:54 -0700
+
 directxshadercompiler (1.4.0.2274-2350~rc3-1lunarg22.04-1) jammy; urgency=medium
 
   [ John Zupin ]
