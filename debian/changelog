@@ -1,3 +1,80 @@
+directxshadercompiler (1.4.0.2274-2417~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Antonio Maiorano ]
+  * Fix crash when printing instructions that have a metadata attached but no parent. (#7036)
+
+  [ Chris B ]
+  * [NFC] Instrument loop pass manager (#7039)
+  * Don't force /Zi when using CMAKE_MSVC_DEBUG_INFORMATION_FORMAT (#7041)
+
+  [ Chris Davis ]
+  * Remove static initializers for llvm::StringRef (#6949)
+
+  [ AndreyVK_D3D ]
+  * Update List of supported SPIR-V extensions (#7028)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Correct local variable declaration scope (#7046)
+
+  [ dependabot[bot] ]
+  * Bump cryptography from 42.0.4 to 43.0.1 in /utils/git (#6894)
+
+  [ Joshua Batista ]
+  * [DXIL] Avoid infinite loop / stack overflow on invalid instruction (#7048)
+  * Update version to 1.8.2502 (#7065)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Avoid emitting Int64 when loading Float64 (#7073)
+
+  [ Steven Perron ]
+  * [SPIRV] Move inline spirv test files in a directory (#7077)
+
+  [ Joshua Batista ]
+  * Bump SM version to 6.9 (#7075)
+  * [Release] Add section for upcoming release (#7072)
+
+  [ Greg Roth ]
+  * Fix and/or intrinsics with non-int parameters (#7060)
+
+  [ Joshua Batista ]
+  * Add Preview Hashing sentinel value to dxil validator (#7053)
+  * [Pipelines] Extend time and add PR trigger (#7071)
+
+  [ Greg Roth ]
+  * Use UMad for dot products on uint vectors (#7059)
+  * Fix and/or intrinsics with non-int parameters (cp to 1.8.2502) (#7091)
+
+  [ Joshua Batista ]
+  * [Error Handling] Fix DxcContainerBuilder error handling (#7056)
+
+  [ Alex Sepkowski ]
+  * Add a test target to run exec tests with latest warp from nuget (#7101)
+
+  [ Steven Perron ]
+  * [SPIRV] Avoid invlid SIPR-V (#7107)
+
+  [ Joshua Batista ]
+  * [NFC][Docs] Update release notes / release template process (#7100)
+  * [NFC] Remove unused functions in ExecutionTest.cpp and assert.cpp (#7129)
+
+  [ Steven Perron ]
+  * [SPIRV] Update link to inline spirv wiki (#7140)
+  * [SPIRV] Stop running ReplaceInvalidOpcPass (#7138)
+  * [SPIRV] Add the vk::image_format to runtime arrays (#7128)
+  * [SPIRV] Use copy-in/copy-out for non-declaration (#7127)
+
+  [ Joshua Batista ]
+  * Add PDB release note to 1.8.2502 (#7148)
+
+  [ Greg Roth ]
+  * Set the resource kind as u32 for boolean resources (#7116)
+  * Disallow structs, arrays, and overwide vectors from typed buffers (#7130)
+
+  [ Nathan Gauër ]
+  * prepare v2025.1 release (#7159)
+
+ -- john <john@odin>  Tue, 04 Mar 2025 10:29:29 -0700
+
 directxshadercompiler (1.4.0.2274-2386~rc1-1lunarg22.04-1) jammy; urgency=medium
 
   [ Antonio Maiorano ]
