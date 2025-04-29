@@ -1,3 +1,230 @@
+directxshadercompiler (1.4.0.2274-2518~rc1-1lunarg24.04-1) noble; urgency=medium
+
+  [ Greg Roth ]
+  * [SM6.9] Allow native vectors longer than 4
+  * Produce errors for long vectors in invalid contexts
+  * fix assert for tesselation patch template args
+
+  [ Simon Moll ]
+  * [SER] Reserve DXIL opcode range [258, 303) (#7125)
+
+  [ Steven Perron ]
+  * [SPIRV] Fix decoration attributes on members. (#7137)
+
+  [ Junda Liu ]
+  * [SPIR-V] Fix OpBitFieldExtract emulation for unsigned integer (#7167)
+
+  [ Greg Roth ]
+  * Make unsigned dot test more robust (#7168)
+
+  [ Joshua Batista ]
+  * [OMM] Add AllocateRayQuery2 DXIL Op, add validation (#7124)
+
+  [ Greg Roth ]
+  * Refactor builtin type detection with attributes
+  * Respond to feedback
+  * Reaname and consolidate longvecs tests
+  * Refactor, clarify, and expand testing
+  * clang-format
+  * Handle subclasses and templates of longvector structs
+
+  [ github-actions[bot] ]
+  * chore: autopublish 2025-03-05T20:50:11Z
+  * Identify matrices and vectors by attributes
+  * Use constant vector limit value for cached types
+  * Use definitiondata bits to determine long vector presence
+  * Test for incomplete types in a number of builtin template-like objects
+
+  [ Chris B ]
+  * [Metal] Add experimental Metal support (#6805)
+  * [NFC] Improve time tracing data (#7146)
+
+  [ Greg Roth ]
+  * Respond to feedback
+  * clang-format
+  * Respond to feedback from a different PR
+  * Rename long vector check func again
+  * Respond to feedback
+  * Use select indices instead of strings as parameters to longvec error
+  * fix formatting induced build break
+
+  [ Joshua Batista ]
+  * Resolve some default error warnings (#7191)
+  * Shorten bool conversion, remove unneeded change (#7197)
+
+  [ Tex Riddell ]
+  * NFC: Update HLSL_INTRINSIC struct for Flags and MinShaderModel fields (#7199)
+
+  [ Joshua Batista ]
+  * [OMM] Implement front end diagnostics for OMM, including on TraceRayInline, and add Availability Attributes (#7156)
+
+  [ Lumina ]
+  * [NFC][Doc] Update HLSL to SPIR-V document (#7204)
+
+  [ Greg Roth ]
+  * Create new raw buffer load lowering function (#7144)
+
+  [ Junda Liu ]
+  * [SPIR-V] Set RValue for the result of bitfield extract emulation (#7200)
+
+  [ Chris B ]
+  * Switch from tj-actions/changed-files to step-security/changed-files (#7217)
+
+  [ Alex Sepkowski ]
+  * Disallow swizzling on long vectors (#7215)
+
+  [ Chris B ]
+  * Actually fix the changed-files workflow (#7226)
+
+  [ Steven Perron ]
+  * Fix typo in SPIR-V.rst (#7224)
+  * [SPIRV] Handle a cast to void (#7227)
+  * [SPIRV] Don't assume entry points are at the start of the worklist. (#7225)
+  * Revert "[SPIRV] Use copy-in/copy-out for non-declaration (#7127)" (#7223)
+
+  [ Joshua Batista ]
+  * Add /bigobj compile option to MSVC build (#7228)
+
+  [ Tex Riddell ]
+  * NFC: Make hlsl::IntrinsicOp enum values stable (#7231)
+
+  [ Joshua Batista ]
+  * Lower RayQuery constructor to allocateRayQuery2 (#7205)
+  * Use Wide String variants explicitly for Windows API calls (#7235)
+  * Add constraint to test that requires spirv support (#7241)
+
+  [ Steven Perron ]
+  * [SPIRV] Update submodules and fix test (#7243)
+  * [SPIRV] Allow sampled type to be half for universal (#7252)
+
+  [ Greg Roth ]
+  * Consolidate buffer store translation (#7251)
+
+  [ Simon Moll ]
+  * [SER] Patch 1: HitObject type lowering and SM 6.9 enablement (#7097)
+  * [SER] HitObject_MakeNop|Miss DXIL opcodes and verification tests (#7201)
+
+  [ Greg Roth ]
+  * Update github actions versions to enable coverage (#7183)
+  * Allow native vectors for LLVM operations (#7155)
+
+  [ Iago Calvo Lista ]
+  * Add support for KHR_compute_shader_derivatives (#7249)
+
+  [ Nathan Gauër ]
+  * [SPIR-V] Fix usage of indices in subfunctions (#7242)
+
+  [ Alex Sepkowski ]
+  * Update DXIL.rst (#7254)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Update submodules (#7269)
+
+  [ raoanag ]
+  * Update print statements to be compatible with Python 3 (#7268)
+
+  [ Joshua Batista ]
+  * [Sema] Add and test new Subobject Attribute (#7258)
+  * [OMM] Add D3D Flag RAYTRACING_PIPELINE_FLAG_ALLOW_OPACITY_MICROMAPS, and run d3dreflect tests (#7239)
+
+  [ Chris B ]
+  * Require CMake 3.17, remove CMP0051 (#7287)
+
+  [ Tex Riddell ]
+  * NFC: Infrastructure changes for DXIL op vector and multi-dim overloads (#7259)
+
+  [ Jeff Noyle ]
+  * PIX: Check for existing PIX UAV in roots sigs before adding it again (#7238)
+
+  [ Antonio Maiorano ]
+  * Fix assert due to unreachable discard (#7289)
+
+  [ Chris B ]
+  * Disable code owners in main (#7298)
+
+  [ Dan Brown ]
+  * [SPIRV] Implements vk::BufferPointer proposal (#7163)
+
+  [ Alex Sepkowski ]
+  * Fix typo in exec tests comment (#7299)
+
+  [ Joshua Batista ]
+  * [OMM] Add DXR Entry point test, non-library target test, conforming tests to spec. (#7281)
+
+  [ Cassandra Beckley ]
+  * [SPIR-V] Implement QuadAny and QuadAll (#7266)
+
+  [ Urs Hanselmann ]
+  * Add UUID compiler extension check on Clang (#7286)
+
+  [ Chris B ]
+  * Update DXC's CONTRIBUTING file (#7265)
+
+  [ Steven Perron ]
+  * Update SPIRV-Tools (#7303)
+
+  [ Dan Brown ]
+  * Fixes non-SPIR-V build, broken by PR #7163 ([SPIRV] Implements vk::BufferPointer proposal) (#7306)
+
+  [ Greg Roth ]
+  * [NFC] Standardize DxilValidation variable capitalization (#7307)
+  * [SM6.9] Native vector load/store lowering (#7292)
+
+  [ Chris B ]
+  * [NFC] containsLongVector -> ContainsLongVector (#7255)
+
+  [ nopandbrk ]
+  * [PIX] Add a pass for PIX to log missing NonUniformResourceIndex usage into a UAV (#7272)
+
+  [ dependabot[bot] ]
+  * Bump cryptography from 43.0.1 to 44.0.1 in /utils/git (#7220)
+
+  [ Chris B ]
+  * [SM6.9] Enable trivial native vector Dxil Operations plus a few (#7324)
+
+  [ Simon Moll ]
+  * [SER] 'reordercoherent' HLSL attribute and DXIL encoding (#7250)
+  * [SER] REORDER_SCOPE Barrier semantic flag (#7263)
+  * [SER] HitObject_FromRayQuery[WithAttrs] DXIL opcodes and check-pass tests (#7277)
+  * [SER] HitObject accessors DXIL opcodes and check-pass tests (#7276)
+  * [SER] HitObject_Invoke|TraceRay DXIL opcodes and check-pass test (#7278)
+  * [SER] MaybeReorderThread DXIL opcode and validation (#7256)
+
+  [ Dan Brown ]
+  * [spirv] Handles rvalue as implicit object argument of vk::BufferPointer::Get(). (#7313)
+  * [spirv] Fixes vk::BufferPointer constructor expression construction. (#7331)
+
+  [ Simon Moll ]
+  * [SER] Declare all SER HLSL intrinsics (#7347)
+
+  [ Tex Riddell ]
+  * Add HctGen of DXIL.rst back to build without LLVM_BUILD_DOCS required (#7346)
+
+  [ Simon Moll ]
+  * Fix field names in long vector DICompositeType (#7332)
+
+  [ Steve Urquhart ]
+  * [SPIRV] Remove patch decoration from gl_TessCoord (#7187) (#7349)
+
+  [ Simon Moll ]
+  * [SER] MaybeReorderThread + Make(Nop|Miss) HLSL -> DXIL lowering and tests (#7262)
+
+  [ alecardoso-tech ]
+  * Moved HANDLE management to Test Class Constructor and Destructor (#7357)
+
+  [ Chris B ]
+  * Revert ADO pipelines to Ubuntu 22.04 temporarily (#7365)
+
+  [ Simon Moll ]
+  * [SER] Diagnose payload in HitObject::TraceRay|Invoke (#7356)
+  * [SER] TraceRay|Invoke HLSL -> DXIL lowering (#7355)
+
+  [ Steven Perron ]
+  * [SPIRV] Update submodules (#7369)
+  * [SPIRV] Update submodules (#7373)
+
+ -- john <john@odin>  Tue, 29 Apr 2025 11:09:16 -0600
+
 directxshadercompiler (1.4.0.2274-2417~rc1-1lunarg24.04-1) noble; urgency=medium
 
   [ Antonio Maiorano ]
