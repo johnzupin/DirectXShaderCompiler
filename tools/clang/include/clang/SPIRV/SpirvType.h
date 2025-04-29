@@ -5,6 +5,9 @@
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
 //
+// Modifications Copyright(C) 2025 Advanced Micro Devices, Inc.
+// All rights reserved.
+//
 //===----------------------------------------------------------------------===//
 #ifndef LLVM_CLANG_SPIRV_SPIRVTYPE_H
 #define LLVM_CLANG_SPIRV_SPIRVTYPE_H
@@ -53,6 +56,7 @@ public:
     TK_RuntimeArray,
     TK_Struct,
     TK_Pointer,
+    TK_ForwardPointer,
     TK_Function,
     TK_AccelerationStructureNV,
     TK_RayQueryKHR,
@@ -302,11 +306,12 @@ public:
               llvm::Optional<uint32_t> offset_ = llvm::None,
               llvm::Optional<uint32_t> matrixStride_ = llvm::None,
               llvm::Optional<bool> isRowMajor_ = llvm::None,
-              bool relaxedPrecision = false, bool precise = false)
+              bool relaxedPrecision = false, bool precise = false,
+              llvm::Optional<AttrVec> attributes = llvm::None)
         : type(type_), fieldIndex(fieldIndex_), name(name_), offset(offset_),
           sizeInBytes(llvm::None), matrixStride(matrixStride_),
           isRowMajor(isRowMajor_), isRelaxedPrecision(relaxedPrecision),
-          isPrecise(precise) {
+          isPrecise(precise), bitfield(llvm::None), attributes(attributes) {
       // A StructType may not contain any hybrid types.
       assert(!isa<HybridType>(type_));
     }
@@ -335,6 +340,8 @@ public:
     bool isPrecise;
     // Information about the bitfield (if applicable).
     llvm::Optional<BitfieldInfo> bitfield;
+    // Other attributes applied to the field.
+    llvm::Optional<AttrVec> attributes;
   };
 
   StructType(
@@ -382,6 +389,26 @@ public:
 private:
   const SpirvType *pointeeType;
   spv::StorageClass storageClass;
+};
+
+/// Represents a SPIR-V forwarding pointer type.
+class ForwardPointerType : public SpirvType {
+public:
+  ForwardPointerType(QualType pointee)
+      : SpirvType(TK_ForwardPointer), pointeeType(pointee) {}
+
+  static bool classof(const SpirvType *t) {
+    return t->getKind() == TK_ForwardPointer;
+  }
+
+  const QualType getPointeeType() const { return pointeeType; }
+
+  bool operator==(const ForwardPointerType &that) const {
+    return pointeeType == that.pointeeType;
+  }
+
+private:
+  const QualType pointeeType;
 };
 
 /// Represents a SPIR-V function type. None of the parameters nor the return
@@ -489,10 +516,11 @@ public:
               hlsl::ConstantPacking *packOffset = nullptr,
               const hlsl::RegisterAssignment *regC = nullptr,
               bool precise = false,
-              llvm::Optional<BitfieldInfo> bitfield = llvm::None)
+              llvm::Optional<BitfieldInfo> bitfield = llvm::None,
+              llvm::Optional<AttrVec> attributes = llvm::None)
         : astType(astType_), name(name_), vkOffsetAttr(offset),
           packOffsetAttr(packOffset), registerC(regC), isPrecise(precise),
-          bitfield(std::move(bitfield)) {}
+          bitfield(std::move(bitfield)), attributes(std::move(attributes)) {}
 
     // The field's type.
     QualType astType;
@@ -509,6 +537,8 @@ public:
     // Whether this field is a bitfield or not. If set to false, bitfield width
     // value is undefined.
     llvm::Optional<BitfieldInfo> bitfield;
+    // Other attributes applied to the field.
+    llvm::Optional<AttrVec> attributes;
   };
 
   HybridStructType(
